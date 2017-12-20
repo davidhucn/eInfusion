@@ -1,16 +1,3 @@
-package logs
-
-import (
-	"log"
-
-	seelog "github.com/cihub/seelog"
-)
-
-// Global var base on seelog framework
-var LogMain seelog.LoggerInterface
-
-// local log configration
-var strLogConfig string = `
 <seelog >
     <outputs formatid="all">
         <file path="./log/tcplog.log"/>
@@ -37,26 +24,3 @@ var strLogConfig string = `
         <format id="criticalemail" format="Critical error on our server!\n    %Time %Date %RelFile %Func %Msg \nSent by Seelog"/>
     </formats>
 </seelog>
-`
-
-// load the config file
-func LogConfigLoad() {
-	//	logger, err := seelog.LoggerFromConfigAsFile("./config/LogConfig.xml")
-	logger, err := seelog.LoggerFromConfigAsBytes([]byte(strLogConfig))
-	if err != nil {
-		log.Println("初始化日志出错")
-		log.Println(err)
-		return
-	}
-	UserLogger(logger)
-}
-
-// 使用指定日志对象
-func UserLogger(newLogger seelog.LoggerInterface) {
-	LogMain = newLogger
-}
-
-// 初始化全局变量Logger为seeLog的禁用状态，主要为防止Logger被多次初始化
-func LogDisable() {
-	LogMain = seelog.Disabled
-}
