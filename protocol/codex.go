@@ -1,7 +1,7 @@
 package protocol
 
 import (
-	"tcp/comm"
+	"eInfusion/comm"
 )
 
 const (
@@ -57,13 +57,13 @@ func DecodeHeader(ref_packHeader []byte, adr_dataLength *int) bool {
 func DecodeData(ref_packData []byte) {
 	switch ref_packData[0] {
 	case c_orderType_recDetectStat:
-		comm.ScrPrint("收到检测器状态..设备编号：", comm.BaseConvert(10, ref_packData[1]), comm.BaseConvert(10, ref_packData[2]),
+		comm.ShowScreen("收到检测器状态..设备编号：", comm.BaseConvert(10, ref_packData[1]), comm.BaseConvert(10, ref_packData[2]),
 			comm.BaseConvert(10, ref_packData[3]), comm.BaseConvert(10, ref_packData[4]))
-		comm.ScrPrint("其它数据：", ref_packData[5])
+		comm.ShowScreen("其它数据：", ref_packData[5])
 	case c_orderType_recRcvStat:
-		comm.ScrPrint("收到接收器状态...，设备编号：", comm.BaseConvert(10, ref_packData[1]), comm.BaseConvert(10, ref_packData[2]),
+		comm.ShowScreen("收到接收器状态...，设备编号：", comm.BaseConvert(10, ref_packData[1]), comm.BaseConvert(10, ref_packData[2]),
 			comm.BaseConvert(10, ref_packData[3]), comm.BaseConvert(10, ref_packData[4]))
-		comm.ScrPrint("其它数据：", ref_packData[5])
+		comm.ShowScreen("其它数据：", ref_packData[5])
 	default:
 	}
 }

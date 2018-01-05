@@ -1,11 +1,11 @@
 package main
 
 import (
+	"eInfusion/comm"
+	"eInfusion/db"
+	"eInfusion/logs"
+	tp "eInfusion/protocol"
 	"net"
-	"tcp/comm"
-	"tcp/logs"
-
-	tp "tcp/protocol"
 )
 
 func init() {
@@ -16,20 +16,20 @@ func init() {
 }
 
 func main() {
+	db.TestDb()
 	netListen, err := net.Listen("tcp", ":7778")
 	defer netListen.Close()
-	comm.ScrPrint("TCP数据接收平台开始运行...")
+	comm.ShowScreen("["+comm.GetCurrentTime()+"]", "TCP数据接收平台开始运行...")
 	if err != nil {
 		logs.LogMain.Critical("监听TCP出错", err)
-		return
+		panic(err)
 	}
 	for {
 		conn, err := netListen.Accept()
 		if err != nil {
 			continue
 		}
-		logs.LogMain.Info("客户端：" + conn.RemoteAddr().String() + "连接成功")
-		//	comm.ScrPrint("tcp客户端连接成功，ip地址:", conn.RemoteAddr().String())
+		logs.LogMain.Info("客户端：" + conn.RemoteAddr().String() + "连接成功!")
 		go receiveData(conn)
 		//	time.Sleep(time.Second * 2)
 	}
