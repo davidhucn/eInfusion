@@ -16,6 +16,7 @@ import (
 func TestDb() {
 	db, err := sql.Open("mysql", "root:2341656@tcp(127.0.0.1:3306)/einfusion?charset=utf8")
 	if err != nil {
+		fmt.Print("database error:")
 		fmt.Println(err)
 		return
 	}

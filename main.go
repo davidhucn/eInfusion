@@ -40,7 +40,10 @@ func receiveData(conn net.Conn) {
 		//	指定接收数据包头的帧长
 		recDataHeader := make([]byte, tp.GetDataHeaderLength())
 		_, err := conn.Read(recDataHeader)
-		logs.LogMain.Error("接收Tcp包头失败", err)
+		if err != nil {
+			logs.LogMain.Error("接收Tcp包头失败", err)
+			return
+		}
 		// 数据包长度记录变量
 		var intPckContentLength int
 		// 判断包头是否正确，如果不正确直接退回
@@ -55,4 +58,10 @@ func receiveData(conn net.Conn) {
 		tp.DecodeData(recDataContent)
 
 	}
+}
+
+func sendData(conn net.Conn) {
+
+	conn.Write([]byte(daytime)) // don't care about return value
+	conn.Close()
 }

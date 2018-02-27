@@ -11,20 +11,28 @@ const (
 	c_metaDataLengthCursor = 1
 	//	数据协议头(16进制)
 	c_metaDataHeader = 66
-	///////////以下为被动接收////////////
+	///////////以下为被动接收////////////////////////
 	// 接收接收器状态(16进制)
-	c_orderType_recRcvStat = 0
+	c_statusValue_recRcvStat = 0
 	// 接收检测器状态(16进制)
-	c_orderType_recDetectStat = 8
-	///////////以下为主动操作//////////
+	c_statusValue_recDetectStat = 1
+	//	添加检测器到接收器成功
+	c_statusValue_addRcvSuccess = 2
+	//	删除检测器成功
+	c_statusValue_deleteRcvSuccess = 3
+	///////////以下为主动操作///////////////////////
 	//	获取接收器状态(16进制)
-	c_orderType_getRcvStat = 16
+	C_orderType_getRcvStat = 10
 	//	获取检测器状态(16进制)
-	c_orderType_getDetectStat = 24
+	C_orderType_getDetectStat = 11
+	//	添加检测器到接受器
+	C_orderType_addDetect = 12
 	//	删除检测器(16进制)
-	c_orderType_delDetect = 32
+	C_orderType_delDetect = 13
 	//	设置接收器网络配置（IP和port) (16进制)
-	c_orderType_setRcvCfg = 40
+	C_orderType_setRcvCfg = 14
+	//	设备接收器重连接时间
+	C_orderType_reconnTimePeriod = 15
 )
 
 // 获取包头长度数值
@@ -53,8 +61,8 @@ func DecodeHeader(ref_packHeader []byte, adr_dataLength *int) bool {
 	return blnRet
 }
 
-//	处理包内数据
-func DecodeData(ref_packData []byte) {
+//	处理接受到的包内数据
+func DecodeReceiveData(ref_packData []byte) {
 	switch ref_packData[0] {
 	case c_orderType_recDetectStat:
 		comm.ShowScreen("收到检测器状态..设备编号：", comm.BaseConvert(10, ref_packData[1]), comm.BaseConvert(10, ref_packData[2]),
@@ -66,4 +74,31 @@ func DecodeData(ref_packData []byte) {
 		comm.ShowScreen("其它数据：", ref_packData[5])
 	default:
 	}
+}
+
+//	处理发送的数据包数据
+func DecodeToOrderData(orderType int, dataContent string) [] byte{
+	var intOrderDataLength = 7
+	sendOrderData := make([]byte, intOrderDataLength)
+	
+	tempData := []byte(dataContent)
+	
+	sendOrderData
+	
+	switch orderType {
+	case C_orderType_getDetectStat
+	
+	case C_orderType_getRcvStat
+	
+	case C_orderType_addDetect
+	
+	case C_orderType_delDetect
+	
+	case C_orderType_setRcvCfg
+	
+	case C_orderType_reconnTimePeriod
+	
+	default:
+	}
+	return sendOrderData
 }
