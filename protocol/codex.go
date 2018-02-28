@@ -77,28 +77,34 @@ func DecodeReceiveData(ref_packData []byte) {
 }
 
 //	处理发送的数据包数据
-func DecodeToOrderData(orderType int, dataContent string) [] byte{
+func DecodeToOrderData(orderType int, ref_RcvID []byte, ref_DetectID []byte,
+	ref_orderDataContent []byte) []byte {
+
 	var intOrderDataLength = 7
-	sendOrderData := make([]byte, intOrderDataLength)
-	
-	tempData := []byte(dataContent)
-	
-	sendOrderData
-	
-	switch orderType {
-	case C_orderType_getDetectStat
-	
-	case C_orderType_getRcvStat
-	
-	case C_orderType_addDetect
-	
-	case C_orderType_delDetect
-	
-	case C_orderType_setRcvCfg
-	
-	case C_orderType_reconnTimePeriod
-	
-	default:
+	//	先确定数据内容(考虑放在函数内还是外面)
+	if len(ref_DetectID) >= 1 {
+		intOrderDataLength = len(ref_DetectID) + intOrderDataLength
+		intOrderDataLength = len(ref_orderDataContent) + intOrderDataLength
 	}
-	return sendOrderData
+
+	//	基本指令内容
+	sendOrders := make([]byte, intOrderDataLength)
+	sendOrders[0] = c_metaDataHeader
+	sendOrders[1] = intOrderDataLength
+	sendOrders[2] = orderType
+	//	接收器ID
+	sendOrders[3] = ref_RcvID[0]
+	sendOrders[4] = ref_RcvID[1]
+	sendOrders[5] = ref_RcvID[2]
+	sendOrders[6] = ref_RcvID[3]
+	//	switch orderType {
+	//	case C_orderType_getDetectStat
+	//	case C_orderType_getRcvStat
+	//	case C_orderType_addDetect
+	//	case C_orderType_delDetect
+	//	case C_orderType_setRcvCfg
+	//	case C_orderType_reconnTimePeriod
+	//	default:
+	//	}
+	return sendOrders
 }
