@@ -1,6 +1,8 @@
 package comm
 
 import (
+	"bytes"
+	"encoding/binary"
 	"fmt"
 	"os"
 	"strconv"
@@ -66,6 +68,19 @@ func GetCurrentDirectory() string {
 	dir, _ := os.Getwd()
 	strPath = dir + strPath
 	return strPath
+}
+
+// 转化整形成字符型
+func ConvertIntToStr(intContent int) string {
+	return strconv.Itoa(intContent)
+}
+
+//整形转换成字节
+func ConvertIntToBytes(n int) []byte {
+	tmp := int32(n)
+	bytesBuffer := bytes.NewBuffer([]byte{})
+	binary.Write(bytesBuffer, binary.BigEndian, tmp)
+	return bytesBuffer.Bytes()
 }
 
 // 写入指定文件，如果没有该文件自动生成

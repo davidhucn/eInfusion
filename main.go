@@ -55,13 +55,13 @@ func receiveData(conn net.Conn) {
 		_, err = conn.Read(recDataContent)
 		logs.LogMain.Error("接收包数据出错", err)
 		// 处理数据包内容
-		tp.DecodeData(recDataContent)
+		//		tp.DecodeToOrderData(recDataContent)
 
 	}
 }
 
 func sendData(conn net.Conn) {
 
-	conn.Write([]byte(daytime)) // don't care about return value
+	conn.Write([]byte("hello")) // don't care about return value
 	conn.Close()
 }

@@ -64,11 +64,11 @@ func DecodeHeader(ref_packHeader []byte, adr_dataLength *int) bool {
 //	处理接受到的包内数据
 func DecodeReceiveData(ref_packData []byte) {
 	switch ref_packData[0] {
-	case c_orderType_recDetectStat:
+	case c_statusValue_recDetectStat:
 		comm.ShowScreen("收到检测器状态..设备编号：", comm.BaseConvert(10, ref_packData[1]), comm.BaseConvert(10, ref_packData[2]),
 			comm.BaseConvert(10, ref_packData[3]), comm.BaseConvert(10, ref_packData[4]))
 		comm.ShowScreen("其它数据：", ref_packData[5])
-	case c_orderType_recRcvStat:
+	case c_statusValue_recRcvStat:
 		comm.ShowScreen("收到接收器状态...，设备编号：", comm.BaseConvert(10, ref_packData[1]), comm.BaseConvert(10, ref_packData[2]),
 			comm.BaseConvert(10, ref_packData[3]), comm.BaseConvert(10, ref_packData[4]))
 		comm.ShowScreen("其它数据：", ref_packData[5])
@@ -77,12 +77,13 @@ func DecodeReceiveData(ref_packData []byte) {
 }
 
 //	处理发送的数据包数据
-func DecodeToOrderData(orderType int, ref_RcvID []byte, ref_DetectID []byte,
-	ref_orderDataContent []byte) []byte {
+func DecodeToOrderData(orderType int, ref_RcvID []byte, ref_DetectID []byte, ref_orderDataContent []byte) []byte {
 
 	var intOrderDataLength = 7
-	//	先确定数据内容(考虑放在函数内还是外面)
-	if len(ref_DetectID) >= 1 {
+	
+	if orderType==C_orderType_addDetect
+	//	确定接收器的是否有内容
+	if len(ref_RcvID) >= 1 {
 		intOrderDataLength = len(ref_DetectID) + intOrderDataLength
 		intOrderDataLength = len(ref_orderDataContent) + intOrderDataLength
 	}
@@ -90,21 +91,22 @@ func DecodeToOrderData(orderType int, ref_RcvID []byte, ref_DetectID []byte,
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)
 	sendOrders[0] = c_metaDataHeader
-	sendOrders[1] = intOrderDataLength
-	sendOrders[2] = orderType
+	sendOrders[1] = comm.ConvertIntToBytes(intOrderDataLength)[0]
+	sendOrders[2] = comm.ConvertIntToBytes(orderType)[0]
 	//	接收器ID
 	sendOrders[3] = ref_RcvID[0]
 	sendOrders[4] = ref_RcvID[1]
 	sendOrders[5] = ref_RcvID[2]
 	sendOrders[6] = ref_RcvID[3]
-	//	switch orderType {
-	//	case C_orderType_getDetectStat
-	//	case C_orderType_getRcvStat
-	//	case C_orderType_addDetect
-	//	case C_orderType_delDetect
-	//	case C_orderType_setRcvCfg
-	//	case C_orderType_reconnTimePeriod
-	//	default:
-	//	}
+
+	//		switch orderType {
+	//		case C_orderType_getDetectStat
+	//		case C_orderType_getRcvStat
+	//		case C_orderType_addDetect
+	//		case C_orderType_delDetect
+	//		case C_orderType_setRcvCfg
+	//		case C_orderType_reconnTimePeriod
+	//		default:
+	//		}
 	return sendOrders
 }
