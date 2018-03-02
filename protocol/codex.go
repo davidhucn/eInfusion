@@ -76,37 +76,92 @@ func DecodeReceiveData(ref_packData []byte) {
 	}
 }
 
-//	处理发送的数据包数据
-func DecodeToOrderData(orderType int, ref_RcvID []byte, ref_DetectID []byte, ref_orderDataContent []byte) []byte {
-
+// 获取指定接收器的状态
+func GetRcvStatus(ref_RcvID []byte) []byte {
 	var intOrderDataLength = 7
-	
-	if orderType==C_orderType_addDetect
-	//	确定接收器的是否有内容
-	if len(ref_RcvID) >= 1 {
-		intOrderDataLength = len(ref_DetectID) + intOrderDataLength
-		intOrderDataLength = len(ref_orderDataContent) + intOrderDataLength
-	}
-
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)
 	sendOrders[0] = c_metaDataHeader
 	sendOrders[1] = comm.ConvertIntToBytes(intOrderDataLength)[0]
-	sendOrders[2] = comm.ConvertIntToBytes(orderType)[0]
-	//	接收器ID
-	sendOrders[3] = ref_RcvID[0]
-	sendOrders[4] = ref_RcvID[1]
-	sendOrders[5] = ref_RcvID[2]
-	sendOrders[6] = ref_RcvID[3]
+	//	获取指令类型
+	sendOrders[2] = C_orderType_getRcvStat
+	//	获取接收器ID
+	for recId := 0; recId < 4; recId++ {
+		sendOrders[recId+3] = ref_RcvID[recId]
+	}
+	return sendOrders
+}
 
-	//		switch orderType {
-	//		case C_orderType_getDetectStat
-	//		case C_orderType_getRcvStat
-	//		case C_orderType_addDetect
-	//		case C_orderType_delDetect
-	//		case C_orderType_setRcvCfg
-	//		case C_orderType_reconnTimePeriod
-	//		default:
-	//		}
+// 对检测器进行操作（检测、册除、新增）
+// 一个设备ID 占4个byte
+func OrderDetect(orderType int, ref_RcvID []byte, ref_DetectID []byte) []byte {
+	var intOrderDataLength = 7
+	//	基本指令内容
+	sendOrders := make([]byte, intOrderDataLength)
+	sendOrders[0] = c_metaDataHeader
+	sendOrders[1] = comm.ConvertIntToBytes(intOrderDataLength)[0]
+	//	获取指令类型
+	sendOrders[2] = comm.ConvertIntToBytes(orderType)[0]
+	//	获取接收器ID
+	for recId := 0; recId < len(ref_RcvID); recId++ {
+		sendOrders[recId+3] = ref_RcvID[recId]
+	}
+	// 如果与检测器相关的操作(添加、删除、检查)
+	if orderType == C_orderType_addDetect || C_orderType_delDetect || C_orderType_getDetectStat {
+		if deviceAmount > 0 {
+			intDevicesLength := deviceAmount * 4
+			orderContents := make([]byte, intDevicesLength+1)
+			orderContents[0] = intDevicesLength
+			//	获取检测器ID
+			for devId := 0; devId < len(ref_DetectID); devId++ {
+				orderContents[devId+1] = ref_DetectID[devId]
+			}
+			append(sendOrders, orderContents)
+		}
+	}
+	return sendOrders
+}
+
+// 修改接收器网络配置
+func SetRcvCfg(ref_RcvID []byte, ref_IP []byte, ref_Port []byte) []byte {
+	var intOrderDataLength = 13
+	//	基本指令内容
+	sendOrders := make([]byte, intOrderDataLength)
+	sendOrders[0] = c_metaDataHeader
+	sendOrders[1] = comm.ConvertIntToBytes(intOrderDataLength)[0]
+	//	获取指令类型
+	sendOrders[2] = C_orderType_setRcvCfg
+	//	获取接收器ID
+	for recId := 0; recId < 4; recId++ {
+		sendOrders[recId+3] = ref_RcvID[recId]
+	}
+	// IP地址
+	for ipAdd := 0; ipAdd < 4; ipAdd++ {
+		sendOrders[ipAdd+7] = ref_IP[ipAdd]
+	}
+	//	端口号
+	for portNum := 0; portNum < 2; portNum++ {
+		sendOrders[portNum+11] = ref_Port[portNum]
+	}
+	return sendOrders
+}
+
+// 设置接收器重连接时间
+func SetRcvReconTime(ref_RcvID []byte, ref_ReconTime int) []byte {
+	var intOrderDataLength = 9
+	//	基本指令内容
+	sendOrders := make([]byte, intOrderDataLength)
+	sendOrders[0] = c_metaDataHeader
+	sendOrders[1] = comm.ConvertIntToBytes(intOrderDataLength)[0]
+	//	获取指令类型
+	sendOrders[2] = C_orderType_reconnTimePeriod
+	//	获取接收器ID
+	for recId := 0; recId < 4; recId++ {
+		sendOrders[recId+3] = ref_RcvID[recId]
+	}
+	// 连接时间
+	for period := 0; period < 2; period++ {
+		sendOrders[period+7] = ref_IP[period]
+	}
 	return sendOrders
 }
