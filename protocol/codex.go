@@ -40,7 +40,7 @@ func GetDataHeaderLength() int {
 	return c_metaDataHeaderLength
 }
 
-//	判断包头是否正确
+//	判断包头是否正确（机制转换）
 // 返回：包头是否为真（布尔值），数据包内正文数据包的长度
 func DecodeHeader(ref_packHeader []byte, adr_dataLength *int) bool {
 	var blnRet bool = false
@@ -82,7 +82,8 @@ func GetRcvStatus(ref_RcvID []byte) []byte {
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)
 	sendOrders[0] = c_metaDataHeader
-	sendOrders[1] = comm.ConvertIntToBytes(intOrderDataLength)[0]
+	sendOrders[1] = byte(intOrderDataLength)
+	//	sendOrders[1] = comm.ConvertIntToBytes(intOrderDataLength)[0]
 	//	获取指令类型
 	sendOrders[2] = C_orderType_getRcvStat
 	//	获取接收器ID
@@ -99,9 +100,9 @@ func OperateDetect(orderType int, ref_RcvID []byte, detectAmount int, ref_Detect
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)
 	sendOrders[0] = c_metaDataHeader
-	sendOrders[1] = comm.ConvertIntToBytes(intOrderDataLength)[0]
+	sendOrders[1] = byte(intOrderDataLength)
 	//	获取指令类型
-	sendOrders[2] = comm.ConvertIntToBytes(orderType)[0]
+	sendOrders[2] = byte(orderType)
 	//	获取接收器ID
 	for recId := 0; recId < len(ref_RcvID); recId++ {
 		sendOrders[recId+3] = ref_RcvID[recId]
@@ -110,7 +111,7 @@ func OperateDetect(orderType int, ref_RcvID []byte, detectAmount int, ref_Detect
 	if orderType == C_orderType_addDetect || orderType == C_orderType_delDetect || orderType == C_orderType_getDetectStat {
 		if detectAmount > 0 {
 			// 检测器数量内容到slice
-			sendOrders = append(sendOrders, comm.ConvertIntToBytes(detectAmount)[0])
+			sendOrders = append(sendOrders, byte(detectAmount))
 			//	添加检测器id到slice
 			for devId := 0; devId < len(ref_DetectID); devId++ {
 				sendOrders = append(sendOrders, ref_DetectID[devId])
@@ -126,7 +127,7 @@ func SetRcvCfg(ref_RcvID []byte, ref_IP []byte, ref_Port []byte) []byte {
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)
 	sendOrders[0] = c_metaDataHeader
-	sendOrders[1] = comm.ConvertIntToBytes(intOrderDataLength)[0]
+	sendOrders[1] = byte(intOrderDataLength)
 	//	获取指令类型
 	sendOrders[2] = C_orderType_setRcvCfg
 	//	获取接收器ID
@@ -150,7 +151,7 @@ func SetRcvReconTime(ref_RcvID []byte, ref_IP []byte, ref_ReconTime int) []byte 
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)
 	sendOrders[0] = c_metaDataHeader
-	sendOrders[1] = comm.ConvertIntToBytes(intOrderDataLength)[0]
+	sendOrders[1] = byte(intOrderDataLength)
 	//	获取指令类型
 	sendOrders[2] = C_orderType_reconnTimePeriod
 	//	获取接收器ID
