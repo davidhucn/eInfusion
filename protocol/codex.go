@@ -94,7 +94,7 @@ func GetRcvStatus(ref_RcvID []byte) []byte {
 
 // 对检测器进行操作（检测、册除、新增）
 // 一个设备ID 占4个byte
-func OrderDetect(orderType int, ref_RcvID []byte, ref_DetectID []byte) []byte {
+func OperateDetect(orderType int, ref_RcvID []byte, detectAmount int, ref_DetectID []byte) []byte {
 	var intOrderDataLength = 7
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)
@@ -107,16 +107,14 @@ func OrderDetect(orderType int, ref_RcvID []byte, ref_DetectID []byte) []byte {
 		sendOrders[recId+3] = ref_RcvID[recId]
 	}
 	// 如果与检测器相关的操作(添加、删除、检查)
-	if orderType == C_orderType_addDetect || C_orderType_delDetect || C_orderType_getDetectStat {
-		if deviceAmount > 0 {
-			intDevicesLength := deviceAmount * 4
-			orderContents := make([]byte, intDevicesLength+1)
-			orderContents[0] = intDevicesLength
-			//	获取检测器ID
+	if orderType == C_orderType_addDetect || orderType == C_orderType_delDetect || orderType == C_orderType_getDetectStat {
+		if detectAmount > 0 {
+			// 检测器数量内容到slice
+			sendOrders = append(sendOrders, comm.ConvertIntToBytes(detectAmount)[0])
+			//	添加检测器id到slice
 			for devId := 0; devId < len(ref_DetectID); devId++ {
-				orderContents[devId+1] = ref_DetectID[devId]
+				sendOrders = append(sendOrders, ref_DetectID[devId])
 			}
-			append(sendOrders, orderContents)
 		}
 	}
 	return sendOrders
@@ -147,7 +145,7 @@ func SetRcvCfg(ref_RcvID []byte, ref_IP []byte, ref_Port []byte) []byte {
 }
 
 // 设置接收器重连接时间
-func SetRcvReconTime(ref_RcvID []byte, ref_ReconTime int) []byte {
+func SetRcvReconTime(ref_RcvID []byte, ref_IP []byte, ref_ReconTime int) []byte {
 	var intOrderDataLength = 9
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)
