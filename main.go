@@ -1,7 +1,7 @@
 package main
 
-import "eInfusion/tcp"
+import et "eInfusion/tcpOperate"
 
 func main() {
-	tcp.StartTcpServer()
+	et.StartTcpServer()
 }

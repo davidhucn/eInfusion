@@ -1,4 +1,4 @@
-package tcp
+package tcpOperate
 
 import (
 	"eInfusion/comm"
@@ -6,7 +6,7 @@ import (
 	"github.com/firstrow/tcp_server"
 )
 
-func StartTcpServer() {
+func StartTcpTest() {
 	server := tcp_server.New(":7778")
 	comm.ShowScreen("["+comm.GetCurrentTime()+"]", "Transfusion数据平台开始运行...")
 
