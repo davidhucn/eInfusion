@@ -8,18 +8,20 @@ import (
 	"net"
 )
 
+const (
+	c_runn
+)
+
 func init() {
 	// 初始化日志
 	logs.LogDisable()
 	logs.LogConfigLoad()
-
 }
 
 func StartTcpServer() {
 	//	db.TestDb()
 	netListen, err := net.Listen("tcp", ":7778")
 	defer netListen.Close()
-	comm.ShowScreen("["+comm.GetCurrentTime()+"]", "Transfusion数据接收平台开始运行...")
 	//	系统开始运行时log记录时间
 	logs.LogMain.Info("[" + comm.GetCurrentTime() + "]" + "Transfusion数据接收平台开始运行... ")
 	if err != nil {
@@ -64,7 +66,7 @@ func receiveData(conn net.Conn) {
 	}
 }
 
-func sendData(conn net.Conn) {
+func sendData(conn net.Conn,bdata) {
 
 	conn.Write([]byte("hello")) // don't care about return value
 	conn.Close()

@@ -9,7 +9,10 @@ const (
 	c_metaDataHeaderLength = 2
 	//	包数据中定义长度的帧	(10进制）
 	c_metaDataLengthCursor = 1
-	//	数据协议头(16进制)
+)
+
+const (
+	//	数据协议（报文）头(16进制)
 	c_metaDataHeader = 66
 	///////////以下为被动接收////////////////////////
 	// 接收接收器状态(16进制)
@@ -20,7 +23,10 @@ const (
 	c_statusValue_addRcvSuccess = 2
 	//	删除检测器成功
 	c_statusValue_deleteRcvSuccess = 3
-	///////////以下为主动操作///////////////////////
+)
+
+///////////以下为主动操作///////////////////////
+const (
 	//	获取接收器状态(16进制)
 	C_orderType_getRcvStat = 10
 	//	获取检测器状态(16进制)
@@ -40,7 +46,7 @@ func GetDataHeaderLength() int {
 	return c_metaDataHeaderLength
 }
 
-//	判断包头是否正确（机制转换）
+//	判断包头是否正确（进制转换）
 // 返回：包头是否为真（布尔值），数据包内正文数据包的长度
 func DecodeHeader(ref_packHeader []byte, adr_dataLength *int) bool {
 	var blnRet bool = false

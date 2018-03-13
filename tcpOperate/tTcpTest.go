@@ -16,11 +16,11 @@ func StartTcpTest() {
 		comm.ShowScreen("client address: ", c.Conn().RemoteAddr())
 	})
 
-	server.OnNewMessage(func(c *tcp_server.Client,message) {
-		//		comm.ShowScreen("test")
-		//		var bb []byte
-		comm.ShowScreen(string(message))
-	})
+	//	server.OnNewMessage(func(c *tcp_server.Client,message) {
+	//		//		comm.ShowScreen("test")
+	//		//		var bb []byte
+	////		comm.ShowScreen(string(message))
+	//	})
 
 	server.OnClientConnectionClosed(func(c *tcp_server.Client, err error) {
 		// connection with client lost

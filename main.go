@@ -3,6 +3,6 @@ package main
 import et "eInfusion/tcpOperate"
 
 func main() {
-	//	et.StartTcpServer()
-	et.StartTcpTest()
+	et.StartTcpServer()
+	//	et.StartTcpTest()
 }

@@ -7,11 +7,17 @@ import (
 	_ "github.com/Go-SQL-Driver/MySQL"
 )
 
-//type userinfo struct {
-//	name        string
-//	description string
-//	url         string
-//}
+const (
+	c_DataBase_IPAddress = "127.0.0.1"
+	c_DataBase_Port      = "3306"
+	c_DataBase_schema    = "transfusion"
+)
+
+type detector struct {
+	detector_id string
+	receiver_id string
+	disable     bool /*是否启用*/
+}
 
 func TestDb() {
 	db, err := sql.Open("mysql", "root:2341656@tcp(127.0.0.1:3306)/einfusion?charset=utf8")
