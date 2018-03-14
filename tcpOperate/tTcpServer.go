@@ -2,15 +2,16 @@ package tcpOperate
 
 import (
 	"eInfusion/comm"
-	//	"eInfusion/db"
 	"eInfusion/logs"
 	ep "eInfusion/protocol"
 	"net"
 )
 
-const (
-	c_runn
-)
+type tcpServer struct {
+	IPAddr      string
+	Port        string
+	ConnHandler net.TCPConn
+}
 
 func init() {
 	// 初始化日志
@@ -66,7 +67,7 @@ func receiveData(conn net.Conn) {
 	}
 }
 
-func sendData(conn net.Conn,bdata) {
+func sendData(conn net.Conn, bData []byte) {
 
 	conn.Write([]byte("hello")) // don't care about return value
 	conn.Close()

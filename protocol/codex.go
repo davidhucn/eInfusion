@@ -2,6 +2,7 @@ package protocol
 
 import (
 	"eInfusion/comm"
+	"eInfusion/dbOperate"
 )
 
 const (
@@ -67,7 +68,7 @@ func DecodeHeader(ref_packHeader []byte, adr_dataLength *int) bool {
 	return blnRet
 }
 
-//	处理接受到的包内数据
+//	处理接收到的包内数据
 func DecodeReceiveData(ref_packData []byte) {
 	switch ref_packData[0] {
 	case c_statusValue_recDetectStat:
