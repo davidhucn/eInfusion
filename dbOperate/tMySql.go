@@ -44,13 +44,7 @@ func (this *DBConn) ConnectDB() error {
 		panic(err.Error())
 		return err
 	}
-	//	checkErr(err, c_Msg_DBConnect_Err)
 	this.DbHandler = db
-	//	if this.DbHandler.Stats().OpenConnections > 0 {
-	//		this.IsConnected = true
-	//	} else {
-	//		this.IsConnected = false
-	//	}
 	this.IsConnected = true
 	return nil
 }
@@ -160,7 +154,7 @@ func (this *DBConn) QueryDataOneRow(strSql string, args ...interface{}) (*map[st
 }
 
 //查询多条数据,结果皆为string
-func (this *DBConn) QueryData(strSql string, args ...interface{}) (*[]map[string]string, error) {
+func (this *DBConn) QueryDataRows(strSql string, args ...interface{}) (*[]map[string]string, error) {
 	//	var stmtOut sql.Stmt
 	//	如果没有连接数据库则强制连接
 	if !this.IsConnected {

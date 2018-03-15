@@ -5,43 +5,6 @@ import (
 	"eInfusion/dbOperate"
 )
 
-const (
-	//	接收数据长度(10进制)
-	c_metaDataHeaderLength = 2
-	//	包数据中定义长度的帧	(10进制）
-	c_metaDataLengthCursor = 1
-)
-
-const (
-	//	数据协议（报文）头(16进制)
-	c_metaDataHeader = 66
-	///////////以下为被动接收////////////////////////
-	// 接收接收器状态(16进制)
-	c_statusValue_recRcvStat = 0
-	// 接收检测器状态(16进制)
-	c_statusValue_recDetectStat = 1
-	//	添加检测器到接收器成功
-	c_statusValue_addRcvSuccess = 2
-	//	删除检测器成功
-	c_statusValue_deleteRcvSuccess = 3
-)
-
-///////////以下为主动操作///////////////////////
-const (
-	//	获取接收器状态(16进制)
-	C_orderType_getRcvStat = 10
-	//	获取检测器状态(16进制)
-	C_orderType_getDetectStat = 11
-	//	添加检测器到接受器
-	C_orderType_addDetect = 12
-	//	删除检测器(16进制)
-	C_orderType_delDetect = 13
-	//	设置接收器网络配置（IP和port) (16进制)
-	C_orderType_setRcvCfg = 14
-	//	设备接收器重连接时间
-	C_orderType_reconnTimePeriod = 15
-)
-
 // 获取包头长度数值
 func GetDataHeaderLength() int {
 	return c_metaDataHeaderLength
@@ -63,6 +26,10 @@ func DecodeHeader(ref_packHeader []byte, adr_dataLength *int) bool {
 			// 函数返回为真
 			blnRet = true
 		}
+		//		else {
+		//			//调试用，如果内容不对，显示出来
+		//			fmt.Println("orginial:", ref_packHeader[0], "transfer:", comm.BaseConvert(16, ref_packHeader[0]))
+		//		}
 	}
 	*adr_dataLength = intDataLength
 	return blnRet
@@ -70,17 +37,7 @@ func DecodeHeader(ref_packHeader []byte, adr_dataLength *int) bool {
 
 //	处理接收到的包内数据
 func DecodeReceiveData(ref_packData []byte) {
-	switch ref_packData[0] {
-	case c_statusValue_recDetectStat:
-		comm.ShowScreen("收到检测器状态..设备编号：", comm.BaseConvert(10, ref_packData[1]), comm.BaseConvert(10, ref_packData[2]),
-			comm.BaseConvert(10, ref_packData[3]), comm.BaseConvert(10, ref_packData[4]))
-		comm.ShowScreen("其它数据：", ref_packData[5])
-	case c_statusValue_recRcvStat:
-		comm.ShowScreen("收到接收器状态...，设备编号：", comm.BaseConvert(10, ref_packData[1]), comm.BaseConvert(10, ref_packData[2]),
-			comm.BaseConvert(10, ref_packData[3]), comm.BaseConvert(10, ref_packData[4]))
-		comm.ShowScreen("其它数据：", ref_packData[5])
-	default:
-	}
+
 }
 
 // 获取指定接收器的状态

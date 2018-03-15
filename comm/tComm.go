@@ -15,17 +15,22 @@ func GetCurrentTime() string {
 	return strTime
 }
 
+//获取当前日期
+func GetCurrentDate() string {
+	return time.Now().Format("2006-01-02")
+}
+
 // 打印到屏幕
 func ShowScreen(v ...interface{}) {
 	fmt.Println(v...)
 }
 
 // 错误判断处理
-func CheckError(err error) {
-	if err != nil {
+//func CheckError(err error) {
+//	if err != nil {
 
-	}
-}
+//	}
+//}
 
 //根据参数base转换成指定进制，返回数值
 func BaseConvert(ref_intBase int, ref_varContent interface{}) string {

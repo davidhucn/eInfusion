@@ -13,7 +13,7 @@ var LogMain seelog.LoggerInterface
 var strLogConfig string = `
 <seelog >
     <outputs formatid="all">
-        <file path="./log/tcplog.log"/>
+        <file path="./log/logs.log"/>
         <filter levels="info">
           <console formatid="fmtinfo"/>
         </filter>
@@ -23,7 +23,7 @@ var strLogConfig string = `
         </filter>
 		<filter levels="critical">
 			<file path="./log/critical.log" formatid="critical"/>
-			<smtp formatid="criticalemail" senderaddress="12679333@qq.com" sendername="logTest"  hostname="smtp.qq.com" hostport="587"
+			<smtp formatid="criticalemail" senderaddress="12679333@qq.com" sendername="Transfusion Error"  hostname="smtp.qq.com" hostport="587"
 				username="12679333@qq.com" password="dn65523213">
 				<recipient address="david.hu@makedoctor.com" />
 			</smtp>

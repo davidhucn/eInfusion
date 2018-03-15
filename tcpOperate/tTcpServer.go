@@ -5,13 +5,11 @@ import (
 	"eInfusion/logs"
 	ep "eInfusion/protocol"
 	"net"
+	//	"sync"
 )
 
-type tcpServer struct {
-	IPAddr      string
-	Port        string
-	ConnHandler net.TCPConn
-}
+const c_Msg_ServerStart = "Transfusion平台运行中 …… "
+const c_TcpServer_Port = "7778"
 
 func init() {
 	// 初始化日志
@@ -20,21 +18,22 @@ func init() {
 }
 
 func StartTcpServer() {
-	//	db.TestDb()
-	netListen, err := net.Listen("tcp", ":7778")
+	netListen, err := net.Listen("tcp", ":"+c_TcpServer_Port)
 	defer netListen.Close()
 	//	系统开始运行时log记录时间
-	logs.LogMain.Info("[" + comm.GetCurrentTime() + "]" + "Transfusion数据接收平台开始运行... ")
+	logs.LogMain.Info(c_Msg_ServerStart + "（" + comm.GetCurrentDate() + "）")
 	if err != nil {
 		logs.LogMain.Critical("监听TCP出错", err)
 		panic(err)
 	}
+	comm.ShowScreen("TCP Port:" + c_TcpServer_Port)
 	for {
 		conn, err := netListen.Accept()
 		if err != nil {
 			continue
 		}
-		logs.LogMain.Info("客户端：" + conn.RemoteAddr().String() + "连接成功!")
+		comm.ShowScreen("----------------------------------------------------------")
+		logs.LogMain.Info("客户端：" + conn.RemoteAddr().String() + " 连接!")
 		go receiveData(conn)
 		//	time.Sleep(time.Second * 2)
 	}
@@ -46,7 +45,8 @@ func receiveData(conn net.Conn) {
 		recDataHeader := make([]byte, ep.GetDataHeaderLength())
 		_, err := conn.Read(recDataHeader)
 		if err != nil {
-			logs.LogMain.Error("接收Tcp包头失败", err)
+			//			logs.LogMain.Error("接收Tcp包头失败", err)
+			comm.ShowScreen(conn.RemoteAddr(), "客户端连接丢失!")
 			return
 		}
 		// 数据包长度记录变量
@@ -62,7 +62,9 @@ func receiveData(conn net.Conn) {
 			logs.LogMain.Error("接收包数据出错", err)
 		}
 		// 处理数据包内容
-		//		tp.DecodeToOrderData(recDataContent)
+		//		ep.DecodeReceiveData(recDataContent)
+
+		comm.ShowScreen(recDataContent[0], recDataContent[1], recDataContent[2], recDataContent[3])
 
 	}
 }
