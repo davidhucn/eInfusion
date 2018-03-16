@@ -9,8 +9,12 @@ import (
 	//	"reflect"
 )
 
-const c_Msg_ServerStart = "Transfusion平台运行中 …… "
 const c_TcpServer_Port = "7778"
+
+const (
+	c_Msg_SendDataErr = "发送数据错误！"
+	c_Msg_ServerStart = "Transfusion平台运行中 …… "
+)
 
 func init() {
 	// 初始化日志
@@ -67,8 +71,11 @@ func receiveData(conn net.Conn) {
 	}
 }
 
-func sendData(conn net.Conn, bData []byte) {
-
-	conn.Write([]byte("hello")) // don't care about return value
-	conn.Close()
+func sendData(conn net.Conn, packetData []byte) {
+	_, err := conn.Write(packetData) // don't care about return value
+	defer conn.Close()
+	if err != nil {
+		logs.LogMain.Critical(c_Msg_SendDataErr)
+		return
+	}
 }
