@@ -1,6 +1,24 @@
 package protocol
 
 //import ""
+
+// 获取指定接收器的状态
+func GetRcvStatus(ref_RcvID []byte) []byte {
+	var intOrderDataLength = 7
+	//	基本指令内容
+	sendOrders := make([]byte, intOrderDataLength)
+	sendOrders[0] = c_metaDataHeader
+	sendOrders[1] = byte(intOrderDataLength)
+	//	sendOrders[1] = comm.ConvertIntToBytes(intOrderDataLength)[0]
+	//	获取指令类型
+	sendOrders[2] = C_orderType_getRcvStat
+	//	获取接收器ID
+	for recId := 0; recId < 4; recId++ {
+		sendOrders[recId+3] = ref_RcvID[recId]
+	}
+	return sendOrders
+}
+
 // 对检测器进行操作（检测、册除、新增）
 // 一个设备ID 占4个byte
 func OperateDetect(orderType uint8, ref_RcvID []byte, detectAmount int, ref_DetectID []byte) []byte {

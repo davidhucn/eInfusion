@@ -32,6 +32,9 @@ type DBConn struct {
 	DbHandler   *sql.DB
 }
 
+// 数据操作对象（模块级）
+var G_DBConn DBConn
+
 //连接数据库
 func (this *DBConn) ConnectDB() error {
 	//	连接用数据库信息
@@ -52,7 +55,6 @@ func (this *DBConn) ConnectDB() error {
 //插入数据到指定数据库内
 func (this *DBConn) InsertData(strSql string, args ...interface{}) (affected_Num int64, err error) {
 	var result sql.Result
-	//	var stmtIns sql.Stmt
 	//	如果没有连接数据库则强制连接
 	if !this.IsConnected {
 		this.ConnectDB()

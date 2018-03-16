@@ -46,20 +46,3 @@ func DecodeRcvData(ref_packData []byte) {
 		//		return
 	}
 }
-
-// 获取指定接收器的状态
-func GetRcvStatus(ref_RcvID []byte) []byte {
-	var intOrderDataLength = 7
-	//	基本指令内容
-	sendOrders := make([]byte, intOrderDataLength)
-	sendOrders[0] = c_metaDataHeader
-	sendOrders[1] = byte(intOrderDataLength)
-	//	sendOrders[1] = comm.ConvertIntToBytes(intOrderDataLength)[0]
-	//	获取指令类型
-	sendOrders[2] = C_orderType_getRcvStat
-	//	获取接收器ID
-	for recId := 0; recId < 4; recId++ {
-		sendOrders[recId+3] = ref_RcvID[recId]
-	}
-	return sendOrders
-}

@@ -2,9 +2,6 @@ package protocol
 
 import . "eInfusion/dbOperate"
 
-// 数据操作对象（模块级）
-var m_DBConn DBConn
-
 const (
 	//	接收数据长度(10进制)
 	c_metaDataHeaderLength int = 2
