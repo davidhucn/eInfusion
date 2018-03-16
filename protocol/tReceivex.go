@@ -2,7 +2,8 @@ package protocol
 
 import (
 	"eInfusion/comm"
-	"eInfusion/dbOperate"
+	ed "eInfusion/dbOperate"
+	//	"reflect"
 )
 
 // 获取包头长度数值
@@ -18,7 +19,7 @@ func DecodeHeader(ref_packHeader []byte, adr_dataLength *int) bool {
 	// 如果包头长度正确
 	if len(ref_packHeader) == c_metaDataHeaderLength {
 		//	如果接收的包头内容正确
-		if comm.BaseConvert(16, ref_packHeader[0]) == comm.BaseConvert(1, c_metaDataHeader) {
+		if ref_packHeader[0] == c_metaDataHeader {
 			//	获取包内数据帧的长度,根据协议规定
 			intDataLength = int(ref_packHeader[c_metaDataLengthCursor])
 			//	包内容帧长 = 包总长度- 包头帧长度
@@ -26,18 +27,26 @@ func DecodeHeader(ref_packHeader []byte, adr_dataLength *int) bool {
 			// 函数返回为真
 			blnRet = true
 		}
-		//		else {
-		//			//调试用，如果内容不对，显示出来
-		//			fmt.Println("orginial:", ref_packHeader[0], "transfer:", comm.BaseConvert(16, ref_packHeader[0]))
-		//		}
 	}
 	*adr_dataLength = intDataLength
 	return blnRet
 }
 
 //	处理接收到的包内数据
-func DecodeReceiveData(ref_packData []byte) {
+func DecodeRcvData(ref_packData []byte) {
 
+	switch ref_packData[0] {
+	//获取接收器状态
+	case c_stRcvStat:
+
+	//获取检测器状态
+	case c_stDetectStat:
+
+	case c_stDelDetectSuccess:
+	case c_stAddDetectSuccess:
+		//	default
+		//		return
+	}
 }
 
 // 获取指定接收器的状态
@@ -59,7 +68,7 @@ func GetRcvStatus(ref_RcvID []byte) []byte {
 
 // 对检测器进行操作（检测、册除、新增）
 // 一个设备ID 占4个byte
-func OperateDetect(orderType int, ref_RcvID []byte, detectAmount int, ref_DetectID []byte) []byte {
+func OperateDetect(orderType uint8, ref_RcvID []byte, detectAmount int, ref_DetectID []byte) []byte {
 	var intOrderDataLength = 7
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)

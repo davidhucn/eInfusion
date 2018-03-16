@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"os"
+	"reflect"
 	"strconv"
 	"time"
 )
@@ -31,6 +32,10 @@ func ShowScreen(v ...interface{}) {
 
 //	}
 //}
+//判断变量类型
+func GetVarType(ref_var interface{}) string {
+	return fmt.Sprint(reflect.TypeOf(ref_var))
+}
 
 //根据参数base转换成指定进制，返回数值
 func BaseConvert(ref_intBase int, ref_varContent interface{}) string {
@@ -60,6 +65,16 @@ func BaseStrToInt(ref_base int, ref_content string) int {
 		intRetValue = 0
 	}
 	return int(intRetValue)
+}
+
+//	根据指定进制要求，把字符串转换成数字Uint8型
+func BaseStrToUint(ref_base int, ref_content string) uint8 {
+	intRetValue, err := strconv.ParseUint(ref_content, ref_base, 64)
+	if err != nil {
+		//		scrPrint(" 字符串转换为数字出错: ", err)
+		intRetValue = 0
+	}
+	return uint8(intRetValue)
 }
 
 // 获取当然路径

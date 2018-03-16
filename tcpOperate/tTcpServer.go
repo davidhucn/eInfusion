@@ -6,6 +6,7 @@ import (
 	ep "eInfusion/protocol"
 	"net"
 	//	"sync"
+	//	"reflect"
 )
 
 const c_Msg_ServerStart = "Transfusion平台运行中 …… "
@@ -45,13 +46,13 @@ func receiveData(conn net.Conn) {
 		recDataHeader := make([]byte, ep.GetDataHeaderLength())
 		_, err := conn.Read(recDataHeader)
 		if err != nil {
-			//			logs.LogMain.Error("接收Tcp包头失败", err)
-			comm.ShowScreen(conn.RemoteAddr(), "客户端连接丢失!")
+			//	logs.LogMain.Error("接收Tcp包头失败", err)
+			comm.ShowScreen(conn.RemoteAddr(), " 客户端连接丢失!")
 			return
 		}
 		// 数据包长度记录变量
 		var intPckContentLength int
-		// 判断包头是否正确，如果不正确直接退回
+		// 判断包头是否正确，如果正确，获取长度
 		if !ep.DecodeHeader(recDataHeader, &intPckContentLength) {
 			return
 		}
@@ -62,10 +63,7 @@ func receiveData(conn net.Conn) {
 			logs.LogMain.Error("接收包数据出错", err)
 		}
 		// 处理数据包内容
-		//		ep.DecodeReceiveData(recDataContent)
-
-		comm.ShowScreen(recDataContent[0], recDataContent[1], recDataContent[2], recDataContent[3])
-
+		ep.DecodeRcvData(recDataContent)
 	}
 }
 
