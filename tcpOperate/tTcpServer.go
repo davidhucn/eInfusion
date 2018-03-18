@@ -31,6 +31,7 @@ func StartTcpServer() {
 		logs.LogMain.Critical("监听TCP出错", err)
 		panic(err)
 	}
+	comm.ShowScreen("----------------------------------------------------------")
 	comm.ShowScreen("TCP Port:" + c_TcpServer_Port)
 	for {
 		conn, err := netListen.Accept()
@@ -67,6 +68,7 @@ func receiveData(conn net.Conn) {
 			logs.LogMain.Error("接收包数据出错", err)
 		}
 		// 处理数据包内容
+		comm.ShowScreen("normal...")
 		ep.DecodeRcvData(recDataContent)
 	}
 }

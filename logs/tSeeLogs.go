@@ -34,7 +34,7 @@ var strLogConfig string = `
         <format id="fmterror" format="[%LEVEL] [%Time] [%FuncShort @ %File.%Line] %Msg%n"/>
 		<format id="critical" format="[%LEVEL] [%Time] [%FuncShort @ %File.%Line] %Msg%n"/>
         <format id="all" format="[%Level] [%Time] %Msg%n"/>
-        <format id="criticalemail" format="Critical error on our server!\n    %Time %Date %RelFile %Func %Msg \nSent by Seelog"/>
+        <format id="criticalemail" format="Transfusion系统发生严重错误！ \n  %Time %Date %RelFile %Func %Msg \n Sent by Seelog"/>
     </formats>
 </seelog>
 `

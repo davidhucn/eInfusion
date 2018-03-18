@@ -1,8 +1,9 @@
 package protocol
 
-//	"eInfusion/comm"
-//	ed "eInfusion/dbOperate"
-//	"reflect"
+import (
+	"eInfusion/comm"
+	edb "eInfusion/dbWorks"
+)
 
 // 获取包头长度数值
 func GetDataHeaderLength() int {
@@ -20,6 +21,10 @@ func DecodeHeader(ref_packHeader []byte, adr_dataLength *int) bool {
 		if ref_packHeader[0] == c_metaDataHeader {
 			//	获取包内数据帧的长度,根据协议规定
 			intDataLength = int(ref_packHeader[c_metaDataLengthCursor])
+			//	包内数据长度不能为0
+			if intDataLength == 0 {
+				return false
+			}
 			//	包内容帧长 = 包总长度- 包头帧长度
 			intDataLength = intDataLength - c_metaDataHeaderLength
 			// 函数返回为真
@@ -34,9 +39,10 @@ func DecodeHeader(ref_packHeader []byte, adr_dataLength *int) bool {
 func DecodeRcvData(ref_packData []byte) {
 
 	switch ref_packData[0] {
-	//获取接收器状态
+	//取得接收器状态（得接收器数目）
 	case c_stRcvStat:
-
+		comm.ShowScreen("start Rcvstat process")
+		edb.GetRcvStat(ref_packData[1:])
 	//获取检测器状态
 	case c_stDetectStat:
 

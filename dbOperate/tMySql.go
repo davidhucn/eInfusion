@@ -7,19 +7,13 @@ import (
 	_ "github.com/Go-SQL-Driver/MySQL"
 )
 
-const (
-	c_DataBase_IPAddress = "127.0.0.1"
-	c_DataBase_Port      = "3306"
-	c_DataBase_schema    = "transfusion"
-)
-
 //数据库连接类错误提示信息
 const (
-	c_Msg_DBConnect_Err  = "错误,无法连接到指定数据库！"
-	c_Msg_DBInsert_Err   = "错误,插入数据库操作失败！"
-	c_Msg_DBDelete_Err   = "错误,册除数据操作失败！"
-	c_Msg_DBTruncate_Err = "错误,册除指定数据表内所有信息失败！"
-	c_Msg_DBQuery_Err    = "错误,查询数据信息失败！"
+	C_Msg_DBConnect_Err  = "错误,无法连接到指定数据库！"
+	C_Msg_DBInsert_Err   = "错误,插入数据库操作失败！"
+	C_Msg_DBDelete_Err   = "错误,册除数据操作失败！"
+	C_Msg_DBTruncate_Err = "错误,册除指定数据表内所有信息失败！"
+	C_Msg_DBQuery_Err    = "错误,查询数据信息失败！"
 )
 
 type DBConn struct {
@@ -32,9 +26,6 @@ type DBConn struct {
 	DbHandler   *sql.DB
 }
 
-// 数据操作对象（模块级）
-var G_DBConn DBConn
-
 //连接数据库
 func (this *DBConn) ConnectDB() error {
 	//	连接用数据库信息
@@ -43,7 +34,7 @@ func (this *DBConn) ConnectDB() error {
 	db, err := sql.Open("mysql", strDataSource)
 	defer db.Close()
 	if err != nil {
-		fmt.Println(c_Msg_DBConnect_Err)
+		fmt.Println(C_Msg_DBConnect_Err)
 		panic(err.Error())
 		return err
 	}
@@ -61,13 +52,13 @@ func (this *DBConn) InsertData(strSql string, args ...interface{}) (affected_Num
 	}
 	stmtIns, err := this.DbHandler.Prepare(strSql)
 	if err != nil {
-		fmt.Println(c_Msg_DBInsert_Err)
+		fmt.Println(C_Msg_DBInsert_Err)
 		return
 	}
 	defer stmtIns.Close()
 	result, err = stmtIns.Exec(args...)
 	if err != nil {
-		fmt.Println(c_Msg_DBInsert_Err)
+		fmt.Println(C_Msg_DBInsert_Err)
 		return
 	}
 	affected_Num, _ = result.RowsAffected()
@@ -84,7 +75,7 @@ func (this *DBConn) DeleteData(strSql string, args ...interface{}) (affected_Num
 	}
 	stmtDel, err := this.DbHandler.Prepare(strSql)
 	if err != nil {
-		fmt.Println(c_Msg_DBInsert_Err)
+		fmt.Println(C_Msg_DBInsert_Err)
 		return
 	}
 	defer stmtDel.Close()
@@ -98,7 +89,7 @@ func (this *DBConn) TruncateTable(strTableName string) (affected_Num int64, err 
 	var result sql.Result
 	result, err = this.DbHandler.Exec("Truncate Table " + strTableName)
 	if err != nil {
-		fmt.Println(c_Msg_DBTruncate_Err)
+		fmt.Println(C_Msg_DBTruncate_Err)
 		return
 	}
 	affected_Num, _ = result.RowsAffected()
@@ -113,19 +104,19 @@ func (this *DBConn) QueryDataOneRow(strSql string, args ...interface{}) (*map[st
 	}
 	stmtOut, err := this.DbHandler.Prepare(strSql)
 	if err != nil {
-		fmt.Println(c_Msg_DBQuery_Err)
+		fmt.Println(C_Msg_DBQuery_Err)
 		return nil, err
 	}
 	defer stmtOut.Close()
 	rows, err := stmtOut.Query(args...)
 	if err != nil {
-		fmt.Println(c_Msg_DBQuery_Err)
+		fmt.Println(C_Msg_DBQuery_Err)
 		return nil, err
 	}
 	//获取字段对象
 	columns, err := rows.Columns()
 	if err != nil {
-		fmt.Println(c_Msg_DBQuery_Err)
+		fmt.Println(C_Msg_DBQuery_Err)
 		return nil, err
 	}
 	values := make([]sql.RawBytes, len(columns))
@@ -138,7 +129,7 @@ func (this *DBConn) QueryDataOneRow(strSql string, args ...interface{}) (*map[st
 	for rows.Next() {
 		err = rows.Scan(scanArgs...)
 		if err != nil {
-			fmt.Println(c_Msg_DBQuery_Err)
+			fmt.Println(C_Msg_DBQuery_Err)
 			return nil, err
 		}
 		var value string
@@ -164,18 +155,18 @@ func (this *DBConn) QueryDataRows(strSql string, args ...interface{}) (*[]map[st
 	}
 	stmtOut, err := this.DbHandler.Prepare(strSql)
 	if err != nil {
-		fmt.Println(c_Msg_DBQuery_Err)
+		fmt.Println(C_Msg_DBQuery_Err)
 		return nil, err
 	}
 	defer stmtOut.Close()
 	rows, err := stmtOut.Query(args...)
 	if err != nil {
-		fmt.Println(c_Msg_DBQuery_Err)
+		fmt.Println(C_Msg_DBQuery_Err)
 		return nil, err
 	}
 	columns, err := rows.Columns()
 	if err != nil {
-		fmt.Println(c_Msg_DBQuery_Err)
+		fmt.Println(C_Msg_DBQuery_Err)
 		return nil, err
 	}
 	values := make([]sql.RawBytes, len(columns))
@@ -188,7 +179,7 @@ func (this *DBConn) QueryDataRows(strSql string, args ...interface{}) (*[]map[st
 	for rows.Next() {
 		err = rows.Scan(scanArgs...)
 		if err != nil {
-			fmt.Println(c_Msg_DBQuery_Err)
+			fmt.Println(C_Msg_DBQuery_Err)
 			return nil, err
 		}
 		var value string

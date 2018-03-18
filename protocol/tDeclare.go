@@ -1,7 +1,5 @@
 package protocol
 
-import . "eInfusion/dbOperate"
-
 const (
 	//	接收数据长度(10进制)
 	c_metaDataHeaderLength int = 2

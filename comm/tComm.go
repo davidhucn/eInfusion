@@ -8,7 +8,19 @@ import (
 	"reflect"
 	"strconv"
 	"time"
+	"unsafe"
 )
+
+//string转byte
+func ConvertStrToBytes(s string) byte {
+	return *(*byte)(unsafe.Pointer(&s))
+}
+
+//byte转string
+// convert b to string without copy
+func ConvertBytesToStr(b []byte) string {
+	return *(*string)(unsafe.Pointer(&b))
+}
 
 // 获取当前时间
 func GetCurrentTime() string {
@@ -26,18 +38,12 @@ func ShowScreen(v ...interface{}) {
 	fmt.Println(v...)
 }
 
-// 错误判断处理
-//func CheckError(err error) {
-//	if err != nil {
-
-//	}
-//}
-//判断变量类型
+//获取变量类型
 func GetVarType(ref_var interface{}) string {
 	return fmt.Sprint(reflect.TypeOf(ref_var))
 }
 
-//根据参数base转换成指定进制，返回数值
+//根据参数base转换成指定进制，返回
 func BaseConvert(ref_intBase int, ref_varContent interface{}) string {
 	//	reflect.TypeOf(ref_varContent)
 	var strBaseValue string
