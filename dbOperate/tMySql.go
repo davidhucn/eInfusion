@@ -2,6 +2,7 @@ package dbOperate
 
 import (
 	"database/sql"
+	"eInfusion/logs"
 	"fmt"
 
 	_ "github.com/Go-SQL-Driver/MySQL"
@@ -29,16 +30,17 @@ type DBConn struct {
 //连接数据库
 func (this *DBConn) ConnectDB() error {
 	//	连接用数据库信息
+	var err error
 	strDataSource := this.UserName + ":" + this.Password + "@tcp(" + this.IpAddr + ":" + this.Port + ")/"
 	strDataSource = strDataSource + this.Schema + "?charset=utf8"
-	db, err := sql.Open("mysql", strDataSource)
-	defer db.Close()
+	this.DbHandler, err = sql.Open("mysql", strDataSource)
+	defer this.DbHandler.Close()
 	if err != nil {
 		fmt.Println(C_Msg_DBConnect_Err)
 		panic(err.Error())
 		return err
 	}
-	this.DbHandler = db
+	//	this.DbHandler = db
 	this.IsConnected = true
 	return nil
 }
@@ -48,17 +50,18 @@ func (this *DBConn) InsertData(strSql string, args ...interface{}) (affected_Num
 	var result sql.Result
 	//	如果没有连接数据库则强制连接
 	if !this.IsConnected {
+		fmt.Println("hasn't connected")
 		this.ConnectDB()
 	}
 	stmtIns, err := this.DbHandler.Prepare(strSql)
 	if err != nil {
-		fmt.Println(C_Msg_DBInsert_Err)
+		fmt.Println(C_Msg_DBInsert_Err, err)
 		return
 	}
 	defer stmtIns.Close()
 	result, err = stmtIns.Exec(args...)
 	if err != nil {
-		fmt.Println(C_Msg_DBInsert_Err)
+		fmt.Println(C_Msg_DBInsert_Err, err)
 		return
 	}
 	affected_Num, _ = result.RowsAffected()

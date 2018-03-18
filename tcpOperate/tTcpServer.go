@@ -59,6 +59,7 @@ func receiveData(conn net.Conn) {
 		var intPckContentLength int
 		// 判断包头是否正确，如果正确，获取长度
 		if !ep.DecodeHeader(recDataHeader, &intPckContentLength) {
+			comm.ShowScreen("Pack Header is uncorrectly")
 			return
 		}
 		// 如果包头接收完整
@@ -68,7 +69,7 @@ func receiveData(conn net.Conn) {
 			logs.LogMain.Error("接收包数据出错", err)
 		}
 		// 处理数据包内容
-		comm.ShowScreen("normal...")
+		//		comm.ShowScreen("normal...")
 		ep.DecodeRcvData(recDataContent)
 	}
 }

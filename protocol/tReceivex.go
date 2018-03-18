@@ -41,14 +41,13 @@ func DecodeRcvData(ref_packData []byte) {
 	switch ref_packData[0] {
 	//取得接收器状态（得接收器数目）
 	case c_stRcvStat:
-		comm.ShowScreen("start Rcvstat process")
 		edb.GetRcvStat(ref_packData[1:])
-	//获取检测器状态
 	case c_stDetectStat:
 
 	case c_stDelDetectSuccess:
 	case c_stAddDetectSuccess:
-		//	default
+	default:
+		comm.ShowScreen("invalid FuncKey...")
 		//		return
 	}
 }

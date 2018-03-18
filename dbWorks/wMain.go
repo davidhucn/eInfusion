@@ -17,7 +17,8 @@ const (
 
 var G_DB DBConn
 
-func init() {
+func Init() {
+	comm.ShowScreen("welcome to the dbworking")
 	G_DB.UserName = c_DB_UsrName
 	G_DB.Password = c_DB_Pwd
 	G_DB.Schema = c_DB_schema
@@ -32,9 +33,10 @@ func init() {
 
 //获取接收器状态
 func GetRcvStat(packData []byte) {
-	strRcvID := comm.BytesString(packData)
-
-	comm.ShowScreen("data rang:", len(strRcvID))
-	comm.ShowScreen(strRcvID)
-	logs.LogMain.Info(strRcvID)
+	strSql := "INSERT INTO t_receiver_dict(receiver_id,detector_amount) VALUES(?,?)"
+	intNum, err := G_DB.InsertData(strSql, packData[0:3], packData[4])
+	if err != nil {
+		comm.ShowScreen("insert receiver_dict error")
+	}
+	comm.ShowScreen("affect num:", intNum)
 }
