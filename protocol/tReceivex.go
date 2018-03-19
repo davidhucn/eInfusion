@@ -47,7 +47,7 @@ func DecodeRcvData(ref_packData []byte) {
 	case c_stDelDetectSuccess:
 	case c_stAddDetectSuccess:
 	default:
-		comm.ShowScreen("invalid FuncKey...")
+		comm.Msg("invalid FuncKey...")
 		//		return
 	}
 }

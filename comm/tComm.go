@@ -34,7 +34,7 @@ func GetCurrentDate() string {
 }
 
 // 打印到屏幕
-func ShowScreen(v ...interface{}) {
+func Msg(v ...interface{}) {
 	fmt.Println(v...)
 }
 

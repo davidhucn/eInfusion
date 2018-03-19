@@ -1,6 +1,15 @@
 package main
 
-import et "eInfusion/tcpOperate"
+import (
+	"eInfusion/logs"
+	et "eInfusion/tcpOperate"
+)
+
+func init() {
+	// 初始化日志
+	logs.LogDisable()
+	logs.LogConfigLoad()
+}
 
 func main() {
 

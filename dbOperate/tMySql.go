@@ -2,10 +2,18 @@ package dbOperate
 
 import (
 	"database/sql"
-	"eInfusion/logs"
+	//	"eInfusion/logs"
 	"fmt"
 
 	_ "github.com/Go-SQL-Driver/MySQL"
+)
+
+const (
+	c_DB_IPAddr  = "127.0.0.1"
+	c_DB_Port    = "3306"
+	c_DB_schema  = "transfusion"
+	c_DB_UsrName = "root"
+	c_DB_Pwd     = "2341656"
 )
 
 //数据库连接类错误提示信息
@@ -17,43 +25,44 @@ const (
 	C_Msg_DBQuery_Err    = "错误,查询数据信息失败！"
 )
 
-type DBConn struct {
-	UserName    string
-	Password    string
-	Schema      string
-	Port        string
-	IpAddr      string
-	IsConnected bool
-	DbHandler   *sql.DB
+var G_Db *sql.DB
+
+func init() {
+	//	var err error
+	strDataSource := c_DB_UsrName + ":" + c_DB_Pwd + "@tcp(" + c_DB_IPAddr + ":" + c_DB_Port + ")/"
+	strDataSource = strDataSource + c_DB_schema + "?charset=utf8"
+	G_Db, _ = sql.Open("mysql", strDataSource)
+
 }
 
 //连接数据库
-func (this *DBConn) ConnectDB() error {
-	//	连接用数据库信息
-	var err error
-	strDataSource := this.UserName + ":" + this.Password + "@tcp(" + this.IpAddr + ":" + this.Port + ")/"
-	strDataSource = strDataSource + this.Schema + "?charset=utf8"
-	this.DbHandler, err = sql.Open("mysql", strDataSource)
-	defer this.DbHandler.Close()
-	if err != nil {
-		fmt.Println(C_Msg_DBConnect_Err)
-		panic(err.Error())
-		return err
+//func ConnectDB() error {
+//	//	连接用数据库信息
+//	strDataSource := c_DB_UsrName + ":" + c_DB_Pwd + "@tcp(" + c_DB_IPAddr + ":" + c_DB_Port + ")/"
+//	strDataSource = strDataSource + c_DB_schema + "?charset=utf8"
+//	db, err := sql.Open("mysql", strDataSource)
+//	defer db.Close()
+//	if err != nil {
+//		panic(err.Error())
+//		return err
+//	}
+//	G_Db = db
+//	return nil
+//}
+
+func IsConnected() bool {
+	//	var dbStats sql.DBStats
+	if G_Db.Stats().OpenConnections > 0 {
+		return true
 	}
-	//	this.DbHandler = db
-	this.IsConnected = true
-	return nil
+	return false
 }
 
 //插入数据到指定数据库内
-func (this *DBConn) InsertData(strSql string, args ...interface{}) (affected_Num int64, err error) {
+func InsertData(strSql string, args ...interface{}) (affected_Num int64, err error) {
 	var result sql.Result
-	//	如果没有连接数据库则强制连接
-	if !this.IsConnected {
-		fmt.Println("hasn't connected")
-		this.ConnectDB()
-	}
-	stmtIns, err := this.DbHandler.Prepare(strSql)
+
+	stmtIns, err := G_Db.Prepare(strSql)
 	if err != nil {
 		fmt.Println(C_Msg_DBInsert_Err, err)
 		return
@@ -69,14 +78,10 @@ func (this *DBConn) InsertData(strSql string, args ...interface{}) (affected_Num
 }
 
 //根据条件册除数据库
-func (this *DBConn) DeleteData(strSql string, args ...interface{}) (affected_Num int64, err error) {
+func DeleteData(strSql string, args ...interface{}) (affected_Num int64, err error) {
 	var result sql.Result
-	//	var stmtDel sql.Stmt
-	//	如果没有连接数据库则强制连接
-	if !this.IsConnected {
-		this.ConnectDB()
-	}
-	stmtDel, err := this.DbHandler.Prepare(strSql)
+
+	stmtDel, err := G_Db.Prepare(strSql)
 	if err != nil {
 		fmt.Println(C_Msg_DBInsert_Err)
 		return
@@ -88,9 +93,9 @@ func (this *DBConn) DeleteData(strSql string, args ...interface{}) (affected_Num
 }
 
 //册除全表
-func (this *DBConn) TruncateTable(strTableName string) (affected_Num int64, err error) {
+func TruncateTable(strTableName string) (affected_Num int64, err error) {
 	var result sql.Result
-	result, err = this.DbHandler.Exec("Truncate Table " + strTableName)
+	result, err = G_Db.Exec("Truncate Table " + strTableName)
 	if err != nil {
 		fmt.Println(C_Msg_DBTruncate_Err)
 		return
@@ -100,12 +105,9 @@ func (this *DBConn) TruncateTable(strTableName string) (affected_Num int64, err 
 }
 
 //查询单条数据,结果皆为string
-func (this *DBConn) QueryDataOneRow(strSql string, args ...interface{}) (*map[string]string, error) {
-	//	如果没有连接数据库则强制连接
-	if !this.IsConnected {
-		this.ConnectDB()
-	}
-	stmtOut, err := this.DbHandler.Prepare(strSql)
+func QueryDataOneRow(strSql string, args ...interface{}) (*map[string]string, error) {
+
+	stmtOut, err := G_Db.Prepare(strSql)
 	if err != nil {
 		fmt.Println(C_Msg_DBQuery_Err)
 		return nil, err
@@ -150,13 +152,8 @@ func (this *DBConn) QueryDataOneRow(strSql string, args ...interface{}) (*map[st
 }
 
 //查询多条数据,结果皆为string
-func (this *DBConn) QueryDataRows(strSql string, args ...interface{}) (*[]map[string]string, error) {
-	//	var stmtOut sql.Stmt
-	//	如果没有连接数据库则强制连接
-	if !this.IsConnected {
-		this.ConnectDB()
-	}
-	stmtOut, err := this.DbHandler.Prepare(strSql)
+func QueryDataRows(strSql string, args ...interface{}) (*[]map[string]string, error) {
+	stmtOut, err := G_Db.Prepare(strSql)
 	if err != nil {
 		fmt.Println(C_Msg_DBQuery_Err)
 		return nil, err
@@ -198,17 +195,6 @@ func (this *DBConn) QueryDataRows(strSql string, args ...interface{}) (*[]map[st
 		ret = append(ret, vmap)
 	}
 	return &ret, nil
-}
-
-//关闭数据库连接
-func (this *DBConn) DisconnectDB() error {
-	if this.IsConnected {
-		err := this.DbHandler.Close()
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
