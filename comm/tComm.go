@@ -11,17 +11,6 @@ import (
 	"unsafe"
 )
 
-//string转byte
-func ConvertStrToBytes(s string) byte {
-	return *(*byte)(unsafe.Pointer(&s))
-}
-
-//byte转string
-// convert b to string without copy
-func ConvertBytesToStr(b []byte) string {
-	return *(*string)(unsafe.Pointer(&b))
-}
-
 // 获取当前时间
 func GetCurrentTime() string {
 	strTime := time.Now().Format("2006-01-02 15:04:05") //后面的参数是固定的 否则将无法正常输出
@@ -41,6 +30,17 @@ func Msg(v ...interface{}) {
 //获取变量类型
 func GetVarType(ref_var interface{}) string {
 	return fmt.Sprint(reflect.TypeOf(ref_var))
+}
+
+//string转byte
+func ConvertStrToBytes(s string) byte {
+	return *(*byte)(unsafe.Pointer(&s))
+}
+
+//byte转string
+// convert b to string without copy
+func ConvertBytesToStr(b []byte) string {
+	return *(*string)(unsafe.Pointer(&b))
 }
 
 //根据参数base转换成指定进制，返回
@@ -66,7 +66,6 @@ func ConvertBasToStr(ref_intBase int, ref_varContent interface{}) string {
 //转换16进制Bytes为string
 func ConvertOxBytesToStr(ref_content []byte) string {
 	var strRet string
-	Msg("rcvid len:", len(ref_content))
 	for i := 0; i < len(ref_content); i++ {
 		strCon := ConvertBasToStr(16, ref_content[i])
 		if len(strCon) == 1 {
@@ -81,7 +80,6 @@ func ConvertOxBytesToStr(ref_content []byte) string {
 func ConvertBasStrToInt(ref_base int, ref_content string) int {
 	intRetValue, err := strconv.ParseInt(ref_content, ref_base, 64)
 	if err != nil {
-		//		scrPrint(" 字符串转换为数字出错: ", err)
 		intRetValue = 0
 	}
 	return int(intRetValue)
@@ -91,7 +89,6 @@ func ConvertBasStrToInt(ref_base int, ref_content string) int {
 func ConvertBasStrToUint(ref_base int, ref_content string) uint8 {
 	intRetValue, err := strconv.ParseUint(ref_content, ref_base, 64)
 	if err != nil {
-		//		scrPrint(" 字符串转换为数字出错: ", err)
 		intRetValue = 0
 	}
 	return uint8(intRetValue)

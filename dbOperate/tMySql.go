@@ -2,6 +2,7 @@ package dbOperate
 
 import (
 	"database/sql"
+	//	"eInfusion/comm"
 
 	_ "github.com/Go-SQL-Driver/MySQL"
 )
@@ -106,8 +107,27 @@ func TruncateTable(strTableName string) (affected_Num int64, err error) {
 	return affected_Num, err
 }
 
+//func QueryFast(strSql string, args ...interface{}) (bool, error) {
+//	//	var rows sql.Rows
+//	comm.Msg("start...")
+//	rows, err := G_Db.Query(strSql, args...)
+//	if err != nil {
+//		return false, err
+//	}
+//	defer rows.Close()
+//	for rows.Next() {
+//		var receiver_id int
+//		if err := rows.Scan(&receiver_id); err != nil {
+//			comm.Msg("rows err:", err)
+//		}
+//		//fmt.Printf("name:%s ,id:is %d\n", name, id)
+//		comm.Msg(receiver_id)
+//	}
+//	return true, nil
+//}
+
 //查询单条数据,结果皆为string
-func QueryDataOneRow(strSql string, args ...interface{}) (*map[string]string, error) {
+func QueryOneRow(strSql string, args ...interface{}) (*map[string]string, error) {
 
 	stmtOut, err := G_Db.Prepare(strSql)
 	if err != nil {
@@ -150,7 +170,7 @@ func QueryDataOneRow(strSql string, args ...interface{}) (*map[string]string, er
 }
 
 //查询多条数据,结果皆为string
-func QueryDataRows(strSql string, args ...interface{}) (*[]map[string]string, error) {
+func QueryRows(strSql string, args ...interface{}) (*[]map[string]string, error) {
 	stmtOut, err := G_Db.Prepare(strSql)
 	if err != nil {
 		return nil, err

@@ -25,14 +25,14 @@ func StartTcpServer() {
 		logs.LogMain.Critical("监听TCP出错", err)
 		panic(err)
 	}
-	comm.Msg("----------------------------------------------------------")
+	comm.Msg("------------------------------------------------------------")
 	comm.Msg("TCP Port:" + c_TcpServer_Port)
 	for {
 		conn, err := netListen.Accept()
 		if err != nil {
 			continue
 		}
-		comm.Msg("----------------------------------------------------------")
+		comm.Msg("------------------------------------------------------------")
 		logs.LogMain.Info("客户端：" + conn.RemoteAddr().String() + " 连接!")
 		go receiveData(conn)
 		//	time.Sleep(time.Second * 2)
