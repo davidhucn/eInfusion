@@ -44,12 +44,12 @@ func GetVarType(ref_var interface{}) string {
 }
 
 //根据参数base转换成指定进制，返回
-func BaseConvert(ref_intBase int, ref_varContent interface{}) string {
+func ConvertBasToStr(ref_intBase int, ref_varContent interface{}) string {
 	//	reflect.TypeOf(ref_varContent)
 	var strBaseValue string
 	switch ref_intBase {
 	case 16:
-		strBaseValue = "x"
+		strBaseValue = "X"
 	case 10:
 		strBaseValue = "d"
 	case 2:
@@ -63,8 +63,22 @@ func BaseConvert(ref_intBase int, ref_varContent interface{}) string {
 	return strRetValue
 }
 
+//转换16进制Bytes为string
+func ConvertOxBytesToStr(ref_content []byte) string {
+	var strRet string
+	Msg("rcvid len:", len(ref_content))
+	for i := 0; i < len(ref_content); i++ {
+		strCon := ConvertBasToStr(16, ref_content[i])
+		if len(strCon) == 1 {
+			strCon = "0" + strCon
+		}
+		strRet += strCon
+	}
+	return strRet
+}
+
 //	根据指定进制要求，把字符串转换成数字int型
-func BaseStrToInt(ref_base int, ref_content string) int {
+func ConvertBasStrToInt(ref_base int, ref_content string) int {
 	intRetValue, err := strconv.ParseInt(ref_content, ref_base, 64)
 	if err != nil {
 		//		scrPrint(" 字符串转换为数字出错: ", err)
@@ -74,7 +88,7 @@ func BaseStrToInt(ref_base int, ref_content string) int {
 }
 
 //	根据指定进制要求，把字符串转换成数字Uint8型
-func BaseStrToUint(ref_base int, ref_content string) uint8 {
+func ConvertBasStrToUint(ref_base int, ref_content string) uint8 {
 	intRetValue, err := strconv.ParseUint(ref_content, ref_base, 64)
 	if err != nil {
 		//		scrPrint(" 字符串转换为数字出错: ", err)
@@ -110,7 +124,7 @@ func ConvertIntToBytes(n int) []byte {
 }
 
 // 写入指定文件，如果没有该文件自动生成
-func WriteToFileWithBuffer(f_strPath string, f_strContent string, f_boolWriteAppend bool) bool {
+func WrToFilWithBuffer(f_strPath string, f_strContent string, f_boolWriteAppend bool) bool {
 	//	this function for complex content to file
 	var intFileOpenMode int
 	if f_boolWriteAppend {

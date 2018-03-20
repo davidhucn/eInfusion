@@ -2,8 +2,6 @@ package dbOperate
 
 import (
 	"database/sql"
-	//	"eInfusion/logs"
-	"fmt"
 
 	_ "github.com/Go-SQL-Driver/MySQL"
 )
@@ -58,20 +56,27 @@ func IsConnected() bool {
 	return false
 }
 
+//快速插入数据到指定数据库内
+func InsertDataFast(strSql string, args ...interface{}) (affected_Num int64, err error) {
+	result, err := G_Db.Exec(strSql, args...)
+	if err != nil {
+		return 0, err
+	}
+	affected_Num, _ = result.RowsAffected()
+	return affected_Num, err
+}
+
 //插入数据到指定数据库内
 func InsertData(strSql string, args ...interface{}) (affected_Num int64, err error) {
 	var result sql.Result
-
 	stmtIns, err := G_Db.Prepare(strSql)
 	if err != nil {
-		fmt.Println(C_Msg_DBInsert_Err, err)
-		return
+		return 0, err
 	}
 	defer stmtIns.Close()
 	result, err = stmtIns.Exec(args...)
 	if err != nil {
-		fmt.Println(C_Msg_DBInsert_Err, err)
-		return
+		return 0, err
 	}
 	affected_Num, _ = result.RowsAffected()
 	return affected_Num, err
@@ -80,11 +85,9 @@ func InsertData(strSql string, args ...interface{}) (affected_Num int64, err err
 //根据条件册除数据库
 func DeleteData(strSql string, args ...interface{}) (affected_Num int64, err error) {
 	var result sql.Result
-
 	stmtDel, err := G_Db.Prepare(strSql)
 	if err != nil {
-		fmt.Println(C_Msg_DBInsert_Err)
-		return
+		return 0, err
 	}
 	defer stmtDel.Close()
 	result, err = stmtDel.Exec(args...)
@@ -97,8 +100,7 @@ func TruncateTable(strTableName string) (affected_Num int64, err error) {
 	var result sql.Result
 	result, err = G_Db.Exec("Truncate Table " + strTableName)
 	if err != nil {
-		fmt.Println(C_Msg_DBTruncate_Err)
-		return
+		return 0, err
 	}
 	affected_Num, _ = result.RowsAffected()
 	return affected_Num, err
@@ -109,19 +111,16 @@ func QueryDataOneRow(strSql string, args ...interface{}) (*map[string]string, er
 
 	stmtOut, err := G_Db.Prepare(strSql)
 	if err != nil {
-		fmt.Println(C_Msg_DBQuery_Err)
 		return nil, err
 	}
 	defer stmtOut.Close()
 	rows, err := stmtOut.Query(args...)
 	if err != nil {
-		fmt.Println(C_Msg_DBQuery_Err)
 		return nil, err
 	}
 	//获取字段对象
 	columns, err := rows.Columns()
 	if err != nil {
-		fmt.Println(C_Msg_DBQuery_Err)
 		return nil, err
 	}
 	values := make([]sql.RawBytes, len(columns))
@@ -134,7 +133,6 @@ func QueryDataOneRow(strSql string, args ...interface{}) (*map[string]string, er
 	for rows.Next() {
 		err = rows.Scan(scanArgs...)
 		if err != nil {
-			fmt.Println(C_Msg_DBQuery_Err)
 			return nil, err
 		}
 		var value string
@@ -155,18 +153,15 @@ func QueryDataOneRow(strSql string, args ...interface{}) (*map[string]string, er
 func QueryDataRows(strSql string, args ...interface{}) (*[]map[string]string, error) {
 	stmtOut, err := G_Db.Prepare(strSql)
 	if err != nil {
-		fmt.Println(C_Msg_DBQuery_Err)
 		return nil, err
 	}
 	defer stmtOut.Close()
 	rows, err := stmtOut.Query(args...)
 	if err != nil {
-		fmt.Println(C_Msg_DBQuery_Err)
 		return nil, err
 	}
 	columns, err := rows.Columns()
 	if err != nil {
-		fmt.Println(C_Msg_DBQuery_Err)
 		return nil, err
 	}
 	values := make([]sql.RawBytes, len(columns))
@@ -179,7 +174,6 @@ func QueryDataRows(strSql string, args ...interface{}) (*[]map[string]string, er
 	for rows.Next() {
 		err = rows.Scan(scanArgs...)
 		if err != nil {
-			fmt.Println(C_Msg_DBQuery_Err)
 			return nil, err
 		}
 		var value string
