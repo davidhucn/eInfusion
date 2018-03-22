@@ -1,8 +1,14 @@
+//***********************************************************
+//					 Package Name dbOperate				    *
+//					  File Name tMysql.go					*
+// 						Author:David.Hu						*
+//						Date:2018.03.22						*
+//				Remark:use the comm sql.Db object			*
+//***********************************************************
 package dbOperate
 
 import (
 	"database/sql"
-	//	"eInfusion/comm"
 
 	_ "github.com/Go-SQL-Driver/MySQL"
 )
@@ -34,27 +40,22 @@ func init() {
 
 }
 
-//连接数据库
-//func ConnectDB() error {
-//	//	连接用数据库信息
-//	strDataSource := c_DB_UsrName + ":" + c_DB_Pwd + "@tcp(" + c_DB_IPAddr + ":" + c_DB_Port + ")/"
-//	strDataSource = strDataSource + c_DB_schema + "?charset=utf8"
-//	db, err := sql.Open("mysql", strDataSource)
-//	defer db.Close()
-//	if err != nil {
-//		panic(err.Error())
-//		return err
-//	}
-//	G_Db = db
-//	return nil
-//}
-
 func IsConnected() bool {
 	//	var dbStats sql.DBStats
 	if G_Db.Stats().OpenConnections > 0 {
 		return true
 	}
 	return false
+}
+
+//快速更新数据到指定数据库内
+func UpateDataFast(strSql string, args ...interface{}) (affected_Num int64, err error) {
+	result, err := G_Db.Exec(strSql, args...)
+	if err != nil {
+		return 0, err
+	}
+	affected_Num, _ = result.RowsAffected()
+	return affected_Num, err
 }
 
 //快速插入数据到指定数据库内
@@ -106,25 +107,6 @@ func TruncateTable(strTableName string) (affected_Num int64, err error) {
 	affected_Num, _ = result.RowsAffected()
 	return affected_Num, err
 }
-
-//func QueryFast(strSql string, args ...interface{}) (bool, error) {
-//	//	var rows sql.Rows
-//	comm.Msg("start...")
-//	rows, err := G_Db.Query(strSql, args...)
-//	if err != nil {
-//		return false, err
-//	}
-//	defer rows.Close()
-//	for rows.Next() {
-//		var receiver_id int
-//		if err := rows.Scan(&receiver_id); err != nil {
-//			comm.Msg("rows err:", err)
-//		}
-//		//fmt.Printf("name:%s ,id:is %d\n", name, id)
-//		comm.Msg(receiver_id)
-//	}
-//	return true, nil
-//}
 
 //查询单条数据,结果皆为string
 func QueryOneRow(strSql string, args ...interface{}) (*map[string]string, error) {
