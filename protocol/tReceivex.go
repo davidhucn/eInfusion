@@ -36,15 +36,16 @@ func DecodeHeader(ref_packHeader []byte, adr_dataLength *int) bool {
 }
 
 //	处理接收到的包内数据
-func DecodeRcvData(ref_packData []byte) {
+func DecodeRcvData(ref_packData []byte, ref_ipAddr string) {
 
 	switch ref_packData[0] {
 	//取得接收器状态（得接收器数目）
 	case c_stRcvStat:
-		edb.GetRcvStat(ref_packData[1:])
+		edb.GetRcvStat(ref_packData[1:], ref_ipAddr)
 	case c_stDetectStat:
-
+		edb.GetDetectStat(ref_packData[1:])
 	case c_stDelDetectSuccess:
+
 	case c_stAddDetectSuccess:
 	default:
 		comm.Msg("invalid FuncKey...")

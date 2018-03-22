@@ -45,7 +45,6 @@ func receiveData(conn net.Conn) {
 		recDataHeader := make([]byte, ep.GetDataHeaderLength())
 		_, err := conn.Read(recDataHeader)
 		if err != nil {
-			//	logs.LogMain.Error("接收Tcp包头失败", err)
 			comm.Msg(conn.RemoteAddr(), " 客户端连接丢失!")
 			return
 		}
@@ -63,8 +62,7 @@ func receiveData(conn net.Conn) {
 			logs.LogMain.Error("接收包数据出错", err)
 		}
 		// 处理数据包内容
-		//		comm.Msg("normal...")
-		ep.DecodeRcvData(recDataContent)
+		ep.DecodeRcvData(recDataContent, conn.RemoteAddr().String())
 	}
 }
 
@@ -72,7 +70,8 @@ func sendData(conn net.Conn, packetData []byte) {
 	_, err := conn.Write(packetData) // don't care about return value
 	defer conn.Close()
 	if err != nil {
-		logs.LogMain.Critical(c_Msg_SendDataErr)
+		comm.Msg(c_Msg_SendDataErr, err)
+		logs.LogMain.Critical(c_Msg_SendDataErr, err)
 		return
 	}
 }
