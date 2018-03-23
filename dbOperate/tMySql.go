@@ -37,6 +37,9 @@ func init() {
 	strDataSource := c_DB_UsrName + ":" + c_DB_Pwd + "@tcp(" + c_DB_IPAddr + ":" + c_DB_Port + ")/"
 	strDataSource = strDataSource + c_DB_schema + "?charset=utf8"
 	G_Db, err = sql.Open("mysql", strDataSource)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func IsConnected() bool {
