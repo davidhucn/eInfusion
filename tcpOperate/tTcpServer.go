@@ -27,6 +27,7 @@ func StartTcpServer() {
 	}
 	comm.Msg("------------------------------------------------------------")
 	comm.Msg("TCP Port:" + c_TcpServer_Port)
+
 	for {
 		conn, err := netListen.Accept()
 		if err != nil {
@@ -45,24 +46,25 @@ func receiveData(conn net.Conn) {
 		recDataHeader := make([]byte, ep.GetDataHeaderLength())
 		_, err := conn.Read(recDataHeader)
 		if err != nil {
+			comm.Msg("------------------------------------------------------------")
 			comm.Msg(conn.RemoteAddr(), " 客户端连接丢失!")
 			return
 		}
-		// 数据包长度记录变量
+		// 数据包数据内容长度记录变量
 		var intPckContentLength int
 		// 判断包头是否正确，如果正确，获取长度
 		if !ep.DecodeHeader(recDataHeader, &intPckContentLength) {
-			comm.Msg("Pack Header is uncorrectly")
+			comm.Msg("调试信息：数据包头不正确")
 			continue
 		}
-		// 如果包头接收完整
+		// 如果包头接收
 		recDataContent := make([]byte, intPckContentLength)
 		_, err = conn.Read(recDataContent)
 		if err != nil {
 			logs.LogMain.Error("接收包数据出错", err)
 		}
 		// 处理数据包内容
-		ep.DecodeRcvData(recDataContent, conn.RemoteAddr().String())
+		ep.DecodeRcvData(recDataContent, conn.RemoteAddr().(*net.TCPAddr).IP.String())
 	}
 }
 

@@ -43,7 +43,7 @@ func DecodeRcvData(ref_packData []byte, ref_ipAddr string) {
 	case c_stRcvStat:
 		edb.GetRcvStat(ref_packData[1:], ref_ipAddr)
 	case c_stDetectStat:
-		edb.GetDetectStat(ref_packData[1:])
+		edb.GetDetectStat(ref_packData[1:], ref_ipAddr)
 	case c_stDelDetectSuccess:
 
 	case c_stAddDetectSuccess:

@@ -39,8 +39,9 @@ const (
 
 //检测器对象
 type Detector struct {
-	Qcode      string
+	ID         string
 	ReceiverID string
+	Stat       string
 	Disable    bool
 }
 

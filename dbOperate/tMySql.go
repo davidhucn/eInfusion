@@ -33,7 +33,7 @@ const (
 var G_Db *sql.DB
 
 func init() {
-	//	var err error
+	var err error
 	strDataSource := c_DB_UsrName + ":" + c_DB_Pwd + "@tcp(" + c_DB_IPAddr + ":" + c_DB_Port + ")/"
 	strDataSource = strDataSource + c_DB_schema + "?charset=utf8"
 	G_Db, err = sql.Open("mysql", strDataSource)
@@ -50,18 +50,8 @@ func IsConnected() bool {
 	return false
 }
 
-//快速更新数据到指定数据库内
-func UpateDataFast(strSql string, args ...interface{}) (affected_Num int64, err error) {
-	result, err := G_Db.Exec(strSql, args...)
-	if err != nil {
-		return 0, err
-	}
-	affected_Num, _ = result.RowsAffected()
-	return affected_Num, err
-}
-
 //快速插入数据到指定数据库内
-func InsertDataFast(strSql string, args ...interface{}) (affected_Num int64, err error) {
+func ExecSQL(strSql string, args ...interface{}) (affected_Num int64, err error) {
 	result, err := G_Db.Exec(strSql, args...)
 	if err != nil {
 		return 0, err
