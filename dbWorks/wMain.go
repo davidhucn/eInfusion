@@ -11,7 +11,7 @@ import (
 type Detector struct {
 	ID         string
 	ReceiverID string
-	Stat       string
+	Stat       string //十进制表示
 	Disable    bool
 }
 
@@ -61,22 +61,41 @@ func InitDetInfoToDB() {
 
 //获取检测器信息
 func GetDetectStat(packData []byte, ipAddr string) bool {
-	var s *Student = new(Detector)
-	//	var strSql string
-	//	检测器编号数组
-	//	var mDetID map[int]string
-	mDetID := make(map[string]string)
+	var dDet []Detector
+	var strSql string
+	var err error
+	var mDetId *map[string]string
 	//检测器数量所在位置
 	var intDetAmountCursor int = 4
-	//	strRcvID := ConvertOxBytesToStr(packData[0:4])
+	//	接收器Id
+	var strRcvID string = ConvertOxBytesToStr(packData[0:4])
 	//检测器数量
 	intDetAmount := ConvertBasStrToInt(10, ConvertBasToStr(10, packData[intDetAmountCursor]))
-	mDetID["Det"] = ConvertOxBytesToStr(packData[5:9])
-	//如果检测器为1个
-	if intDetAmount > 1 {
-		//		for i:=
 
+	//如果检测器超过1个
+	if intDetAmount > 0 {
+		for i := 0; i < intDetAmount; i++ {
+			//检测器ID起始位置
+			var begin int = 5
+			var end int = begin + 4
+			dDet[i].ReceiverID = strRcvID
+			dDet[i].ID = ConvertOxBytesToStr(packData[begin:end])
+			dDet[i].Stat = ConvertBasToStr(10, packData[end])
+			dDet[i].Disable = false
+			begin = end
+		}
 	}
-	Msg("interal data lens:", len(packData))
-	return true
+	//开始存入数据库（t_match_dict,t_device_dict,t_receiver_dict）
+	//	确定device_dict表里是否存在，如果存在则更新
+	strSql = "Select detector_id From t_device_dict Where detector_id=?"
+	mDetId, err = QueryOneRow(strSql, dDet[i])
+	if err != nil {
+		logs.LogMain.Error(C_Msg_DBInsert_Err, err)
+		return false
+	}
+	//是否已存在指定的接受器号
+	if (*mRcvId)["detector_id"] == "" {
+		strSql = "Insert Into t_device_dict() "
+		return true
+	}
 }
