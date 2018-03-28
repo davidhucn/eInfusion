@@ -7,16 +7,26 @@ import (
 	"eInfusion/logs"
 )
 
-//检测器对象
-type Detector struct {
-	ID         string
-	ReceiverID string
-	Stat       string //十进制表示
-	Disable    bool
+//初始化生成8个检测器信息到数据库-> t_device_dict
+func InitDetInfoToDB(ref_amount int) {
+	var strSql string
+	var di [ref_amount]Detector
+	for i := 0; i < ref_amount; i++ {
+		di[i].ID = "B000000" + ConvertIntToStr(i)
+		di[i].Disable = false
+		di[i].Stat = 0
+	}
+	for i := 0; i < ref_amount; i++ {
+		strSql = "Insert Into t_device_dict(detector_id,qcode,disable) Values(?,?,?)"
+		_, err = ExecSQL(strSql, di[i].ID, di[i].Qcode, di[i].Disable)
+		if err != nil {
+			Msg("err:", err)
+		}
+	}
 }
 
 //获取接收器状态
-func GetRcvStat(packData []byte, ipAddr string) bool {
+func ReceiveRcvStat(packData []byte, ipAddr string) bool {
 	var strSql string
 	var err error
 	//专用数据内容位置
@@ -54,13 +64,8 @@ func GetRcvStat(packData []byte, ipAddr string) bool {
 	return true
 }
 
-//初始化生成8个检测器信息到数据库->t_device_dict
-func InitDetInfoToDB() {
-
-}
-
 //获取检测器信息
-func GetDetectStat(packData []byte, ipAddr string) bool {
+func ReceiveDetectStat(packData []byte, ipAddr string) bool {
 	var dDet []Detector
 	var strSql string
 	var err error
@@ -77,7 +82,7 @@ func GetDetectStat(packData []byte, ipAddr string) bool {
 			//检测器ID起始位置
 			var begin int = 5
 			var end int = begin + 4
-			dDet[i].ReceiverID = strRcvID
+			dDet[i].RcvID = strRcvID
 			dDet[i].ID = ConvertOxBytesToStr(packData[begin:end])
 			dDet[i].Stat = ConvertBasToStr(10, packData[end])
 			dDet[i].Disable = false
@@ -85,9 +90,8 @@ func GetDetectStat(packData []byte, ipAddr string) bool {
 		}
 	}
 	//开始存入数据库（t_match_dict,t_device_dict,t_receiver_dict）
-
 	//	遍历整个数组
-	for i := 0; i < len(dDet); i++ {
+	for i := 0; i < intDetAmount; i++ {
 		////////////////////确定device_dict表
 		strSql = "Select detector_id From t_device_dict Where detector_id=?"
 		mDetId, err = QueryOneRow(strSql, dDet[i].ID)
@@ -112,7 +116,7 @@ func GetDetectStat(packData []byte, ipAddr string) bool {
 		}
 		if (*mDetId)["detector_id"] == "" {
 			strSql = "Insert Into t_match_dict(detector_id,receiver_id) Values(?,?)"
-			_, err = ExecSQL(strSql, dDet[i].ID, dDet[i].ReceiverID)
+			_, err = ExecSQL(strSql, dDet[i].ID, dDet[i].RcvID)
 			if err != nil {
 				logs.LogMain.Error(C_Msg_DBInsert_Err, err)
 				return false
@@ -120,7 +124,7 @@ func GetDetectStat(packData []byte, ipAddr string) bool {
 		} else {
 			//如果已有则更新
 			strSql = "UPDATE t_match_dict SET detector_id=?,receiver_id=? WHERE receiver_id=?"
-			_, err = ExecSQL(strSql, dDet[i].ID, dDet[i].ReceiverID, dDet[i].ReceiverID)
+			_, err = ExecSQL(strSql, dDet[i].ID, dDet[i].RcvID, dDet[i].RcvID)
 			if err != nil {
 				logs.LogMain.Error(C_Msg_DBUpdate_Err, err)
 				return false
@@ -128,15 +132,15 @@ func GetDetectStat(packData []byte, ipAddr string) bool {
 		}
 		/////////////////////确定 t_receiver_dict
 		strSql = "Select receiver_id From t_receiver_dict Where receiver_id=?"
-		mDetId, err = QueryOneRow(strSql, dDet[i].ReceiverID)
+		mDetId, err = QueryOneRow(strSql, dDet[i].RcvID)
 		if err != nil {
 			logs.LogMain.Error(C_Msg_DBQuery_Err, err)
 			return false
 		}
 		if (*mDetId)["detector_id"] == "" {
 			strSql = `Insert Into t_receiver_dict(detector_id,detector_amount,last_time,ip_addr)
-			 		Values(?,?)`
-			_, err = ExecSQL(strSql, dDet[i].ID, len(dDet), GetCurrentTime(), ipAddr)
+			 		Values(?,?,?,?)`
+			_, err = ExecSQL(strSql, dDet[i].ID, intDetAmount, GetCurrentTime(), ipAddr)
 			if err != nil {
 				logs.LogMain.Error(C_Msg_DBInsert_Err, err)
 				return false
@@ -145,7 +149,7 @@ func GetDetectStat(packData []byte, ipAddr string) bool {
 			//如果已有则更新
 			strSql = `UPDATE t_receiver_dict SET detector_id=?,detector_amount=?,last_time=?,
 					ip_addr=? WHERE receiver_id=?`
-			_, err = ExecSQL(strSql, dDet[i].ID, len(dDet), GetCurrentTime(), ipAddr)
+			_, err = ExecSQL(strSql, dDet[i].ID, intDetAmount, GetCurrentTime(), ipAddr, dDet[i].RcvID)
 			if err != nil {
 				logs.LogMain.Error(C_Msg_DBUpdate_Err, err)
 				return false

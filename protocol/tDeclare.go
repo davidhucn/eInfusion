@@ -36,18 +36,3 @@ const (
 	//	设备接收器重连接时间
 	C_orderType_reconnTimePeriod uint8 = 0x15
 )
-
-//检测器对象
-type Detector struct {
-	ID         string
-	ReceiverID string
-	Stat       string
-	Disable    bool
-}
-
-//接收器对象
-type Receiver struct {
-	Qcode      string
-	DetectorID string
-	IPAddr     string
-}
