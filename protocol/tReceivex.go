@@ -37,7 +37,6 @@ func DecodeHeader(ref_packHeader []byte, adr_dataLength *int) bool {
 
 //	处理接收到的包内数据
 func DecodeRcvData(ref_packData []byte, ref_ipAddr string) {
-
 	InitDetInfoToDB(8)
 
 	switch ref_packData[0] {

@@ -10,15 +10,22 @@ import (
 //初始化生成8个检测器信息到数据库-> t_device_dict
 func InitDetInfoToDB(ref_amount int) {
 	var strSql string
-	var di [ref_amount]Detector
+	dd := make([]Detector, ref_amount)
 	for i := 0; i < ref_amount; i++ {
-		di[i].ID = "B000000" + ConvertIntToStr(i)
-		di[i].Disable = false
-		di[i].Stat = 0
+		var di Detector
+		di.ID = "B000000" + ConvertIntToStr(i)
+		di.Disable = false
+		di.Stat = ConvertIntToStr(2)
+		di.QRCode = GetQRCodeStr(di.ID)
+		//		Msg("dd len:", len{dd})
+
+		dd = append(dd, di)
+		Msg("dd:", dd[1].ID)
 	}
 	for i := 0; i < ref_amount; i++ {
+		Msg("real:", dd[i].ID)
 		strSql = "Insert Into t_device_dict(detector_id,qcode,disable) Values(?,?,?)"
-		_, err = ExecSQL(strSql, di[i].ID, di[i].Qcode, di[i].Disable)
+		_, err := ExecSQL(strSql, dd[i].ID, dd[i].QRCode, dd[i].Disable)
 		if err != nil {
 			Msg("err:", err)
 		}
@@ -54,7 +61,7 @@ func ReceiveRcvStat(packData []byte, ipAddr string) bool {
 		}
 	} else {
 		//如果已有则更新
-		strSql = "UPDATE t_receiver_dict SET detector_amount=?,last_time=?,ip_addr WHERE receiver_id=?"
+		strSql = "UPDATE t_receiver_dict SET detector_amount=?,last_time=?,ip_addr=? WHERE receiver_id=?"
 		_, err = ExecSQL(strSql, strDetectAmount, GetCurrentTime(), strRcvID, ipAddr)
 		if err != nil {
 			logs.LogMain.Error(C_Msg_DBUpdate_Err, err)

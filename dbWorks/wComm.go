@@ -1,8 +1,10 @@
 package dbWorks
 
+//import . "eInfusion/comm"
+
 //检测器对象
 type Detector struct {
-	Qcode   string
+	QRCode  string
 	ID      string
 	RcvID   string
 	Stat    string //十进制表示
@@ -10,10 +12,10 @@ type Detector struct {
 }
 
 //生成二维码字符串
-func GetQcodeStr(ref_ID) string {
+func GetQRCodeStr(ref_strID string) string {
 	strBranchCode := "1x0"
-	strUnitCode := "CP"
+	strCategoryCode := "CP"
 	strPHCode := "xx1"
 
-	return ""
+	return strBranchCode + strCategoryCode + strPHCode + ref_strID
 }
