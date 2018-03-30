@@ -8,28 +8,25 @@ import (
 )
 
 //初始化生成8个检测器信息到数据库-> t_device_dict
-func InitDetInfoToDB(ref_amount int) {
+func InitDetInfoToDB(ref_amount int) bool {
 	var strSql string
-	dd := make([]Detector, ref_amount)
+	var dd []Detector
 	for i := 0; i < ref_amount; i++ {
 		var di Detector
 		di.ID = "B000000" + ConvertIntToStr(i)
 		di.Disable = false
 		di.Stat = ConvertIntToStr(2)
 		di.QRCode = GetQRCodeStr(di.ID)
-		//		Msg("dd len:", len{dd})
-
 		dd = append(dd, di)
-		Msg("dd:", dd[1].ID)
 	}
 	for i := 0; i < ref_amount; i++ {
-		Msg("real:", dd[i].ID)
 		strSql = "Insert Into t_device_dict(detector_id,qcode,disable) Values(?,?,?)"
 		_, err := ExecSQL(strSql, dd[i].ID, dd[i].QRCode, dd[i].Disable)
 		if err != nil {
-			Msg("err:", err)
+			Msg(C_Msg_DBInsert_Err, err)
 		}
 	}
+	return true
 }
 
 //获取接收器状态
@@ -89,12 +86,14 @@ func ReceiveDetectStat(packData []byte, ipAddr string) bool {
 			//检测器ID起始位置
 			var begin int = 5
 			var end int = begin + 4
-			dDet[i].RcvID = strRcvID
-			dDet[i].ID = ConvertOxBytesToStr(packData[begin:end])
-			dDet[i].Stat = ConvertBasToStr(10, packData[end])
-			dDet[i].Disable = false
+			var di Detector
+			di.RcvID = strRcvID
+			di.ID = ConvertOxBytesToStr(packData[begin:end])
+			di.Stat = ConvertBasToStr(10, packData[end])
+			di.Disable = false
 			begin = end
 		}
+		dDet = append(dDet, di)
 	}
 	//开始存入数据库（t_match_dict,t_device_dict,t_receiver_dict）
 	//	遍历整个数组
