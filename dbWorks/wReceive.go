@@ -33,7 +33,7 @@ func InitDetInfoToDB(ref_amount int) bool {
 func ReceiveRcvStat(packData []byte, ipAddr string) bool {
 	var strSql string
 	var err error
-	//专用数据内容位置
+	//数据包内数量位置
 	var intAmountCursor int = 4
 	//接收器ID
 	strRcvID := ConvertOxBytesToStr(packData[:4])
@@ -92,12 +92,23 @@ func ReceiveDetectStat(packData []byte, ipAddr string) bool {
 			di.Stat = ConvertBasToStr(10, packData[end])
 			di.Disable = false
 			begin = end
+			//	判断该检测器是否为device_dict表内已注册设备，如果不是,则不记录
+			strSql = "Select detector_id From t_device_dict Where detector_id=?"
+			mDetId, err = QueryOneRow(strSql, di.ID)
+			if err != nil {
+				logs.LogMain.Error(C_Msg_DBQuery_Err, err)
+				return false
+			}
+			if (*mDetId)["detector_id"] != "" {
+				dDet = append(dDet, di)
+			} else {
+				logs.LogMain.Warn(di.ID, "不是注册设备，来自ip：", ipAddr)
+			}
 		}
-		dDet = append(dDet, di)
 	}
 	//开始存入数据库（t_match_dict,t_device_dict,t_receiver_dict）
-	//	遍历整个数组
-	for i := 0; i < intDetAmount; i++ {
+	//	遍历整个slice
+	for i := 0; i < len(dDet); i++ {
 		////////////////////确定device_dict表
 		strSql = "Select detector_id From t_device_dict Where detector_id=?"
 		mDetId, err = QueryOneRow(strSql, dDet[i].ID)
@@ -143,19 +154,19 @@ func ReceiveDetectStat(packData []byte, ipAddr string) bool {
 			logs.LogMain.Error(C_Msg_DBQuery_Err, err)
 			return false
 		}
-		if (*mDetId)["detector_id"] == "" {
-			strSql = `Insert Into t_receiver_dict(detector_id,detector_amount,last_time,ip_addr)
+		if (*mDetId)["receiver_id"] == "" {
+			strSql = `Insert Into t_receiver_dict(receiver_id,detector_amount,last_time,ip_addr)
 			 		Values(?,?,?,?)`
-			_, err = ExecSQL(strSql, dDet[i].ID, intDetAmount, GetCurrentTime(), ipAddr)
+			_, err = ExecSQL(strSql, dDet[i].RcvID, len(dDet), GetCurrentTime(), ipAddr)
 			if err != nil {
 				logs.LogMain.Error(C_Msg_DBInsert_Err, err)
 				return false
 			}
 		} else {
 			//如果已有则更新
-			strSql = `UPDATE t_receiver_dict SET detector_id=?,detector_amount=?,last_time=?,
+			strSql = `UPDATE t_receiver_dict SET receiver_id=?,detector_amount=?,last_time=?,
 					ip_addr=? WHERE receiver_id=?`
-			_, err = ExecSQL(strSql, dDet[i].ID, intDetAmount, GetCurrentTime(), ipAddr, dDet[i].RcvID)
+			_, err = ExecSQL(strSql, dDet[i].RcvID, len(dDet), GetCurrentTime(), ipAddr, dDet[i].RcvID)
 			if err != nil {
 				logs.LogMain.Error(C_Msg_DBUpdate_Err, err)
 				return false
@@ -164,4 +175,11 @@ func ReceiveDetectStat(packData []byte, ipAddr string) bool {
 		//////////////////////////////////////////////////////////////////////////////
 	}
 	return true
+}
+
+//获取删除检测器结果信息
+func ReceiveDeleteDetectInfo(packData []byte, ipAddr string) bool {
+	var strSql string
+	var err error
+
 }

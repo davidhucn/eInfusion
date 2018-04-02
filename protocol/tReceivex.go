@@ -37,14 +37,15 @@ func DecodeHeader(ref_packHeader []byte, adr_dataLength *int) bool {
 
 //	处理接收到的包内数据
 func DecodeRcvData(ref_packData []byte, ref_ipAddr string) {
-	InitDetInfoToDB(8)
+	//	初始化t_device_dict
+	//	InitDetInfoToDB(8)
 
 	switch ref_packData[0] {
 	//取得接收器状态（得接收器数目）
 	case c_stRcvStat:
 		ReceiveRcvStat(ref_packData[1:], ref_ipAddr)
 	case c_stDetectStat:
-		ReceiveRcvStat(ref_packData[1:], ref_ipAddr)
+		ReceiveDetectStat(ref_packData[1:], ref_ipAddr)
 	case c_stDelDetectSuccess:
 
 	case c_stAddDetectSuccess:
