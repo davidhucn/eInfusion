@@ -2,6 +2,7 @@ package comm
 
 import (
 	"bytes"
+	"eInfusion/logs"
 	"encoding/binary"
 	"fmt"
 	"os"
@@ -30,6 +31,15 @@ func Msg(v ...interface{}) {
 //获取变量类型
 func GetVarType(ref_var interface{}) string {
 	return fmt.Sprint(reflect.TypeOf(ref_var))
+}
+
+//处理错误
+func CkErr(ref_err error, ref_Msg string) bool {
+	if ref_err != nil {
+		logs.LogMain.Error(ref_Msg, ref_err)
+		return true
+	}
+	return false
 }
 
 //string转byte
