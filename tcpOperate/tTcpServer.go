@@ -6,7 +6,6 @@ import (
 	ep "eInfusion/protocol"
 	"net"
 	//	"sync"
-	//	"reflect"
 )
 
 const c_TcpServer_Port = "7778"
@@ -25,9 +24,9 @@ func StartTcpServer() {
 		logs.LogMain.Critical("监听TCP出错", err)
 		panic(err)
 	}
+	comm.CreateQRCodePngFile("lsfuhte isht elstwhfs.", "\barcode\barcode.png", 128)
 	comm.Msg("------------------------------------------------------------")
 	comm.Msg("TCP Port:" + c_TcpServer_Port)
-
 	for {
 		conn, err := netListen.Accept()
 		if err != nil {

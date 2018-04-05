@@ -11,10 +11,12 @@ type Detector struct {
 	Disable bool
 }
 
-//生成二维码字符串
-func GetQRCodeStr(ref_strID string) string {
+//生成索引编号
+//等待下一步细化
+func CreateQRID(ref_strID string) string {
 	strBranchCode := "1x0"
 	strCategoryCode := "CP"
+	//批号
 	strPHCode := "xx1"
 
 	return strBranchCode + strCategoryCode + strPHCode + ref_strID

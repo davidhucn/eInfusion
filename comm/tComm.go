@@ -104,6 +104,15 @@ func ConvertBasStrToUint(ref_base int, ref_content string) uint8 {
 	return uint8(intRetValue)
 }
 
+//判断是否存在,true表示存在
+func IsExists(ref_Path string) bool {
+	_, err := os.Stat(ref_Path)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
 // 获取当然路径
 func GetCurrentDirectory() string {
 	var strPath string
@@ -114,6 +123,17 @@ func GetCurrentDirectory() string {
 	}
 	dir, _ := os.Getwd()
 	strPath = dir + strPath
+	return strPath
+}
+
+//根据环境，返回分隔符
+func GetPathSeparator() string {
+	var strPath string
+	if os.IsPathSeparator('\\') { //前边的判断是否是系统的分隔符
+		strPath = "\\"
+	} else {
+		strPath = "/"
+	}
 	return strPath
 }
 

@@ -16,7 +16,7 @@ func InitDetInfoToDB(ref_amount int) bool {
 		di.ID = "B000000" + ConvertIntToStr(i)
 		di.Disable = false
 		di.Stat = ConvertIntToStr(2)
-		di.QRCode = GetQRCodeStr(di.ID)
+		di.QRCode = CreateQRID(di.ID)
 		dd = append(dd, di)
 	}
 	for i := 0; i < ref_amount; i++ {
@@ -276,7 +276,7 @@ func ReceiveAddDetect(packData []byte, ipAddr string) bool {
 		var di Detector
 		di.RcvID = strRcvID
 		di.ID = ConvertOxBytesToStr(packData[begin:end])
-		di.QRCode = GetQRCodeStr(di.ID)
+		di.QRCode = CreateQRID(di.ID)
 		di.Disable = false
 		begin = end
 		dDet = append(dDet, di)
