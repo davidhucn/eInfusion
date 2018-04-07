@@ -1,6 +1,7 @@
 package main
 
 import (
+	eh "eInfusion/httpOperate"
 	"eInfusion/logs"
 	et "eInfusion/tcpOperate"
 )
@@ -12,7 +13,7 @@ func init() {
 }
 
 func main() {
-
+	eh.StartHttpServer()
 	et.StartTcpServer()
 
 }

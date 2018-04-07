@@ -24,7 +24,6 @@ func StartTcpServer() {
 		logs.LogMain.Critical("监听TCP出错", err)
 		panic(err)
 	}
-	comm.CreateQRCodePngFile("lsfuhte isht elstwhfs.", "\barcode\barcode.png", 128)
 	comm.Msg("------------------------------------------------------------")
 	comm.Msg("TCP Port:" + c_TcpServer_Port)
 	for {
