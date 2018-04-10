@@ -47,10 +47,11 @@ func DecodeRcvData(ref_packData []byte, ref_ipAddr string) {
 	case c_stDetectStat:
 		ReceiveDetectStat(ref_packData[1:], ref_ipAddr)
 	case c_stDelDetectSuccess:
-
+		ReceiveDeleteDetect(ref_packData[1:], ref_ipAddr)
 	case c_stAddDetectSuccess:
+		ReceiveAddDetect(ref_packData[1:], ref_ipAddr)
 	default:
-		comm.Msg("invalid FuncKey...")
+		comm.Msg("调试信息，无效数据...")
 		//		return
 	}
 }

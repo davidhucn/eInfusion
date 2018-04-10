@@ -5,10 +5,10 @@ import (
 	"eInfusion/logs"
 	ep "eInfusion/protocol"
 	"net"
-	//	"sync"
+	"sync"
 )
 
-func StartTcpServer() {
+func TryTcpServer() {
 	//	tcpAddr, err := net.ResolveTCPAddr("tcp4", ":8989")
 	//	checkError(err)
 	netListen, err := net.Listen("tcp", ":"+c_TcpServer_Port)
@@ -28,12 +28,12 @@ func StartTcpServer() {
 		}
 		comm.Msg(comm.SprtLin(60))
 		logs.LogMain.Info("客户端：" + conn.RemoteAddr().String() + " 连接!")
-		go receiveData(conn)
+		go tryreceiveData(conn)
 		//	time.Sleep(time.Second * 2)
 	}
 }
 
-func receiveData(conn net.Conn) {
+func tryreceiveData(conn net.Conn) {
 	for {
 		//	指定接收数据包头的帧长
 		recDataHeader := make([]byte, ep.GetDataHeaderLength())

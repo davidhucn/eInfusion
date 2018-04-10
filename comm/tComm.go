@@ -8,6 +8,7 @@ import (
 	"os"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 	"unsafe"
 )
@@ -23,6 +24,17 @@ func GetCurrentDate() string {
 	return time.Now().Format("2006-01-02")
 }
 
+//生成分隔行
+func SprtLin(ref_num int) string {
+	s := "-"
+	return strings.Repeat(s, ref_num)
+}
+
+//去除左右空格
+func TrimSpc(ref_str string) string {
+	return strings.TrimSpace(ref_str)
+}
+
 // 打印到屏幕
 func Msg(v ...interface{}) {
 	fmt.Println(v...)
@@ -34,6 +46,7 @@ func GetVarType(ref_var interface{}) string {
 }
 
 //处理错误
+//如果有错误，返回true,无错则返回false
 func CkErr(ref_Msg string, ref_err error) bool {
 	if ref_err != nil {
 		logs.LogMain.Error(ref_Msg, ref_err)

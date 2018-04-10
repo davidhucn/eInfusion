@@ -13,7 +13,7 @@ func init() {
 }
 
 func main() {
-	eh.StartHttpServer()
+	go eh.StartHttpServer()
 	et.StartTcpServer()
 
 }
