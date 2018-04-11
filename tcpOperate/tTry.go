@@ -5,7 +5,7 @@ import (
 	"eInfusion/logs"
 	ep "eInfusion/protocol"
 	"net"
-	"sync"
+	//	"sync"
 )
 
 func TryTcpServer() {
@@ -21,15 +21,30 @@ func TryTcpServer() {
 	}
 	comm.Msg(comm.SprtLin(60))
 	comm.Msg("TCP Port:" + c_TcpServer_Port)
-	for {
-		conn, err := netListen.Accept()
-		if err != nil {
-			continue
+	//	最大连接数不能超过规定数
+	if len(g_Conns) <= c_MaxConnectionAmount {
+		for {
+			conn, err := netListen.Accept()
+			if err != nil {
+				continue
+			}
+			////////////////临时Tconn连接对象////////////////////////////////
+			var c TConn
+			c.ID = conn.RemoteAddr().String()
+			c.IsAlive = true
+			c.Conn = conn
+			c.IPAddr = conn.RemoteAddr().(*net.TCPAddr).IP.String()
+			g_Conns = append(g_Conns, c)
+			///////////////////////////////////////////////////////////////
+			comm.Msg(comm.SprtLin(60))
+			logs.LogMain.Info("客户端：" + conn.RemoteAddr().String() + " 连接!")
+			go tryreceiveData(c.Conn)
+			//	time.Sleep(time.Second * 2)
+			///////////////////////////////////////////////////////////////
 		}
-		comm.Msg(comm.SprtLin(60))
-		logs.LogMain.Info("客户端：" + conn.RemoteAddr().String() + " 连接!")
-		go tryreceiveData(conn)
-		//	time.Sleep(time.Second * 2)
+	} else {
+		//超出连接数则不再接收连接
+		logs.LogMain.Warn(c_MaxConnectionAmount)
 	}
 }
 
@@ -60,7 +75,7 @@ func tryreceiveData(conn net.Conn) {
 	}
 }
 
-func sendData(conn net.Conn, packetData []byte) {
+func trysendData(conn net.Conn, packetData []byte) {
 	_, err := conn.Write(packetData) // don't care about return value
 	defer conn.Close()
 	if err != nil {
