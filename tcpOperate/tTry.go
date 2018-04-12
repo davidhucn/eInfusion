@@ -5,8 +5,14 @@ import (
 	"eInfusion/logs"
 	ep "eInfusion/protocol"
 	"net"
-	//	"sync"
+	"sync"
 )
+
+func init() {
+	//	初始化连接对象集
+	g_Conns = make(map[string]TConn)
+
+}
 
 func TryTcpServer() {
 	//	tcpAddr, err := net.ResolveTCPAddr("tcp4", ":8989")
@@ -29,33 +35,35 @@ func TryTcpServer() {
 				continue
 			}
 			////////////////临时Tconn连接对象////////////////////////////////
+			sync.Mutex.Lock()
 			var c TConn
 			c.ID = conn.RemoteAddr().String()
 			c.IsAlive = true
 			c.Conn = conn
 			c.IPAddr = conn.RemoteAddr().(*net.TCPAddr).IP.String()
-			g_Conns = append(g_Conns, c)
+			g_Conns[c.ID] = c
+			sync.Mutex.Unlock()
 			///////////////////////////////////////////////////////////////
 			comm.Msg(comm.SprtLin(60))
-			logs.LogMain.Info("客户端：" + conn.RemoteAddr().String() + " 连接!")
-			go tryreceiveData(c.Conn)
+			logs.LogMain.Info("客户端：" + c.ID + " 连接!")
+			go tryreceiveData(c)
 			//	time.Sleep(time.Second * 2)
 			///////////////////////////////////////////////////////////////
 		}
 	} else {
 		//超出连接数则不再接收连接
-		logs.LogMain.Warn(c_MaxConnectionAmount)
+		logs.LogMain.Warn(c_Msg_OutOfMaximumConnection)
 	}
 }
 
-func tryreceiveData(conn net.Conn) {
+func tryreceiveData(c TConn) {
 	for {
 		//	指定接收数据包头的帧长
 		recDataHeader := make([]byte, ep.GetDataHeaderLength())
-		_, err := conn.Read(recDataHeader)
+		_, err := c.Conn.Read(recDataHeader)
 		if err != nil {
 			comm.Msg(comm.SprtLin(60))
-			comm.Msg(conn.RemoteAddr(), " 客户端连接丢失!")
+			delete(g_Conns, c.ID)
 			return
 		}
 		// 数据包数据内容长度记录变量
@@ -67,10 +75,10 @@ func tryreceiveData(conn net.Conn) {
 		}
 		// 如果包头接收
 		recDataContent := make([]byte, intPckContentLength)
-		_, err = conn.Read(recDataContent)
+		_, err = c.Conn.Read(recDataContent)
 		if !comm.CkErr("接收报文出错", err) {
 			// 处理报文数据内容
-			ep.DecodeRcvData(recDataContent, conn.RemoteAddr().(*net.TCPAddr).IP.String())
+			ep.DecodeRcvData(recDataContent, c.IPAddr)
 		}
 	}
 }

@@ -20,5 +20,5 @@ type TConn struct {
 	ID      string
 }
 
-// tcp全局连接slice
-var g_Conns []TConn
+// tcp全局连接map
+var g_Conns map[string]TConn
