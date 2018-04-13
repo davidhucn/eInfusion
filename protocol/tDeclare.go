@@ -7,6 +7,12 @@ const (
 	c_metaDataLengthCursor int = 1
 )
 
+//数据包头
+var G_mHeader map[string]uint8
+
+//报文内容MAP
+var G_mTransfusionContent [string]uint8
+
 const (
 	//	数据协议（报文）头(16进制)
 	c_metaDataHeader uint8 = 0x66

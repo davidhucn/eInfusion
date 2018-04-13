@@ -5,16 +5,10 @@ import (
 	"eInfusion/logs"
 	ep "eInfusion/protocol"
 	"net"
-	"sync"
+	//	"sync"
 )
 
-func init() {
-	//	初始化连接对象集
-	g_Conns = make(map[string]TConn)
-
-}
-
-func TryTcpServer() {
+func StartTcpServer_backup() {
 	//	tcpAddr, err := net.ResolveTCPAddr("tcp4", ":8989")
 	//	checkError(err)
 	netListen, err := net.Listen("tcp", ":"+c_TcpServer_Port)
@@ -27,43 +21,26 @@ func TryTcpServer() {
 	}
 	comm.Msg(comm.SprtLin(60))
 	comm.Msg("TCP Port:" + c_TcpServer_Port)
-	//	最大连接数不能超过规定数
-	if len(g_Conns) <= c_MaxConnectionAmount {
-		for {
-			conn, err := netListen.Accept()
-			if err != nil {
-				continue
-			}
-			////////////////临时Tconn连接对象////////////////////////////////
-			sync.Mutex.Lock()
-			var c TConn
-			c.ID = conn.RemoteAddr().String()
-			c.IsAlive = true
-			c.Conn = conn
-			c.IPAddr = conn.RemoteAddr().(*net.TCPAddr).IP.String()
-			g_Conns[c.ID] = c
-			sync.Mutex.Unlock()
-			///////////////////////////////////////////////////////////////
-			comm.Msg(comm.SprtLin(60))
-			logs.LogMain.Info("客户端：" + c.ID + " 连接!")
-			go tryreceiveData(c)
-			//	time.Sleep(time.Second * 2)
-			///////////////////////////////////////////////////////////////
+	for {
+		conn, err := netListen.Accept()
+		if err != nil {
+			continue
 		}
-	} else {
-		//超出连接数则不再接收连接
-		logs.LogMain.Warn(c_Msg_OutOfMaximumConnection)
+		comm.Msg(comm.SprtLin(60))
+		logs.LogMain.Info("客户端：" + conn.RemoteAddr().String() + " 连接!")
+		go receiveData(conn)
+		//	time.Sleep(time.Second * 2)
 	}
 }
 
-func tryreceiveData(c TConn) {
+func receiveData_backup(conn net.Conn) {
 	for {
 		//	指定接收数据包头的帧长
 		recDataHeader := make([]byte, ep.GetDataHeaderLength())
-		_, err := c.Conn.Read(recDataHeader)
+		_, err := conn.Read(recDataHeader)
 		if err != nil {
 			comm.Msg(comm.SprtLin(60))
-			delete(g_Conns, c.ID)
+			comm.Msg(conn.RemoteAddr(), " 客户端连接丢失!")
 			return
 		}
 		// 数据包数据内容长度记录变量
@@ -75,15 +52,15 @@ func tryreceiveData(c TConn) {
 		}
 		// 如果包头接收
 		recDataContent := make([]byte, intPckContentLength)
-		_, err = c.Conn.Read(recDataContent)
+		_, err = conn.Read(recDataContent)
 		if !comm.CkErr("接收报文出错", err) {
 			// 处理报文数据内容
-			ep.DecodeRcvData(recDataContent, c.IPAddr)
+			ep.DecodeRcvData(recDataContent, conn.RemoteAddr().(*net.TCPAddr).IP.String())
 		}
 	}
 }
 
-func trysendData(conn net.Conn, packetData []byte) {
+func sendData_backup(conn net.Conn, packetData []byte) {
 	_, err := conn.Write(packetData) // don't care about return value
 	defer conn.Close()
 	if err != nil {
