@@ -21,16 +21,6 @@ const (
 	c_DB_Pwd     = "2341656"
 )
 
-//数据库连接类错误提示信息
-const (
-	C_Msg_DBConnect_Err  = "错误,无法连接到指定数据库！"
-	C_Msg_DBInsert_Err   = "错误,插入数据库操作失败！"
-	C_Msg_DBDelete_Err   = "错误,册除数据操作失败！"
-	C_Msg_DBTruncate_Err = "错误,册除指定数据表内所有信息失败！"
-	C_Msg_DBQuery_Err    = "错误,查询数据信息失败！"
-	C_Msg_DBUpdate_Err   = "错误,更数据信息失败！"
-)
-
 var G_Db *sql.DB
 
 func init() {

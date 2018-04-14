@@ -25,9 +25,9 @@ func GetCurrentDate() string {
 }
 
 //生成分隔行
-func SprtLin(ref_num int) string {
+func SepLi(ref_num int) string {
 	s := "-"
-	return strings.Repeat(s, ref_num)
+	Msg(strings.Repeat(s, ref_num))
 }
 
 //去除左右空格

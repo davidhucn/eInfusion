@@ -7,11 +7,11 @@ func GetRcvStatus(ref_RcvID []byte) []byte {
 	var intOrderDataLength = 7
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)
-	sendOrders[0] = c_metaDataHeader
+	sendOrders[0] = G_TsPack.Header
 	sendOrders[1] = byte(intOrderDataLength)
 	//	sendOrders[1] = comm.ConvertIntToBytes(intOrderDataLength)[0]
 	//	获取指令类型
-	sendOrders[2] = C_orderType_getRcvStat
+	sendOrders[2] = G_TsPack.GetRcv
 	//	获取接收器ID
 	for recId := 0; recId < 4; recId++ {
 		sendOrders[recId+3] = ref_RcvID[recId]
@@ -25,7 +25,7 @@ func OperateDetect(orderType uint8, ref_RcvID []byte, detectAmount int, ref_Dete
 	var intOrderDataLength = 7
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)
-	sendOrders[0] = c_metaDataHeader
+	sendOrders[0] = G_TsPack.Header
 	sendOrders[1] = byte(intOrderDataLength)
 	//	获取指令类型
 	sendOrders[2] = byte(orderType)
@@ -34,7 +34,7 @@ func OperateDetect(orderType uint8, ref_RcvID []byte, detectAmount int, ref_Dete
 		sendOrders[recId+3] = ref_RcvID[recId]
 	}
 	// 如果与检测器相关的操作(添加、删除、检查)
-	if orderType == C_orderType_addDetect || orderType == C_orderType_delDetect || orderType == C_orderType_getDetectStat {
+	if orderType == G_TsPack.AddDetect || orderType == G_TsPack.DelDetect || orderType == G_TsPack.GetDetect {
 		if detectAmount > 0 {
 			// 检测器数量内容到slice
 			sendOrders = append(sendOrders, byte(detectAmount))
@@ -52,10 +52,10 @@ func SetRcvCfg(ref_RcvID []byte, ref_IP []byte, ref_Port []byte) []byte {
 	var intOrderDataLength = 13
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)
-	sendOrders[0] = c_metaDataHeader
+	sendOrders[0] = G_TsPack.Header
 	sendOrders[1] = byte(intOrderDataLength)
 	//	获取指令类型
-	sendOrders[2] = C_orderType_setRcvCfg
+	sendOrders[2] = G_TsPack.SetRcvNetCfg
 	//	获取接收器ID
 	for recId := 0; recId < 4; recId++ {
 		sendOrders[recId+3] = ref_RcvID[recId]
@@ -76,10 +76,10 @@ func SetRcvReconTime(ref_RcvID []byte, ref_IP []byte, ref_ReconTime int) []byte 
 	var intOrderDataLength = 9
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)
-	sendOrders[0] = c_metaDataHeader
+	sendOrders[0] = G_TsPack.Header
 	sendOrders[1] = byte(intOrderDataLength)
 	//	获取指令类型
-	sendOrders[2] = C_orderType_reconnTimePeriod
+	sendOrders[2] = G_TsPack.SetReconnTime
 	//	获取接收器ID
 	for recId := 0; recId < 4; recId++ {
 		sendOrders[recId+3] = ref_RcvID[recId]

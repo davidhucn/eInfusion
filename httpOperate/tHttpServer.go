@@ -10,6 +10,7 @@ import (
 
 func StartHttpServer() {
 	comm.Msg("start http..")
+	comm.SepLi(60)
 	router := gin.Default()
 
 	router.GET("/", func(c *gin.Context) {

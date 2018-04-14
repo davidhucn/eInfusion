@@ -5,7 +5,7 @@ import (
 	"eInfusion/logs"
 	ep "eInfusion/protocol"
 	"net"
-	"sync"
+	//	"sync"
 )
 
 func init() {
@@ -25,7 +25,7 @@ func StartTcpServer() {
 		logs.LogMain.Critical("监听TCP出错", err)
 		panic(err)
 	}
-	comm.Msg(comm.SprtLin(60))
+	comm.SepLi(60)
 	comm.Msg("TCP Port:" + c_TcpServer_Port)
 	//	最大连接数不能超过规定数
 	if len(g_Conns) <= c_MaxConnectionAmount {
@@ -42,7 +42,7 @@ func StartTcpServer() {
 			c.IPAddr = conn.RemoteAddr().(*net.TCPAddr).IP.String()
 			g_Conns[c.ID] = c
 			///////////////////////////////////////////////////////////////
-			comm.Msg(comm.SprtLin(60))
+			comm.SepLi(60)
 			logs.LogMain.Info("客户端：" + c.ID + " 连接!")
 			go receiveData(c)
 			//	time.Sleep(time.Second * 2)
@@ -57,13 +57,13 @@ func StartTcpServer() {
 func receiveData(c TConn) {
 	for {
 		//	指定接收数据包头的帧长
-		recDataHeader := make([]byte, ep.GetDataHeaderLength())
+		recDataHeader := make([]byte, ep.G_TsPack.HeaderLength)
 		_, err := c.Conn.Read(recDataHeader)
 		if err != nil {
-			comm.Msg(comm.SprtLin(60))
-			sync.Mutex.Lock()
+			comm.SepLi(60)
+			//			sync.Mutex.Lock()
 			delete(g_Conns, c.ID)
-			sync.Mutex.Unlock()
+			//			sync.Mutex.Unlock()
 			return
 		}
 		// 数据包数据内容长度记录变量
