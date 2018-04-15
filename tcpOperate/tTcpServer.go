@@ -10,8 +10,7 @@ import (
 
 func init() {
 	//	初始化连接对象集
-	g_Conns = make(map[string]TConn)
-
+	G_tConns = make(map[string]TcpConn)
 }
 
 func StartTcpServer() {
@@ -28,19 +27,19 @@ func StartTcpServer() {
 	comm.SepLi(60)
 	comm.Msg("TCP Port:" + c_TcpServer_Port)
 	//	最大连接数不能超过规定数
-	if len(g_Conns) <= c_MaxConnectionAmount {
+	if len(G_tConns) <= c_MaxConnectionAmount {
 		for {
 			conn, err := netListen.Accept()
 			if err != nil {
 				continue
 			}
 			////////////////临时Tconn连接对象////////////////////////////////
-			var c TConn
+			var c TcpConn
 			c.ID = conn.RemoteAddr().String()
 			c.IsAlive = true
 			c.Conn = conn
 			c.IPAddr = conn.RemoteAddr().(*net.TCPAddr).IP.String()
-			g_Conns[c.ID] = c
+			G_tConns[c.ID] = c
 			///////////////////////////////////////////////////////////////
 			comm.SepLi(60)
 			logs.LogMain.Info("客户端：" + c.ID + " 连接!")
@@ -54,16 +53,16 @@ func StartTcpServer() {
 	}
 }
 
-func receiveData(c TConn) {
+func receiveData(c TcpConn) {
 	for {
 		//	指定接收数据包头的帧长
 		recDataHeader := make([]byte, ep.G_TsPack.HeaderLength)
 		_, err := c.Conn.Read(recDataHeader)
 		if err != nil {
 			comm.SepLi(60)
-			//			sync.Mutex.Lock()
-			delete(g_Conns, c.ID)
-			//			sync.Mutex.Unlock()
+			c.Mutex.Lock()
+			delete(G_tConns, c.ID)
+			c.Mutex.Unlock()
 			return
 		}
 		// 数据包数据内容长度记录变量

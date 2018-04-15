@@ -9,7 +9,8 @@ import (
 )
 
 func StartHttpServer() {
-	comm.Msg("start http..")
+	comm.SepLi(60)
+	comm.Msg("start http...,Port:", c_Http_Port)
 	comm.SepLi(60)
 	router := gin.Default()
 
@@ -17,5 +18,5 @@ func StartHttpServer() {
 		c.String(http.StatusOK, "It works")
 	})
 
-	router.Run(":7090")
+	router.Run(":" + comm.ConvertIntToStr(c_Http_Port))
 }

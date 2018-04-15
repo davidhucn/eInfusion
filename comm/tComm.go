@@ -25,7 +25,7 @@ func GetCurrentDate() string {
 }
 
 //生成分隔行
-func SepLi(ref_num int) string {
+func SepLi(ref_num int) {
 	s := "-"
 	Msg(strings.Repeat(s, ref_num))
 }

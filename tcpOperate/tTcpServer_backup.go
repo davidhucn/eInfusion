@@ -19,14 +19,14 @@ func StartTcpServer_backup() {
 		logs.LogMain.Critical("监听TCP出错", err)
 		panic(err)
 	}
-	comm.Msg(comm.SepLi(60))
+	comm.SepLi(60)
 	comm.Msg("TCP Port:" + c_TcpServer_Port)
 	for {
 		conn, err := netListen.Accept()
 		if err != nil {
 			continue
 		}
-		comm.Msg(comm.SepLi(60))
+		comm.SepLi(60)
 		logs.LogMain.Info("客户端：" + conn.RemoteAddr().String() + " 连接!")
 		go receiveData_backup(conn)
 		//	time.Sleep(time.Second * 2)
@@ -39,7 +39,7 @@ func receiveData_backup(conn net.Conn) {
 		recDataHeader := make([]byte, ep.G_TsPack.HeaderLength)
 		_, err := conn.Read(recDataHeader)
 		if err != nil {
-			comm.Msg(comm.SepLi(60))
+			comm.SepLi(60)
 			comm.Msg(conn.RemoteAddr(), " 客户端连接丢失!")
 			return
 		}

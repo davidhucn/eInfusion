@@ -1,6 +1,9 @@
 package tcpOperate
 
-import "net"
+import (
+	"net"
+	"sync"
+)
 
 const c_TcpServer_Port = "7778"
 
@@ -13,12 +16,13 @@ const (
 //tcp最大连接数
 const c_MaxConnectionAmount = 30
 
-type TConn struct {
+type TcpConn struct {
 	IPAddr  string
 	Conn    net.Conn
 	IsAlive bool
 	ID      string
+	sync.Mutex
 }
 
-// tcp全局连接map
-var g_Conns map[string]TConn
+//全局tcp连接对象
+var G_tConns map[string]TcpConn
