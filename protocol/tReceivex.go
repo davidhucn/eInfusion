@@ -20,7 +20,7 @@ func DecodeHeader(ref_packHeader []byte, adr_dataLength *int) bool {
 			if intDataLength == 0 {
 				return false
 			}
-			//	包内容帧长 = 包总长度- 包头帧长度
+			//	包内容帧长 = 包总长度 - 包头帧长度
 			intDataLength = intDataLength - G_TsPack.HeaderLength
 			// 函数返回为真
 			blnRet = true

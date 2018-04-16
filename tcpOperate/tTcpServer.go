@@ -82,6 +82,11 @@ func receiveData(c TcpConn) {
 	}
 }
 
+// 整合信息发送至指定客户端
+func PreSendOrders() {
+
+}
+
 func SendData(conn net.Conn, packetData []byte) {
 	_, err := conn.Write(packetData) // don't care about return value
 	defer conn.Close()
