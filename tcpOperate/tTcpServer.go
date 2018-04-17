@@ -43,8 +43,8 @@ func StartTcpServer() {
 			///////////////////////////////////////////////////////////////
 			comm.SepLi(60)
 			logs.LogMain.Info("客户端：" + c.ID + " 连接!")
-			go receiveData(c)
 			PreSendOrders()
+			go receiveData(c)
 			//	time.Sleep(time.Second * 2)
 			///////////////////////////////////////////////////////////////
 		}
@@ -52,12 +52,13 @@ func StartTcpServer() {
 		//超出连接数则不再接收连接
 		logs.LogMain.Warn(c_Msg_OutOfMaximumConnection)
 	}
+
 }
 
 func receiveData(c TcpConn) {
 	for {
 		//	指定接收数据包头的帧长
-		recDataHeader := make([]byte, ep.G_TsPack.HeaderLength)
+		recDataHeader := make([]byte, ep.G_TsCmd.HeaderLength)
 		_, err := c.Conn.Read(recDataHeader)
 		if err != nil {
 			comm.SepLi(60)
@@ -88,15 +89,18 @@ func PreSendOrders() {
 	//遍历所有连接结点，发送命令
 	for connsID, _ := range G_tConns {
 		var orders []byte
-		var RcvID []byte={"A0","00","00","00"}
+		RcvID := []byte("A0000000")
+
+		comm.Msg("RCVID:", RcvID)
 		orders = ep.GetRcvStatus(RcvID)
-		SendData(G_tConns[connsID].Conn,orders)
+		comm.Msg("orders", orders)
+		SendData(G_tConns[connsID].Conn, orders)
 	}
 }
 
 func SendData(conn net.Conn, packetData []byte) {
 	_, err := conn.Write(packetData) // don't care about return value
-	defer conn.Close()
+	//	defer conn.Close()
 	if err != nil {
 		comm.Msg(c_Msg_SendDataErr, err)
 		logs.LogMain.Error(c_Msg_SendDataErr, err)

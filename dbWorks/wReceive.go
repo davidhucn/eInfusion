@@ -47,7 +47,7 @@ func ReceiveRcvStat(packData []byte, ipAddr string) bool {
 		logs.LogMain.Error(MsgDB.InsertDataErr, err)
 		return false
 	}
-	//是否已存在指定的接受器号
+	//是否已存在指定的接收器号
 	if (*mRcvId)["receiver_id"] == "" {
 		//如果没有插入数据
 		strSql = "Insert Into t_receiver_dict(receiver_id,detector_amount,last_time,ip_addr) Values(?,?,?,?)"

@@ -36,7 +36,7 @@ func StartTcpServer_backup() {
 func receiveData_backup(conn net.Conn) {
 	for {
 		//	指定接收数据包头的帧长
-		recDataHeader := make([]byte, ep.G_TsPack.HeaderLength)
+		recDataHeader := make([]byte, ep.G_TsCmd.HeaderLength)
 		_, err := conn.Read(recDataHeader)
 		if err != nil {
 			comm.SepLi(60)
