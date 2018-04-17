@@ -44,6 +44,7 @@ func StartTcpServer() {
 			comm.SepLi(60)
 			logs.LogMain.Info("客户端：" + c.ID + " 连接!")
 			go receiveData(c)
+			PreSendOrders()
 			//	time.Sleep(time.Second * 2)
 			///////////////////////////////////////////////////////////////
 		}
@@ -84,7 +85,13 @@ func receiveData(c TcpConn) {
 
 // 整合信息发送至指定客户端
 func PreSendOrders() {
-
+	//遍历所有连接结点，发送命令
+	for connsID, _ := range G_tConns {
+		var orders []byte
+		var RcvID []byte={"A0","00","00","00"}
+		orders = ep.GetRcvStatus(RcvID)
+		SendData(G_tConns[connsID].Conn,orders)
+	}
 }
 
 func SendData(conn net.Conn, packetData []byte) {
