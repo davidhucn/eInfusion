@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"unsafe"
 )
 
 // 获取当前时间
@@ -53,17 +52,6 @@ func CkErr(ref_Msg string, ref_err error) bool {
 		return true
 	}
 	return false
-}
-
-//string转byte
-func ConvertStrToBytes(s string) byte {
-	return *(*byte)(unsafe.Pointer(&s))
-}
-
-//byte转string
-// convert b to string without copy
-func ConvertBytesToStr(b []byte) string {
-	return *(*string)(unsafe.Pointer(&b))
 }
 
 //根据参数base转换成指定进制，返回
@@ -115,6 +103,55 @@ func ConvertBasStrToUint(ref_base int, ref_content string) uint8 {
 		intRetValue = 0
 	}
 	return uint8(intRetValue)
+}
+
+//根据开始、结束下标返回相应的字符串内容返回bytes
+func GetPartOfStringToBytes(ref_strContent string, ref_intBegin int, ref_intEnd int) []byte {
+	var bT []byte
+	n := len(ref_strContent)
+	if ref_intEnd < n && ref_intBegin > 0 {
+		for i := ref_intBegin; i <= ref_intEnd; i++ {
+			bT = append(bT, ref_strContent[i])
+		}
+	}
+	return bT
+}
+
+//根据开始、结束下标返回相应的字符串内容返回bytes
+func GetPartOfStringToStr(ref_strContent string, ref_intBegin int, ref_intEnd int) string {
+	var strR string
+	n := len(ref_strContent)
+	if ref_intEnd < n && ref_intBegin >= 0 {
+		for i := ref_intBegin; i <= ref_intEnd; i++ {
+			strR += string(ref_strContent[i])
+		}
+	}
+	return strR
+}
+
+//把字符串内容按每两字符对应一个byte组成新的bytes，返回[]byte
+func GetPerTwoCharOfStringToBytes(ref_s string) []byte {
+	var bT []byte
+	var n int = len(ref_s)
+	var st int = 0
+	var i int = 0
+	var end int = 1
+	for {
+		strT := ref_s[st] + ref_s[end]
+		Msg("st:", ConvertBasToStr(16, ref_s[st]))
+		Msg("end:", ConvertBasToStr(16, ref_s[end]))
+		Msg("temp:", strT)
+		Msg("i:", i)
+		bT[i] = strT
+		st = end
+		if end < n {
+			end += 2
+		} else {
+			break
+		}
+		i = i + 1
+	}
+	return bT
 }
 
 //判断是否存在,true表示存在
