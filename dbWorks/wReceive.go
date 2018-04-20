@@ -38,7 +38,7 @@ func ReceiveRcvStat(packData []byte, ipAddr string) bool {
 	//接收器ID
 	strRcvID := ConvertOxBytesToStr(packData[:4])
 	//检测器数量
-	strDetectAmount := ConvertBasToStr(10, packData[intAmountCursor])
+	strDetectAmount := ConvertBasNumberToStr(10, packData[intAmountCursor])
 	//查询用 接收器ID map
 	var mRcvId *map[string]string
 	strSql = "SELECT receiver_id FROM t_receiver_dict WHERE receiver_id=?"
@@ -79,7 +79,7 @@ func ReceiveDetectStat(packData []byte, ipAddr string) bool {
 	//	接收器Id
 	var strRcvID string = ConvertOxBytesToStr(packData[0:4])
 	//检测器数量
-	intDetAmount := ConvertBasStrToInt(10, ConvertBasToStr(10, packData[intDetAmountCursor]))
+	intDetAmount := ConvertBasStrToInt(10, ConvertBasNumberToStr(10, packData[intDetAmountCursor]))
 	//根据数量来存储
 	if intDetAmount > 0 {
 		for i := 0; i < intDetAmount; i++ {
@@ -89,7 +89,7 @@ func ReceiveDetectStat(packData []byte, ipAddr string) bool {
 			var di Detector
 			di.RcvID = strRcvID
 			di.ID = ConvertOxBytesToStr(packData[begin:end])
-			di.Stat = ConvertBasToStr(10, packData[end])
+			di.Stat = ConvertBasNumberToStr(10, packData[end])
 			di.Disable = false
 			begin = end
 			//	判断该检测器是否为device_dict表内已注册设备，如果不是,则不记录
@@ -189,7 +189,7 @@ func ReceiveDeleteDetect(packData []byte, ipAddr string) bool {
 	//接收器id
 	strRcvID := ConvertOxBytesToStr(packData[:4])
 	//检测器数量
-	intDetAmount = ConvertBasStrToInt(10, ConvertBasToStr(10, packData[intDetAmountCursor]))
+	intDetAmount = ConvertBasStrToInt(10, ConvertBasNumberToStr(10, packData[intDetAmountCursor]))
 
 	for i := 0; i < intDetAmount; i++ {
 		var begin int = 5
@@ -268,7 +268,7 @@ func ReceiveAddDetect(packData []byte, ipAddr string) bool {
 	//接收器id
 	strRcvID := ConvertOxBytesToStr(packData[:4])
 	//检测器数量
-	intDetAmount = ConvertBasStrToInt(10, ConvertBasToStr(10, packData[intDetAmountCursor]))
+	intDetAmount = ConvertBasStrToInt(10, ConvertBasNumberToStr(10, packData[intDetAmountCursor]))
 
 	for i := 0; i < intDetAmount; i++ {
 		var begin int = 5

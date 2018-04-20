@@ -54,8 +54,8 @@ func CkErr(ref_Msg string, ref_err error) bool {
 	return false
 }
 
-//根据参数base转换成指定进制，返回
-func ConvertBasToStr(ref_intBase int, ref_varContent interface{}) string {
+//把数字内容（int/uint）根据参数base转换成指定进制，返回
+func ConvertBasNumberToStr(ref_intBase int, ref_varContent interface{}) string {
 	//	reflect.TypeOf(ref_varContent)
 	var strBaseValue string
 	switch ref_intBase {
@@ -78,7 +78,7 @@ func ConvertBasToStr(ref_intBase int, ref_varContent interface{}) string {
 func ConvertOxBytesToStr(ref_content []byte) string {
 	var strRet string
 	for i := 0; i < len(ref_content); i++ {
-		strCon := ConvertBasToStr(16, ref_content[i])
+		strCon := ConvertBasNumberToStr(16, ref_content[i])
 		if len(strCon) == 1 {
 			strCon = "0" + strCon
 		}
@@ -88,17 +88,18 @@ func ConvertOxBytesToStr(ref_content []byte) string {
 }
 
 //	根据指定进制要求，把字符串转换成数字int型
-func ConvertBasStrToInt(ref_base int, ref_content string) int {
-	intRetValue, err := strconv.ParseInt(ref_content, ref_base, 64)
+func ConvertBasStrToInt(ref_intBase int, ref_content string) int {
+	intRetValue, err := strconv.ParseInt(ref_content, ref_intBase, 64)
 	if err != nil {
 		intRetValue = 0
 	}
+
 	return int(intRetValue)
 }
 
 //	根据指定进制要求，把字符串转换成数字Uint8型
-func ConvertBasStrToUint(ref_base int, ref_content string) uint8 {
-	intRetValue, err := strconv.ParseUint(ref_content, ref_base, 64)
+func ConvertBasStrToUint(ref_intBase int, ref_content string) uint8 {
+	intRetValue, err := strconv.ParseUint(ref_content, ref_intBase, 64)
 	if err != nil {
 		intRetValue = 0
 	}
@@ -106,19 +107,20 @@ func ConvertBasStrToUint(ref_base int, ref_content string) uint8 {
 }
 
 //根据开始、结束下标返回相应的字符串内容返回bytes
-func GetPartOfStringToBytes(ref_strContent string, ref_intBegin int, ref_intEnd int) []byte {
+func ConvertOxStrToBytes(ref_strContent string, ref_intBegin int, ref_intEnd int, ref_intBase int) []byte {
 	var bT []byte
 	n := len(ref_strContent)
 	if ref_intEnd < n && ref_intBegin > 0 {
 		for i := ref_intBegin; i <= ref_intEnd; i++ {
-			bT = append(bT, ref_strContent[i])
+			strT := string(ref_strContent[i])
+			bT = append(bT, ConvertBasStrToUint(ref_intBase, strT))
 		}
 	}
 	return bT
 }
 
-//根据开始、结束下标返回相应的字符串内容返回bytes
-func GetPartOfStringToStr(ref_strContent string, ref_intBegin int, ref_intEnd int) string {
+//根据开始、结束下标返回相应的字符串内容返回string
+func GetPartOfStrToStr(ref_strContent string, ref_intBegin int, ref_intEnd int) string {
 	var strR string
 	n := len(ref_strContent)
 	if ref_intEnd < n && ref_intBegin >= 0 {
@@ -130,26 +132,13 @@ func GetPartOfStringToStr(ref_strContent string, ref_intBegin int, ref_intEnd in
 }
 
 //把字符串内容按每两字符对应一个byte组成新的bytes，返回[]byte
-func GetPerTwoCharOfStringToBytes(ref_s string) []byte {
+func ConvertPerTwoOxCharOfStrToBytes(ref_s string) []byte {
 	var bT []byte
 	var n int = len(ref_s)
-	var st int = 0
-	var i int = 0
-	var end int = 1
-	for {
-		strT := ref_s[st] + ref_s[end]
-		Msg("st:", ConvertBasToStr(16, ref_s[st]))
-		Msg("end:", ConvertBasToStr(16, ref_s[end]))
-		Msg("temp:", strT)
-		Msg("i:", i)
-		bT[i] = strT
-		st = end
-		if end < n {
-			end += 2
-		} else {
-			break
-		}
-		i = i + 1
+	for i := 0; i < n-1; i++ {
+		j := i + 1
+		strP := ref_s[i] + ref_s[j]
+		bT = append(bT, ConvertBasStrToUint(16, string(strP)))
 	}
 	return bT
 }
