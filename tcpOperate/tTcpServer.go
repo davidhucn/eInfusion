@@ -88,15 +88,14 @@ func receiveData(c TcpConn) {
 // 整合信息发送至指定客户端
 func PreSendOrders() {
 	//遍历所有连接结点，发送命令
-	//	for connsID, _ := range G_tConns {
-	//		var orders, RcvID []byte
-	//		s := "A0000000"
-	//		RcvID = comm.GetPerTwoCharOfStringToBytes(s)
-	//		comm.Msg("RCVID:", RcvID)
-	//		orders = ep.GetRcvStatus(RcvID)
-	//		comm.Msg("orders", orders)
-	//		SendData(G_tConns[connsID].Conn, orders)
-	//	}
+	for connsID, _ := range G_tConns {
+		var orders []byte
+		var RcvID []byte
+		s := "A0000000"
+		RcvID = comm.ConvertPerTwoOxCharOfStrToBytes(s)
+		orders = ep.CmdGetRcvStatus(RcvID)
+		SendData(G_tConns[connsID].Conn, orders)
+	}
 }
 
 func SendData(conn net.Conn, packetData []byte) {

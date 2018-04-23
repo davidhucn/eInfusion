@@ -3,7 +3,7 @@ package protocol
 import . "eInfusion/comm"
 
 // 获取指定接收器的状态
-func GetRcvStatus(ref_RcvID []byte) []byte {
+func CmdGetRcvStatus(ref_RcvID []byte) []byte {
 	var intOrderDataLength = 7
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)
@@ -20,7 +20,7 @@ func GetRcvStatus(ref_RcvID []byte) []byte {
 
 // 对检测器进行操作（检测、册除、新增）
 // 一个设备ID 占4个byte
-func OperateDetect(orderType uint8, ref_RcvID []byte, detectAmount int, ref_DetectID []byte) []byte {
+func CmdOperateDetect(orderType uint8, ref_RcvID []byte, detectAmount int, ref_DetectID []byte) []byte {
 	var intOrderDataLength = 7
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)
@@ -47,7 +47,7 @@ func OperateDetect(orderType uint8, ref_RcvID []byte, detectAmount int, ref_Dete
 }
 
 // 修改接收器网络配置
-func SetRcvCfg(ref_RcvID []byte, ref_IP []byte, ref_Port []byte) []byte {
+func CmdSetRcvCfg(ref_RcvID []byte, ref_IP []byte, ref_Port []byte) []byte {
 	var intOrderDataLength = 13
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)
@@ -71,7 +71,7 @@ func SetRcvCfg(ref_RcvID []byte, ref_IP []byte, ref_Port []byte) []byte {
 }
 
 // 设置接收器重连接时间
-func SetRcvReconTime(ref_RcvID []byte, ref_IP []byte, ref_ReconTime int) []byte {
+func CmdSetRcvReconTime(ref_RcvID []byte, ref_IP []byte, ref_ReconTime int) []byte {
 	var intOrderDataLength = 9
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)

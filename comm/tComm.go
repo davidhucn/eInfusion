@@ -79,9 +79,9 @@ func ConvertOxBytesToStr(ref_content []byte) string {
 	var strRet string
 	for i := 0; i < len(ref_content); i++ {
 		strCon := ConvertBasNumberToStr(16, ref_content[i])
-		if len(strCon) == 1 {
-			strCon = "0" + strCon
-		}
+		//		if len(strCon) == 1 {
+		//			strCon = "0" + strCon
+		//		}
 		strRet += strCon
 	}
 	return strRet
@@ -107,7 +107,7 @@ func ConvertBasStrToUint(ref_intBase int, ref_content string) uint8 {
 }
 
 //根据开始、结束下标返回相应的字符串内容返回bytes
-func ConvertOxStrToBytes(ref_strContent string, ref_intBegin int, ref_intEnd int, ref_intBase int) []byte {
+func ConvertBasStrToBytes(ref_strContent string, ref_intBegin int, ref_intEnd int, ref_intBase int) []byte {
 	var bT []byte
 	n := len(ref_strContent)
 	if ref_intEnd < n && ref_intBegin > 0 {
@@ -137,7 +137,7 @@ func ConvertPerTwoOxCharOfStrToBytes(ref_s string) []byte {
 	var n int = len(ref_s)
 	for i := 0; i < n-1; i++ {
 		j := i + 1
-		strP := ref_s[i] + ref_s[j]
+		strP := string(ref_s[i]) + string(ref_s[j])
 		bT = append(bT, ConvertBasStrToUint(16, string(strP)))
 	}
 	return bT
