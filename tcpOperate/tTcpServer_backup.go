@@ -14,7 +14,7 @@ func StartTcpServer_backup() {
 	netListen, err := net.Listen("tcp", ":"+c_TcpServer_Port)
 	defer netListen.Close()
 	//	系统开始运行时log记录时间
-	logs.LogMain.Info(c_Msg_ServerStart + "（" + comm.GetCurrentDate() + "）")
+	logs.LogMain.Info(c_Msg_Info_ServerStart + "（" + comm.GetCurrentDate() + "）")
 	if err != nil {
 		logs.LogMain.Critical("监听TCP出错", err)
 		panic(err)
@@ -64,8 +64,8 @@ func sendData_backup(conn net.Conn, packetData []byte) {
 	_, err := conn.Write(packetData) // don't care about return value
 	defer conn.Close()
 	if err != nil {
-		comm.Msg(c_Msg_SendDataErr, err)
-		logs.LogMain.Critical(c_Msg_SendDataErr, err)
+		comm.Msg(c_Msg_Err_SendData, err)
+		logs.LogMain.Critical(c_Msg_Err_SendData, err)
 		return
 	}
 }
