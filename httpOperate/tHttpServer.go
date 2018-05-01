@@ -8,6 +8,9 @@ import (
 	//	"gopkg.in/gin-gonic/gin.v1"
 )
 
+func init() {
+	//	gin.SetMode(gin.ReleaseMode)
+}
 func StartHttpServer() {
 	comm.SepLi(60)
 	comm.Msg("start http...,Port:", c_Http_Port)

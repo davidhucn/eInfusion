@@ -42,9 +42,9 @@ func newConn(lser net.Listener) {
 			}
 			c.Flag = comm.GetTimeStamp() /*获取时间戳作为标识*/
 			c.IPAddr = c.Conn.RemoteAddr().(*net.TCPAddr).IP.String()
-			G_tConns[c.ID] = c
+			G_tConns[c.Flag] = c
 			comm.SepLi(60)
-			logs.LogMain.Info("客户端：" + c.ID + " 连接!")
+			logs.LogMain.Info("客户端：" + c.Conn.RemoteAddr() + " 连接!")
 			go receiveData(c)
 			//	time.Sleep(time.Second * 2)
 		}

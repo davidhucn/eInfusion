@@ -20,7 +20,7 @@ const c_MaxConnectionAmount = 30
 type TcpConn struct {
 	IPAddr string
 	Conn   net.Conn
-	Flag   string /*临时标记，用于索引*/
+	Flag   string /*临时标记，用于索引,暂定时间戳*/
 	ID     string /*设备编号唯一标识*/
 	sync.Mutex
 }
