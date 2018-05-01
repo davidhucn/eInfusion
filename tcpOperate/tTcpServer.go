@@ -40,7 +40,7 @@ func newConn(lser net.Listener) {
 				continue
 				logs.LogMain.Error(c_Msg_Err_AcceptConnection)
 			}
-			c.Flag = c.Conn.RemoteAddr().String()
+			c.Flag = comm.GetTimeStamp() /*获取时间戳作为标识*/
 			c.IPAddr = c.Conn.RemoteAddr().(*net.TCPAddr).IP.String()
 			G_tConns[c.ID] = c
 			comm.SepLi(60)
@@ -62,6 +62,7 @@ func receiveData(c TcpConn) {
 		if err != nil {
 			comm.SepLi(60)
 			c.Mutex.Lock()
+			c.Conn.Close()
 			delete(G_tConns, c.Flag)
 			c.Mutex.Unlock()
 			return
@@ -89,7 +90,7 @@ func SendOrders(connID string, packetData []byte) {
 	//如果连接存在
 	if _, ok := G_tConns[connID]; ok {
 		writeToConn(G_tConns[connID].Conn, packetData)
-	} else { /*如果连接断开，则保留2小时*/
+	} else { /*如果连接断开，则数据保留2小时*/
 
 	}
 }
