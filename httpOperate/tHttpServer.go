@@ -19,7 +19,7 @@ func StartHttpServer() {
 
 	//注册接口
 	//	router.GET("/simple/server/get", GetHandler)
-	router.POST("/simple/server/post", PostHandler)
+	router.POST("/r/", PostHandler)
 	//	router.PUT("/simple/server/put", PutHandler)
 	//	router.DELETE("/simple/server/delete", DeleteHandler)
 
@@ -27,13 +27,20 @@ func StartHttpServer() {
 }
 
 func PostHandler(c *gin.Context) {
+	//	c.GetPostForm()
 	//c.GetHeader()
-	type JsonHolder struct {
-		Id   int    `json:"id"`
-		Name string `json:"name"`
-	}
-	holder := JsonHolder{Id: 1, Name: "my name"}
+	//	type JsonHolder struct {
+	//		Id   int    `json:"id"`
+	//		Name string `json:"name"`
+	//	}
+	//	holder := JsonHolder{Id: 1, Name: "my name"}
 	//若返回json数据，可以直接使用gin封装好的JSON方法
-	c.JSON(http.StatusOK, holder)
+	buf := make([]byte, 1024)
+	n, _ := c.Request.Body.Read(buf)
+	comm.SepLi(60)
+	comm.Msg(string(buf[0:n]))
+	comm.SepLi(60)
+	resp := map[string]string{"hello": "world"}
+	c.JSON(http.StatusOK, resp)
 	return
 }
