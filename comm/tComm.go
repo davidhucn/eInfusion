@@ -13,8 +13,8 @@ import (
 )
 
 //获取时间戳
-func GetTimeStamp() int64 {
-	return time.Now().Unix()
+func GetTimeStamp() string {
+	return string(time.Now().Unix())
 }
 
 // 获取当前时间
