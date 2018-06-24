@@ -15,14 +15,14 @@ const (
 )
 
 //tcp最大连接数
-const c_MaxConnectionAmount = 30
+const c_MaxConnectionAmount = 2
 
 type TcpConn struct {
 	IPAddr string
 	Conn   net.Conn
 	Flag   string /*临时标记，用于索引,暂定时间戳*/
 	ID     string /*设备编号唯一标识*/
-	sync.Mutex
+	//	sync.Mutex
 }
 
 //指令消息结构

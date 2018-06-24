@@ -1,14 +1,12 @@
 package tcpOperate
 
 import (
-	"fmt"
+	"eInfusion/comm"
+	"eInfusion/logs"
+	ep "eInfusion/protocol"
 	"net"
 	"os"
 	"time"
-)
-
-const (
-	MAX_CONN_NUM = 5
 )
 
 //echo server Goroutine
@@ -31,8 +29,9 @@ func EchoFunc(conn net.Conn) {
 }
 
 //initial listener and run
-func main() {
-	listener, err := net.Listen("tcp", "0.0.0.0:8088")
+func StartTcpServer() {
+	listener, err := net.Listen("tcp", ":"+c_TcpServer_Port)
+	defer listener.Close()
 	if err != nil {
 		fmt.Println("error listening:", err.Error())
 		os.Exit(1)
@@ -57,12 +56,14 @@ func main() {
 		}
 	}()
 
-	for i := 0; i < MAX_CONN_NUM; i++ {
+	for i := 0; i < c_MaxConnectionAmount; i++ {
 		go func() {
 			for conn := range conn_chan {
 				ch_conn_change <- 1
+				println("change:", ch_conn_change)
 				EchoFunc(conn)
 				ch_conn_change <- -1
+				println("change:", ch_conn_change)
 			}
 		}()
 	}
