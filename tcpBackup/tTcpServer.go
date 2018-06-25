@@ -1,4 +1,6 @@
-package tcpOperate
+package tcpBackup
+
+//2018.06.25 backup
 
 import (
 	"eInfusion/comm"
@@ -91,7 +93,7 @@ func SendOrders(connID string, packetData []byte) {
 	if _, ok := G_tConns[connID]; ok {
 		writeToConn(G_tConns[connID].Conn, packetData)
 	} else { /*如果连接断开，则数据保留2小时*/
-
+		//TODO:保留两小时
 	}
 }
 
