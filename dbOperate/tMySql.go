@@ -41,7 +41,7 @@ func IsConnected() bool {
 	return false
 }
 
-//快速插入数据到指定数据库内
+//快速执行查询到指定数据库内
 func ExecSQL(strSql string, args ...interface{}) (affected_Num int64, err error) {
 	result, err := G_Db.Exec(strSql, args...)
 	if err != nil {
