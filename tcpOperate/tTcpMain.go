@@ -5,22 +5,37 @@ import (
 	"eInfusion/logs"
 	ep "eInfusion/protocol"
 	"net"
-	"os"
 	"time"
 )
 
+//func mkClisConn(key string, conn *net.TCPConn) {
+//	connMkMutex.Lock()
+//	defer connMkMutex.Unlock()
+//	clisConnMap[key] = conn
+//}
+
+///*
+//   删除socket conn 映射
+//*/
+//func delClisConn(key string) {
+//	connDelMutex.Lock()
+//	defer connDelMutex.Unlock()
+//	delete(clisConnMap, key)
+//}
+
 //echo server Goroutine
-func EchoFunc(conn net.Conn) {
-	defer conn.Close()
+func EchoFunc(c Clienter) {
+	//	FIXME: 修改这里
+	defer c.Conn.Close()
 	buf := make([]byte, 1024)
 	for {
-		_, err := conn.Read(buf)
+		_, err := c.Conn.Read(buf)
 		if err != nil {
 			//println("Error reading:", err.Error())
 			return
 		}
 		//send reply
-		_, err = conn.Write(buf)
+		_, err = c.Conn.Write(buf)
 		if err != nil {
 			//println("Error send reply:", err.Error())
 			return
@@ -33,37 +48,37 @@ func StartTcpServer() {
 	listener, err := net.Listen("tcp", ":"+c_TcpServer_Port)
 	defer listener.Close()
 	if err != nil {
-		fmt.Println("error listening:", err.Error())
-		os.Exit(1)
+		logs.LogMain.Critical("监听TCP出错", err)
+		panic(err)
 	}
-	defer listener.Close()
+	logs.LogMain.Info(c_Msg_Info_ServerStart + "（" + comm.GetCurrentDate() + "）")
+	comm.SepLi(60)
+	comm.Msg("TCP Port:" + c_TcpServer_Port)
+	//并发，在线数量
+	var intConcurrentNum int = 0
 
-	fmt.Printf("running ...\n")
+	//	var c_stream chan Clienter
+	conn_stream = make(chan net.Conn)
 
-	var cur_conn_num int = 0
-	conn_chan := make(chan net.Conn)
-	ch_conn_change := make(chan int)
-
+	intConnCounter_stream := make(chan int)
+	//////////////////////////////////////////////////////////////
 	go func() {
-		for conn_change := range ch_conn_change {
-			cur_conn_num += conn_change
+		for intConnTemp := range intConnCounter_stream {
+			intConcurrentNum += intConnTemp
 		}
 	}()
-
 	go func() {
 		for _ = range time.Tick(1e8) {
-			fmt.Printf("cur conn num: %f\n", cur_conn_num)
+			comm.Msg("cur conn num: %f\n", intConcurrentNum)
 		}
 	}()
-
+	////////////////////process per connection///////////////////////////////
 	for i := 0; i < c_MaxConnectionAmount; i++ {
 		go func() {
-			for conn := range conn_chan {
-				ch_conn_change <- 1
-				println("change:", ch_conn_change)
+			for conn := range conn_stream {
+				intConnCounter_stream <- 1
 				EchoFunc(conn)
-				ch_conn_change <- -1
-				println("change:", ch_conn_change)
+				intConnCounter_stream <- -1
 			}
 		}()
 	}
@@ -71,9 +86,9 @@ func StartTcpServer() {
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			println("Error accept:", err.Error())
-			return
+			continue
+			logs.LogMain.Error(c_Msg_Err_AcceptConnection)
 		}
-		conn_chan <- conn
+		conn_stream <- conn
 	}
 }

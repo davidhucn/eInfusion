@@ -2,7 +2,7 @@ package tcpOperate
 
 import (
 	"net"
-	"sync"
+	//	"sync"
 )
 
 const c_TcpServer_Port = "7778"
@@ -17,7 +17,13 @@ const (
 //tcp最大连接数
 const c_MaxConnectionAmount = 2
 
-type TcpConn struct {
+//定义锁
+var (
+	connMkMutex  sync.Mutex
+	connDelMutex sync.Mutex
+)
+
+type Clienter struct {
 	IPAddr string
 	Conn   net.Conn
 	Flag   string /*临时标记，用于索引,暂定时间戳*/
@@ -33,7 +39,7 @@ type OrdersQueue struct {
 }
 
 //全局tcp连接对象
-var G_tConns map[string]TcpConn
+//var G_tConns map[string]TcpConn
 
 //消息
 var G_cOrders chan OrdersQueue
