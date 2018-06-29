@@ -1,9 +1,12 @@
 package tcpOperate
 
+//@Author:david
+//@Date:2018/06/29
+//@Purpose: Tcp Socket Server(Epoll模型）
 import (
 	"eInfusion/comm"
 	"eInfusion/logs"
-	ep "eInfusion/protocol"
+	//	ep "eInfusion/protocol"
 	"net"
 	"time"
 )
@@ -24,7 +27,7 @@ import (
 //}
 
 //echo server Goroutine
-func EchoFunc(c Clienter) {
+func EchoFunc(c EndPointer) {
 	//	FIXME: 修改这里
 	defer c.Conn.Close()
 	buf := make([]byte, 1024)
@@ -58,7 +61,7 @@ func StartTcpServer() {
 	var intConcurrentNum int = 0
 
 	//	var c_stream chan Clienter
-	conn_stream = make(chan net.Conn)
+	conn_stream := make(chan net.Conn)
 
 	intConnCounter_stream := make(chan int)
 	//////////////////////////////////////////////////////////////
@@ -79,6 +82,7 @@ func StartTcpServer() {
 				intConnCounter_stream <- 1
 				EchoFunc(conn)
 				intConnCounter_stream <- -1
+
 			}
 		}()
 	}
