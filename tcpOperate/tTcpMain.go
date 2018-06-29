@@ -9,10 +9,10 @@ import (
 	//	ep "eInfusion/protocol"
 	"net"
 	"strconv"
+	"strings"
 	"time"
 )
 
-<<<<<<< HEAD
 func mkClisConn(key string, conn *net.TCPConn) {
 	connMkMutex.Lock()
 	defer connMkMutex.Unlock()
@@ -59,21 +59,9 @@ func ckError(err error, title string, exit bool) {
 			os.Exit(1)
 		} else {
 			logs.LogMain.Error(title, err.Error())
-=======
-//func mkClisConn(key string, conn *net.TCPConn) {
-//	connMkMutex.Lock()
-//	defer connMkMutex.Unlock()
-//	clisConnMap[key] = conn
-//}
-
-///*
-//   删除socket conn 映射
-//*/
-//func delClisConn(key string) {
-//	connDelMutex.Lock()
-//	defer connDelMutex.Unlock()
-//	delete(clisConnMap, key)
-//}
+		}
+	}
+}
 
 //echo server Goroutine
 func EchoFunc(c EndPointer) {
@@ -85,7 +73,6 @@ func EchoFunc(c EndPointer) {
 		if err != nil {
 			//println("Error reading:", err.Error())
 			return
->>>>>>> 7d5589a2bc1ca06c570d39bf6c057c1a6ce15959
 		}
 	}
 }
@@ -136,47 +123,18 @@ func StartTcpServer(port int) {
 	ckError(err, "TCP监听错误", true)
 	logs.LogMain.Info(c_Msg_Info_ServerStart + "（" + comm.GetCurrentDate() + "）")
 	comm.SepLi(60)
-<<<<<<< HEAD
 	comm.Msg("TCP Server Info:" + tcpAddr.IP.String() + host)
 
-	conStream := make(chan net.TCPConn)
+	conStream := make(chan *net.TCPConn)
 	initClisConnMap()
 	//打开N个Goroutine等待连接，Epoll模式
 	for i := 0; i < c_MaxConnectionAmount; i++ {
 		go func() {
 			for cs := range conStream {
 				connectionMade(cs)
-				//TODO:[优先]接收数据
-				//EchoFunc(cs)
-=======
-	comm.Msg("TCP Port:" + c_TcpServer_Port)
-	//并发，在线数量
-	var intConcurrentNum int = 0
-
-	//	var c_stream chan Clienter
-	conn_stream := make(chan net.Conn)
-
-	intConnCounter_stream := make(chan int)
-	//////////////////////////////////////////////////////////////
-	go func() {
-		for intConnTemp := range intConnCounter_stream {
-			intConcurrentNum += intConnTemp
-		}
-	}()
-	go func() {
-		for _ = range time.Tick(1e8) {
-			comm.Msg("cur conn num: %f\n", intConcurrentNum)
-		}
-	}()
-	////////////////////process per connection///////////////////////////////
-	for i := 0; i < c_MaxConnectionAmount; i++ {
-		go func() {
-			for conn := range conn_stream {
-				intConnCounter_stream <- 1
-				EchoFunc(conn)
-				intConnCounter_stream <- -1
-
->>>>>>> 7d5589a2bc1ca06c570d39bf6c057c1a6ce15959
+				//				EchoFunc(cs)
+				//TODO:【优先】接收数据
+				connectionLost(cs)
 			}
 		}()
 	}
