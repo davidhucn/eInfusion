@@ -23,8 +23,17 @@ var (
 	connDelMutex sync.Mutex
 )
 
+<<<<<<< HEAD
 //全局tcp连接对象
 var clisConnMap map[string]*net.TCPConn
+=======
+type EndPointer struct {
+	IPAddr string
+	Conn   net.Conn
+	Flag   string /*临时标记，用于索引,暂定时间戳*/
+	ID     string /*设备编号唯一标识*/
+}
+>>>>>>> 7d5589a2bc1ca06c570d39bf6c057c1a6ce15959
 
 //指令消息结构
 type OrdersQueue struct {
@@ -32,3 +41,12 @@ type OrdersQueue struct {
 	CreateTime   string
 	TargetID     string
 }
+<<<<<<< HEAD
+=======
+
+//全局连接对象集
+var G_epMap map[string]EndPointer
+
+//消息
+var G_cOrders chan OrdersQueue
+>>>>>>> 7d5589a2bc1ca06c570d39bf6c057c1a6ce15959
