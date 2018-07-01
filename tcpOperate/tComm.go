@@ -1,6 +1,9 @@
 package tcpOperate
 
-import "net"
+import (
+	"net"
+	"sync"
+)
 
 const (
 	c_Msg_Err_SendData            = "发送数据错误！"

@@ -17,6 +17,10 @@ func GetTimeStamp() string {
 	return string(time.Now().Unix())
 }
 
+func GetRealIAAddr(ip string) string {
+	return strings.Split(ip, ":")[0]
+}
+
 // 获取当前时间
 func GetCurrentTime() string {
 	strTime := time.Now().Format("2006-01-02 15:04:05") //后面的参数是固定的 否则将无法正常输出

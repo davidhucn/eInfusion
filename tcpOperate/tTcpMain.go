@@ -10,7 +10,6 @@ import (
 	"net"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -35,22 +34,27 @@ func initClisConnMap() {
 // 连接断开
 func lostConn(conn *net.TCPConn) {
 	//连接断开这个函数被调用
-	addr := conn.RemoteAddr().String()
-	ip := strings.Split(addr, ":")[0]
-
+	ip := comm.GetRealIAAddr(conn.RemoteAddr())
 	delClisConn(ip) // 删除关闭的连接对应的clisMap项
 	//TODO:	记录日志
 	//	doLog("connectionLost:", addr)
 }
 
 //   发送数据
-func sendData(conn *net.TCPConn, data []byte) (n int, err error) {
+func SendData(conn *net.TCPConn, data []byte) (n int, err error) {
 	addr := conn.RemoteAddr().String()
 	n, err = conn.Write(data)
 	if err == nil {
 		//TODO:记录日志
 	}
 	return
+}
+
+//广播数据
+func broadcast(tclisMap map[string]*net.TCPConn, data []byte) {
+	for _, conn := range tclisMap {
+		sendData(conn, data)
+	}
 }
 
 //   定时处理&延时处理
@@ -77,9 +81,8 @@ func loopingCall(conn *net.TCPConn) {
 //连接初始处理(ed)
 func initConn(conn *net.TCPConn) {
 	//初始化连接这个函数被调用
-	addr := conn.RemoteAddr().String()
-	ip := strings.Split(addr, ":")[0]
-	mkClisConn(ip, conn)
+
+	mkClisConn(comm.GetRealIAAddr(conn.RemoteAddr()), conn)
 	// ****定时处理(心跳等)
 	//	go loopingCall(conn)
 }
@@ -107,7 +110,7 @@ func receiveData(c *net.TCPConn) {
 		_, err = c.Read(r)
 		if !comm.CkErr("接收报文出错", err) {
 			// 处理报文数据内容
-			ep.DecodeRcvData(r, c.IPAddr)
+			ep.DecodeRcvData(r, comm.GetRealIAAddr(c.RemoteAddr()))
 		}
 	}
 }
