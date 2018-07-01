@@ -8,6 +8,7 @@ import (
 	"eInfusion/logs"
 	ep "eInfusion/protocol"
 	"net"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -52,17 +53,6 @@ func sendData(conn *net.TCPConn, data []byte) (n int, err error) {
 	return
 }
 
-func ckError(err error, title string, exit bool) {
-	if err != nil {
-		if exit == true {
-			logs.LogMain.Critical(title, err.Error())
-			os.Exit(1)
-		} else {
-			logs.LogMain.Error(title, err.Error())
-		}
-	}
-}
-
 //   定时处理&延时处理
 func loopingCall(conn *net.TCPConn) {
 	pingTicker := time.NewTicker(30 * time.Second) // 定时
@@ -90,20 +80,18 @@ func initConn(conn *net.TCPConn) {
 	addr := conn.RemoteAddr().String()
 	ip := strings.Split(addr, ":")[0]
 	mkClisConn(ip, conn)
-
-	//	doLog("connectionMade:", addr)
-
 	// ****定时处理(心跳等)
 	//	go loopingCall(conn)
 }
 
 //echo server Goroutine
 func receiveData(c *net.TCPConn) {
-	defer c.Conn.Close()
+	defer c.Close()
 	for {
+		setReadTimeout(c, 5*time.Minute)
 		//	指定接收数据包头的帧长
 		recDataHeader := make([]byte, ep.G_TsCmd.HeaderLength)
-		_, err := c.Conn.Read(recDataHeader)
+		_, err := c.Read(recDataHeader)
 		if err != nil {
 			break
 		}
@@ -116,7 +104,7 @@ func receiveData(c *net.TCPConn) {
 		}
 		// 如果包头接收正确
 		r := make([]byte, intPckContentLength)
-		_, err = c.Conn.Read(r)
+		_, err = c.Read(r)
 		if !comm.CkErr("接收报文出错", err) {
 			// 处理报文数据内容
 			ep.DecodeRcvData(r, c.IPAddr)
@@ -128,10 +116,15 @@ func receiveData(c *net.TCPConn) {
 func StartTcpServer(port int) {
 	host := ":" + strconv.Itoa(port)
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", host)
-	ckError(err, "TCP资源错误", true)
+	//FIXME:	ckError(err, "TCP资源错误", true)
+	if comm.CkErr("TCP资源错误", err) {
+		os.Exit(1)
+	}
 	listener, err := net.ListenTCP("tcp", tcpAddr)
 	defer listener.Close()
-	ckError(err, "TCP监听错误", true)
+	if comm.CkErr("TCP资源错误", err) {
+		os.Exit(1)
+	}
 	logs.LogMain.Info(c_Msg_Info_ServerStart + "（" + comm.GetCurrentDate() + "）")
 	comm.SepLi(60)
 	comm.Msg("TCP Server Info:" + tcpAddr.IP.String() + host)
@@ -143,8 +136,8 @@ func StartTcpServer(port int) {
 		go func() {
 			for cs := range connStream {
 				initConn(cs)
-				//TODO:【优先】接收数据
-
+				//	接收数据
+				receiveData(cs)
 				lostConn(cs)
 			}
 		}()

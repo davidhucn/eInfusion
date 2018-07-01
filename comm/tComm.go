@@ -51,9 +51,9 @@ func GetVarType(ref_var interface{}) string {
 
 //处理错误
 //如果有错误，返回true,无错则返回false
-func CkErr(ref_Msg string, ref_err error) bool {
+func CkErr(ref_MsgTitle string, ref_err error) bool {
 	if ref_err != nil {
-		logs.LogMain.Error(ref_Msg, ref_err)
+		logs.LogMain.Error(ref_MsgTitle, ref_err)
 		return true
 	}
 	return false
