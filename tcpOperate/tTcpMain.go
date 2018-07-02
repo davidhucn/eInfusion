@@ -34,17 +34,17 @@ func initClisConnMap() {
 // 连接断开
 func lostConn(conn *net.TCPConn) {
 	//连接断开这个函数被调用
-	ip := comm.GetRealIAAddr(conn.RemoteAddr().String())
+	ip := comm.GetRealIPAddr(conn.RemoteAddr().String())
 	delClisConn(ip) // 删除关闭的连接对应的clisMap项
-	logs.LogMain.Info(ip, "下线")
+	logs.LogMain.Info("IP:", ip, "下线")
 }
 
 //   发送数据
 func SendData(conn *net.TCPConn, data []byte) (n int, err error) {
-	ip := comm.GetRealIAAddr(conn.RemoteAddr().String())
+	ip := comm.GetRealIPAddr(conn.RemoteAddr().String())
+	//FIXME:未考虑网络延迟、断网问题
 	n, err = conn.Write(data)
 	if err == nil {
-		//TODO:记录日志
 		logs.LogMain.Info("=>"+ip, "完成数据发送")
 	}
 	return
@@ -81,9 +81,8 @@ func Broadcast(tclisMap map[string]*net.TCPConn, data []byte) {
 //连接初始处理(ed)
 func initConn(conn *net.TCPConn) {
 	//初始化连接这个函数被调用
-
-	mkClisConn(comm.GetRealIAAddr(conn.RemoteAddr().String()), conn)
-	logs.LogMain.Info("IP:", comm.GetRealIAAddr(conn.RemoteAddr().String()), "上线")
+	mkClisConn(comm.GetRealIPAddr(conn.RemoteAddr().String()), conn)
+	logs.LogMain.Info("IP:", comm.GetRealIPAddr(conn.RemoteAddr().String()), "上线")
 	// ****定时处理(心跳等)
 	//	go loopingCall(conn)
 }
@@ -104,14 +103,16 @@ func receiveData(c *net.TCPConn) {
 		// 判断包头是否正确，如果正确，获取长度
 		if !ep.DecodeHeader(recDataHeader, &intPckContentLength) {
 			comm.Msg("调试信息：数据包头不正确")
-			continue
+			//	如果包头不正确，断开连接
+			break
+			//	continue
 		}
 		// 如果包头接收正确
 		r := make([]byte, intPckContentLength)
 		_, err = c.Read(r)
 		if !comm.CkErr("接收报文出错", err) {
 			// 处理报文数据内容
-			ep.DecodeRcvData(r, comm.GetRealIAAddr(c.RemoteAddr().String()))
+			ep.DecodeRcvData(r, comm.GetRealIPAddr(c.RemoteAddr().String()))
 		}
 	}
 }
@@ -120,7 +121,6 @@ func receiveData(c *net.TCPConn) {
 func StartTcpServer(port int) {
 	host := ":" + strconv.Itoa(port)
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", host)
-
 	if comm.CkErr("TCP资源错误", err) {
 		os.Exit(1)
 	}
@@ -129,15 +129,12 @@ func StartTcpServer(port int) {
 	if comm.CkErr("TCP资源错误", err) {
 		os.Exit(1)
 	}
-	logs.LogMain.Info(c_Msg_Info_ServerStart + "（" + comm.GetCurrentDate() + "）")
 	comm.SepLi(60, "")
-	comm.Msg("TCP Server Info:" + host)
+	logs.LogMain.Info(c_Msg_Info_ServerStart + "（" + comm.GetCurrentDate() + "）")
+	comm.Msg("TCP Server Port", host)
 	comm.SepLi(60, "")
 	connStream := make(chan *net.TCPConn)
 	initClisConnMap()
-	//	异步统计在线数量/////////
-	go GetOnlineAmount()
-	////////////////////////////
 	//打开N个Goroutine等待连接，Epoll模式
 	for i := 0; i < c_MaxConnectionAmount; i++ {
 		go func() {
@@ -163,13 +160,4 @@ func StartTcpServer(port int) {
 //   设置读数据超时
 func setReadTimeout(conn *net.TCPConn, t time.Duration) {
 	conn.SetReadDeadline(time.Now().Add(t))
-}
-
-//实时显示在线数量
-func GetOnlineAmount() {
-	for _ = range time.Tick(1 * time.Minute) {
-		comm.SepLi(16, "^")
-		comm.Msg("当前在线数量:", len(clisConnMap))
-		comm.SepLi(16, "^")
-	}
 }

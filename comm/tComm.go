@@ -17,7 +17,7 @@ func GetTimeStamp() string {
 	return string(time.Now().Unix())
 }
 
-func GetRealIAAddr(ip string) string {
+func GetRealIPAddr(ip string) string {
 	return strings.Split(ip, ":")[0]
 }
 
@@ -91,9 +91,10 @@ func ConvertOxBytesToStr(ref_content []byte) string {
 	var strRet string
 	for i := 0; i < len(ref_content); i++ {
 		strCon := ConvertBasNumberToStr(16, ref_content[i])
-		//		if len(strCon) == 1 {
-		//			strCon = "0" + strCon
-		//		}
+		//	FIXME:win7测试OK,确定linux/macos是否可台
+		if len(strCon) == 1 {
+			strCon = "0" + strCon
+		}
 		strRet += strCon
 	}
 	return strRet
@@ -105,7 +106,6 @@ func ConvertBasStrToInt(ref_intBase int, ref_content string) int {
 	if err != nil {
 		intRetValue = 0
 	}
-
 	return int(intRetValue)
 }
 
