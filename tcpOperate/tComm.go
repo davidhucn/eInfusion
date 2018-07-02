@@ -13,7 +13,7 @@ const (
 )
 
 //tcp最大连接数
-const c_MaxConnectionAmount = 30
+const c_MaxConnectionAmount = 3
 
 //定义锁
 var (

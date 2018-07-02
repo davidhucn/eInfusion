@@ -34,55 +34,56 @@ func initClisConnMap() {
 // 连接断开
 func lostConn(conn *net.TCPConn) {
 	//连接断开这个函数被调用
-	ip := comm.GetRealIAAddr(conn.RemoteAddr())
+	ip := comm.GetRealIAAddr(conn.RemoteAddr().String())
 	delClisConn(ip) // 删除关闭的连接对应的clisMap项
-	//TODO:	记录日志
-	//	doLog("connectionLost:", addr)
+	logs.LogMain.Info(ip, "下线")
 }
 
 //   发送数据
 func SendData(conn *net.TCPConn, data []byte) (n int, err error) {
-	addr := conn.RemoteAddr().String()
+	ip := comm.GetRealIAAddr(conn.RemoteAddr().String())
 	n, err = conn.Write(data)
 	if err == nil {
 		//TODO:记录日志
+		logs.LogMain.Info("=>"+ip, "完成数据发送")
 	}
 	return
 }
 
 //广播数据
-func broadcast(tclisMap map[string]*net.TCPConn, data []byte) {
+func Broadcast(tclisMap map[string]*net.TCPConn, data []byte) {
 	for _, conn := range tclisMap {
-		sendData(conn, data)
+		SendData(conn, data)
 	}
 }
 
 //   定时处理&延时处理
-func loopingCall(conn *net.TCPConn) {
-	pingTicker := time.NewTicker(30 * time.Second) // 定时
-	testAfter := time.After(5 * time.Second)       // 延时
+//func loopingCall(conn *net.TCPConn) {
+//	pingTicker := time.NewTicker(30 * time.Second) // 定时
+//	testAfter := time.After(5 * time.Second)       // 延时
 
-	for {
-		select {
-		case <-pingTicker.C:
-			//发送心跳
-			_, err := sendData(conn, []byte("PING"))
-			if err != nil {
-				pingTicker.Stop()
-				return
-			}
-		case <-testAfter:
-			//	doLog("testAfter:")
-			//TODO:日志记录
-		}
-	}
-}
+//	for {
+//		select {
+//		case <-pingTicker.C:
+//			//发送心跳
+//			_, err := SendData(conn, []byte("PING"))
+//			if err != nil {
+//				pingTicker.Stop()
+//				return
+//			}
+//		case <-testAfter:
+//			//	doLog("testAfter:")
+//			//TODO:日志记录
+//		}
+//	}
+//}
 
 //连接初始处理(ed)
 func initConn(conn *net.TCPConn) {
 	//初始化连接这个函数被调用
 
-	mkClisConn(comm.GetRealIAAddr(conn.RemoteAddr()), conn)
+	mkClisConn(comm.GetRealIAAddr(conn.RemoteAddr().String()), conn)
+	logs.LogMain.Info("IP:", comm.GetRealIAAddr(conn.RemoteAddr().String()), "上线")
 	// ****定时处理(心跳等)
 	//	go loopingCall(conn)
 }
@@ -110,7 +111,7 @@ func receiveData(c *net.TCPConn) {
 		_, err = c.Read(r)
 		if !comm.CkErr("接收报文出错", err) {
 			// 处理报文数据内容
-			ep.DecodeRcvData(r, comm.GetRealIAAddr(c.RemoteAddr()))
+			ep.DecodeRcvData(r, comm.GetRealIAAddr(c.RemoteAddr().String()))
 		}
 	}
 }
@@ -119,7 +120,7 @@ func receiveData(c *net.TCPConn) {
 func StartTcpServer(port int) {
 	host := ":" + strconv.Itoa(port)
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", host)
-	//FIXME:	ckError(err, "TCP资源错误", true)
+
 	if comm.CkErr("TCP资源错误", err) {
 		os.Exit(1)
 	}
@@ -129,11 +130,14 @@ func StartTcpServer(port int) {
 		os.Exit(1)
 	}
 	logs.LogMain.Info(c_Msg_Info_ServerStart + "（" + comm.GetCurrentDate() + "）")
-	comm.SepLi(60)
-	comm.Msg("TCP Server Info:" + tcpAddr.IP.String() + host)
-
+	comm.SepLi(60, "")
+	comm.Msg("TCP Server Info:" + host)
+	comm.SepLi(60, "")
 	connStream := make(chan *net.TCPConn)
 	initClisConnMap()
+	//	异步统计在线数量/////////
+	go GetOnlineAmount()
+	////////////////////////////
 	//打开N个Goroutine等待连接，Epoll模式
 	for i := 0; i < c_MaxConnectionAmount; i++ {
 		go func() {
@@ -159,4 +163,13 @@ func StartTcpServer(port int) {
 //   设置读数据超时
 func setReadTimeout(conn *net.TCPConn, t time.Duration) {
 	conn.SetReadDeadline(time.Now().Add(t))
+}
+
+//实时显示在线数量
+func GetOnlineAmount() {
+	for _ = range time.Tick(1 * time.Minute) {
+		comm.SepLi(16, "^")
+		comm.Msg("当前在线数量:", len(clisConnMap))
+		comm.SepLi(16, "^")
+	}
 }
