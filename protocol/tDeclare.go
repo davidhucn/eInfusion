@@ -1,19 +1,21 @@
 package protocol
 
 type sTransfusionCode struct {
-	Header           uint8
-	HeaderLength     int
-	PackLengthCursor uint8
-	RcvState         uint8
-	DetectState      uint8
-	AddDetectState   uint8
-	DelDetectState   uint8
-	GetRcv           uint8
-	GetDetect        uint8
-	AddDetect        uint8
-	DelDetect        uint8
-	SetRcvNetCfg     uint8
-	SetReconnTime    uint8
+	Header             uint8
+	HeaderLength       int
+	PackLengthCursor   uint8
+	RcvState           uint8
+	DetectState        uint8
+	AddDetectState     uint8
+	DelDetectState     uint8
+	SetRcvNetCfgState  uint8
+	SetReconnTimeState uint8
+	GetRcv             uint8
+	GetDetect          uint8
+	AddDetect          uint8
+	DelDetect          uint8
+	SetRcvNetCfg       uint8
+	SetReconnTime      uint8
 }
 
 //全局输液报警tcp编码
@@ -31,6 +33,9 @@ func init() {
 	G_TsCmd.DetectState = 0x01
 	G_TsCmd.AddDetectState = 0x02
 	G_TsCmd.DelDetectState = 0x03
+	G_TsCmd.SetRcvNetCfgState = 0x04
+	G_TsCmd.SetReconnTimeState = 0x05
+	///////////////////////////////////
 	G_TsCmd.GetRcv = 0x0a
 	G_TsCmd.GetDetect = 0x0b
 	//	添加检测器到接受器

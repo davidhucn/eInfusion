@@ -87,11 +87,11 @@ func ConvertBasNumberToStr(ref_intBase int, ref_varContent interface{}) string {
 }
 
 //转换16进制Bytes为string
+//转换过程中可能会丢失0，因此需要补0
 func ConvertOxBytesToStr(ref_content []byte) string {
 	var strRet string
 	for i := 0; i < len(ref_content); i++ {
 		strCon := ConvertBasNumberToStr(16, ref_content[i])
-		//	FIXME:win7测试OK,确定linux/macos是否可台
 		if len(strCon) == 1 {
 			strCon = "0" + strCon
 		}

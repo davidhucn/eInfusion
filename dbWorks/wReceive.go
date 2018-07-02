@@ -172,7 +172,6 @@ func ReceiveDetectStat(packData []byte, ipAddr string) bool {
 				return false
 			}
 		}
-		//////////////////////////////////////////////////////////////////////////////
 	}
 	return true
 }
