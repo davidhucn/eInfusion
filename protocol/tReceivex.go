@@ -45,6 +45,9 @@ func DecodeRcvData(ref_packData []byte, ref_ipAddr string) {
 		ReceiveDeleteDetect(ref_packData[1:], ref_ipAddr)
 	case G_TsCmd.AddDetectState:
 		ReceiveAddDetect(ref_packData[1:], ref_ipAddr)
+	case G_TsCmd.SetRcvNetCfgState:
+		ReceiveSetRcvNetCfgStat(ref_packData[1:], ref_ipAddr)
+	case G_TsCmd.SetReconnTimeState:
 	default:
 		comm.Msg("调试信息，无效数据...")
 		//		return

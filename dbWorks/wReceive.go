@@ -315,3 +315,45 @@ func ReceiveAddDetect(packData []byte, ipAddr string) bool {
 	}
 	return true
 }
+
+//获取设置网络配置操作结果信息
+func ReceiveSetRcvNetCfgStat(packData []byte, ipAddr string) bool {
+	var strSql string
+	var err error
+	//接收器ID
+	strRcvID := ConvertOxBytesToStr(packData[:4])
+	//ServerIP地址
+	var strServerIP, strServerPort string
+	for i := 4; i <= 7; i++ {
+		strServerIP += ConvertBasNumberToStr(10, packData[i])
+		if i < 7 {
+			strServerIP += "."
+		}
+	}
+	//	ServerPort
+	//	FIXME:端口写入数据库不对，数据进制转换问题
+	strServerPort = ConvertBasNumberToStr(10, packData[8:9])
+	//查询用 接收器ID map
+	var mRcvId *map[string]string
+	strSql = "SELECT receiver_id FROM t_receiver_dict WHERE receiver_id=?"
+	mRcvId, err = QueryOneRow(strSql, strRcvID)
+	if err != nil {
+		logs.LogMain.Error(MsgDB.InsertDataErr, err)
+		return false
+	}
+	//存在指定的接收器
+	if (*mRcvId)["receiver_id"] != "" {
+		//如果没有插入数据
+		strSql = "UPDATE t_receiver_dict SET last_time=?,ip_addr=?,server_ip=?,server_port=? WHERE receiver_id=?"
+		_, err = ExecSQL(strSql, GetCurrentTime(), ipAddr, strServerIP, strServerPort, strRcvID)
+		if err != nil {
+			logs.LogMain.Error(MsgDB.UpdateDataErr, err)
+			return false
+		}
+	} else {
+		//	如果不存在指定的接收器，报错误
+		logs.LogMain.Error("更新接收器网络配置出错，不存在指定接收器:", strRcvID)
+		return false
+	}
+	return true
+}

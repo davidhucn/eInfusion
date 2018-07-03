@@ -105,14 +105,23 @@ func receiveData(c *net.TCPConn) {
 			comm.Msg("调试信息：数据包头不正确")
 			//	如果包头不正确，断开连接
 			break
-			//	continue
+			//	continue 退出本次
 		}
 		// 如果包头接收正确
 		r := make([]byte, intPckContentLength)
-		_, err = c.Read(r)
-		if !comm.CkErr("接收报文出错", err) {
-			// 处理报文数据内容
-			ep.DecodeRcvData(r, comm.GetRealIPAddr(c.RemoteAddr().String()))
+		n, er := c.Read(r)
+		if !comm.CkErr("接收报文出错", er) {
+			//	实际长度和包头内规定长度不一致
+			if n == intPckContentLength {
+				// 处理报文数据内容
+				ep.DecodeRcvData(r, comm.GetRealIPAddr(c.RemoteAddr().String()))
+			} else {
+				continue /*如果长度不一致，退出*/
+				//	break /*断开连接*/
+			}
+		} else {
+			continue /*如果接收出错，退出*/
+			//	break /*断开连接*/
 		}
 	}
 }
