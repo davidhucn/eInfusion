@@ -89,7 +89,7 @@ func ReceiveDetectStat(packData []byte, ipAddr string) bool {
 			var di Detector
 			di.RcvID = strRcvID
 			di.ID = ConvertOxBytesToStr(packData[begin:end])
-			di.Stat = ConvertBasNumberToStr(10, packData[end])
+			di.Stat = ConvertBasNumberToStr(10, packData[end]) /*FIXME:接收器状态位，须针对位处理*/
 			di.Disable = false
 			begin = end
 			//	判断该检测器是否为device_dict表内已注册设备，如果不是,则不记录
@@ -323,7 +323,7 @@ func ReceiveSetRcvNetCfgStat(packData []byte, ipAddr string) bool {
 	//接收器ID
 	strRcvID := ConvertOxBytesToStr(packData[:4])
 	//ServerIP地址
-	var strServerIP, strServerPort string
+	var strServerIP string
 	for i := 4; i <= 7; i++ {
 		strServerIP += ConvertBasNumberToStr(10, packData[i])
 		if i < 7 {
@@ -331,8 +331,7 @@ func ReceiveSetRcvNetCfgStat(packData []byte, ipAddr string) bool {
 		}
 	}
 	//	ServerPort
-	//	FIXME:端口写入数据库不对，数据进制转换问题
-	strServerPort = ConvertBasNumberToStr(10, packData[8:9])
+	intServerPort := ConvertBasStrToInt(16, ConvertOxBytesToStr(packData[8:10]))
 	//查询用 接收器ID map
 	var mRcvId *map[string]string
 	strSql = "SELECT receiver_id FROM t_receiver_dict WHERE receiver_id=?"
@@ -343,9 +342,9 @@ func ReceiveSetRcvNetCfgStat(packData []byte, ipAddr string) bool {
 	}
 	//存在指定的接收器
 	if (*mRcvId)["receiver_id"] != "" {
-		//如果没有插入数据
+		//更新IP地址和端口设置
 		strSql = "UPDATE t_receiver_dict SET last_time=?,ip_addr=?,server_ip=?,server_port=? WHERE receiver_id=?"
-		_, err = ExecSQL(strSql, GetCurrentTime(), ipAddr, strServerIP, strServerPort, strRcvID)
+		_, err = ExecSQL(strSql, GetCurrentTime(), ipAddr, strServerIP, intServerPort, strRcvID)
 		if err != nil {
 			logs.LogMain.Error(MsgDB.UpdateDataErr, err)
 			return false
@@ -353,6 +352,38 @@ func ReceiveSetRcvNetCfgStat(packData []byte, ipAddr string) bool {
 	} else {
 		//	如果不存在指定的接收器，报错误
 		logs.LogMain.Error("更新接收器网络配置出错，不存在指定接收器:", strRcvID)
+		return false
+	}
+	return true
+}
+
+//获取设置重新连接时间
+func ReceiveSetReconnTimeStat(packData []byte, ipAddr string) bool {
+	var strSql string
+	var err error
+	//接收器ID
+	strRcvID := ConvertOxBytesToStr(packData[:4])
+	intReconnTime := ConvertBasStrToInt(16, ConvertOxBytesToStr(packData[4:6]))
+	//查询用 接收器ID map
+	var mRcvId *map[string]string
+	strSql = "SELECT receiver_id FROM t_receiver_dict WHERE receiver_id=?"
+	mRcvId, err = QueryOneRow(strSql, strRcvID)
+	if err != nil {
+		logs.LogMain.Error(MsgDB.InsertDataErr, err)
+		return false
+	}
+	//存在指定的接收器
+	if (*mRcvId)["receiver_id"] != "" {
+		//更新重新连接时间设置
+		strSql = "UPDATE t_receiver_dict SET last_time=?,ip_addr=?,reconn_time=? WHERE receiver_id=?"
+		_, err = ExecSQL(strSql, GetCurrentTime(), ipAddr, intReconnTime, strRcvID)
+		if err != nil {
+			logs.LogMain.Error(MsgDB.UpdateDataErr, err)
+			return false
+		}
+	} else {
+		//	如果不存在指定的接收器，报错误
+		logs.LogMain.Error("更新接收器重连接配置出错，不存在指定接收器:", strRcvID)
 		return false
 	}
 	return true

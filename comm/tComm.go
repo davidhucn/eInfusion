@@ -100,7 +100,7 @@ func ConvertOxBytesToStr(ref_content []byte) string {
 	return strRet
 }
 
-//	根据指定进制要求，把字符串转换成数字int型
+//	把指定进制的字符转换成为十进制数值（int型）
 func ConvertBasStrToInt(ref_intBase int, ref_content string) int {
 	intRetValue, err := strconv.ParseInt(ref_content, ref_intBase, 64)
 	if err != nil {

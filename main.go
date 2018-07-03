@@ -18,5 +18,7 @@ func init() {
 
 func main() {
 	//	go eh.StartHttpServer()
-	et.StartTcpServer(7778)
+	//	et.StartTcpServer(7778)
+	et.Testcmd()
+
 }

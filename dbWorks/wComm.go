@@ -9,7 +9,7 @@ type Detector struct {
 	QRCode  string
 	ID      string
 	RcvID   string
-	Stat    string //十进制表示
+	Stat    string /*十六进制，每位都有含义*/
 	Disable bool
 }
 

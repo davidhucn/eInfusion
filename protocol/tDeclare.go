@@ -28,17 +28,16 @@ func init() {
 	G_TsCmd.HeaderLength = 2
 	//	包数据中定义长度的帧(10进制）
 	G_TsCmd.PackLengthCursor = 1
-	//	接收接收器状态(16进制)
+	///////////receive state//////////////
 	G_TsCmd.RcvState = 0x00
 	G_TsCmd.DetectState = 0x01
 	G_TsCmd.AddDetectState = 0x02
 	G_TsCmd.DelDetectState = 0x03
 	G_TsCmd.SetRcvNetCfgState = 0x04
 	G_TsCmd.SetReconnTimeState = 0x05
-	///////////////////////////////////
+	////////////action cmd///////////////
 	G_TsCmd.GetRcv = 0x0a
 	G_TsCmd.GetDetect = 0x0b
-	//	添加检测器到接受器
 	G_TsCmd.AddDetect = 0x0c
 	G_TsCmd.DelDetect = 0x0d
 	//	设置接收器网络配置（IP和port) (16进制)

@@ -31,14 +31,6 @@ func initClisConnMap() {
 	clisConnMap = make(map[string]*net.TCPConn)
 }
 
-// 连接断开
-func lostConn(conn *net.TCPConn) {
-	//连接断开这个函数被调用
-	ip := comm.GetRealIPAddr(conn.RemoteAddr().String())
-	delClisConn(ip) // 删除关闭的连接对应的clisMap项
-	logs.LogMain.Info("IP:", ip, "下线")
-}
-
 //   发送数据
 func SendData(conn *net.TCPConn, data []byte) (n int, err error) {
 	ip := comm.GetRealIPAddr(conn.RemoteAddr().String())
@@ -55,6 +47,11 @@ func Broadcast(tclisMap map[string]*net.TCPConn, data []byte) {
 	for _, conn := range tclisMap {
 		SendData(conn, data)
 	}
+}
+
+//模拟生成命令
+func Testcmd() {
+	comm.Msg("test cmd:", ep.CmdGetRcvStatus([]byte("A0000000")))
 }
 
 //   定时处理&延时处理
@@ -79,12 +76,24 @@ func Broadcast(tclisMap map[string]*net.TCPConn, data []byte) {
 //}
 
 //连接初始处理(ed)
-func initConn(conn *net.TCPConn) {
+func madeConn(conn *net.TCPConn) {
 	//初始化连接这个函数被调用
+	comm.SepLi(20, "!")
 	mkClisConn(comm.GetRealIPAddr(conn.RemoteAddr().String()), conn)
 	logs.LogMain.Info("IP:", comm.GetRealIPAddr(conn.RemoteAddr().String()), "上线")
+	comm.SepLi(20, "!")
 	// ****定时处理(心跳等)
 	//	go loopingCall(conn)
+}
+
+// 连接断开
+func lostConn(conn *net.TCPConn) {
+	//连接断开这个函数被调用
+	comm.SepLi(20, "*")
+	ip := comm.GetRealIPAddr(conn.RemoteAddr().String())
+	delClisConn(ip) // 删除关闭的连接对应的clisMap项
+	logs.LogMain.Info("IP:", ip, "下线")
+	comm.SepLi(20, "*")
 }
 
 //echo server Goroutine
@@ -102,7 +111,7 @@ func receiveData(c *net.TCPConn) {
 		var intPckContentLength int
 		// 判断包头是否正确，如果正确，获取长度
 		if !ep.DecodeHeader(recDataHeader, &intPckContentLength) {
-			comm.Msg("调试信息：数据包头不正确")
+			comm.Msg("调试信息：数据包头不正确,来自IP地址：", comm.GetRealIPAddr(c.RemoteAddr().String()))
 			//	如果包头不正确，断开连接
 			break
 			//	continue 退出本次
@@ -116,8 +125,10 @@ func receiveData(c *net.TCPConn) {
 				// 处理报文数据内容
 				ep.DecodeRcvData(r, comm.GetRealIPAddr(c.RemoteAddr().String()))
 			} else {
-				continue /*如果长度不一致，退出*/
-				//	break /*断开连接*/
+				/*如果长度不一致，退出*/
+				//	continue
+				/*断开连接*/
+				break
 			}
 		} else {
 			continue /*如果接收出错，退出*/
@@ -140,7 +151,7 @@ func StartTcpServer(port int) {
 	}
 	comm.SepLi(60, "")
 	logs.LogMain.Info(c_Msg_Info_ServerStart + "（" + comm.GetCurrentDate() + "）")
-	comm.Msg("TCP Server Port", host)
+	comm.Msg("Transfusion System Server Port", host)
 	comm.SepLi(60, "")
 	connStream := make(chan *net.TCPConn)
 	initClisConnMap()
@@ -148,14 +159,13 @@ func StartTcpServer(port int) {
 	for i := 0; i < c_MaxConnectionAmount; i++ {
 		go func() {
 			for cs := range connStream {
-				initConn(cs)
+				madeConn(cs)
 				//	接收数据
 				receiveData(cs)
 				lostConn(cs)
 			}
 		}()
 	}
-
 	for {
 		lc, err := listener.AcceptTCP()
 		if err != nil {

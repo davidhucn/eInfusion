@@ -20,14 +20,14 @@ func CmdGetRcvStatus(ref_RcvID []byte) []byte {
 
 // 对检测器进行操作（检测、册除、新增）
 // 一个设备ID 占4个byte
-func CmdOperateDetect(orderType uint8, ref_RcvID []byte, detectAmount int, ref_DetectID []byte) []byte {
+func CmdOperateDetect(orderType byte, ref_RcvID []byte, detectAmount int, ref_DetectID []byte) []byte {
 	var intOrderDataLength = 7
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)
 	sendOrders[0] = G_TsCmd.Header
 	sendOrders[1] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, intOrderDataLength))
 	//	获取指令类型
-	sendOrders[2] = byte(orderType)
+	sendOrders[2] = orderType
 	//	获取接收器ID
 	for recId := 0; recId < len(ref_RcvID); recId++ {
 		sendOrders[recId+3] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, ref_RcvID[recId]))
