@@ -49,11 +49,6 @@ func Broadcast(tclisMap map[string]*net.TCPConn, data []byte) {
 	}
 }
 
-//模拟生成命令
-func Testcmd() {
-	comm.Msg("test cmd:", ep.CmdGetRcvStatus([]byte("A0000000")))
-}
-
 //   定时处理&延时处理
 //func loopingCall(conn *net.TCPConn) {
 //	pingTicker := time.NewTicker(30 * time.Second) // 定时
@@ -78,10 +73,10 @@ func Testcmd() {
 //连接初始处理(ed)
 func madeConn(conn *net.TCPConn) {
 	//初始化连接这个函数被调用
-	comm.SepLi(20, "!")
+
 	mkClisConn(comm.GetRealIPAddr(conn.RemoteAddr().String()), conn)
 	logs.LogMain.Info("IP:", comm.GetRealIPAddr(conn.RemoteAddr().String()), "上线")
-	comm.SepLi(20, "!")
+	comm.SepLi(20, "-")
 	// ****定时处理(心跳等)
 	//	go loopingCall(conn)
 }
@@ -89,7 +84,7 @@ func madeConn(conn *net.TCPConn) {
 // 连接断开
 func lostConn(conn *net.TCPConn) {
 	//连接断开这个函数被调用
-	comm.SepLi(20, "*")
+
 	ip := comm.GetRealIPAddr(conn.RemoteAddr().String())
 	delClisConn(ip) // 删除关闭的连接对应的clisMap项
 	logs.LogMain.Info("IP:", ip, "下线")
@@ -98,6 +93,7 @@ func lostConn(conn *net.TCPConn) {
 
 //echo server Goroutine
 func receiveData(c *net.TCPConn) {
+	//	SendData(c, ep.CmdGetRcvStatus(comm.ConvertPerTwoOxCharOfStrToBytes("A0000000")))
 	defer c.Close()
 	for {
 		setReadTimeout(c, 5*time.Minute)
@@ -111,7 +107,7 @@ func receiveData(c *net.TCPConn) {
 		var intPckContentLength int
 		// 判断包头是否正确，如果正确，获取长度
 		if !ep.DecodeHeader(recDataHeader, &intPckContentLength) {
-			comm.Msg("调试信息：数据包头不正确,来自IP地址：", comm.GetRealIPAddr(c.RemoteAddr().String()))
+			logs.LogMain.Info(comm.GetRealIPAddr(c.RemoteAddr().String()), "的数据包头异常,强制下线!")
 			//	如果包头不正确，断开连接
 			break
 			//	continue 退出本次
