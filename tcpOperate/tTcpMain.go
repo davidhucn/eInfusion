@@ -93,7 +93,7 @@ func lostConn(conn *net.TCPConn) {
 
 //echo server Goroutine
 func receiveData(c *net.TCPConn) {
-	//	SendData(c, ep.CmdGetRcvStatus(comm.ConvertPerTwoOxCharOfStrToBytes("A0000000")))
+	SendData(c, ep.CmdGetRcvStatus(comm.ConvertPerTwoOxCharOfStrToBytes("A0000000")))
 	defer c.Close()
 	for {
 		setReadTimeout(c, 5*time.Minute)
