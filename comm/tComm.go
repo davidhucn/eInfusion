@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"eInfusion/logs"
 	"encoding/binary"
-	"encoding/hex"
+	// "encoding/hex"
 	"fmt"
 	"os"
 	"reflect"
