@@ -15,16 +15,7 @@ func init() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 }
-
-func tt(){
-
-	for i:=0;i<2;i++{
-		println(i)
-	}
-}
-
 func main() {
-	tt()
-	go eh.StartHttpServer()
+	go eh.StartHttpServer(7779)
 	et.StartTcpServer(7778)
 }

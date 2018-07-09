@@ -9,9 +9,9 @@ import (
 	//	"encoding/json"
 )
 
-func StartHttpServer() {
+func StartHttpServer(iPort int) {
 	comm.SepLi(60, "")
-	comm.Msg("start http...,Port:", c_Http_Port)
+	comm.Msg("start http...,Port:", iPort)
 	comm.SepLi(60, "")
 
 	gin.SetMode(gin.DebugMode) //全局设置环境，此为开发环境，线上环境为gin.ReleaseMode
@@ -23,7 +23,7 @@ func StartHttpServer() {
 	//	router.PUT("/simple/server/put", PutHandler)
 	//	router.DELETE("/simple/server/delete", DeleteHandler)
 
-	router.Run(":" + comm.ConvertIntToStr(c_Http_Port))
+	router.Run(":" + comm.ConvertIntToStr(iPort))
 }
 
 func PostHandler(c *gin.Context) {
