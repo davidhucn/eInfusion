@@ -93,7 +93,14 @@ func lostConn(conn *net.TCPConn) {
 
 //echo server Goroutine
 func receiveData(c *net.TCPConn) {
-	SendData(c, ep.CmdGetRcvStatus(comm.ConvertPerTwoOxCharOfStrToBytes("A0000000")))
+	// TODO:test the detect operate
+	// SendData(c, ep.CmdGetRcvStatus(comm.ConvertPerTwoOxCharOfStrToBytes("A0000000")))
+	dtID := comm.ConvertPerTwoOxCharOfStrToBytes("B0000000")
+	rvID := comm.ConvertPerTwoOxCharOfStrToBytes("A0000000")
+	orders := ep.CmdOperateDetect(ep.G_TsCmd.GetDetect, rvID, 1, dtID)
+	// // logs.LogMain.Debug(orders)
+	// comm.Msg(orders)
+	SendData(c, orders)
 	defer c.Close()
 	for {
 		setReadTimeout(c, 5*time.Minute)

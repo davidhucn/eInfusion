@@ -20,7 +20,7 @@ func CmdGetRcvStatus(ref_RcvID []byte) []byte {
 
 // 对检测器进行操作（检测、册除、新增）
 // 一个设备ID 占4个byte
-func CmdOperateDetect(orderType byte, ref_RcvID []byte, detectAmount int, ref_DetectID []byte) []byte {
+func CmdOperateDetect(orderType uint8, ref_RcvID []byte, detectAmount int, ref_DetectID []byte) []byte {
 	var intOrderDataLength = 7
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)
@@ -29,7 +29,7 @@ func CmdOperateDetect(orderType byte, ref_RcvID []byte, detectAmount int, ref_De
 	//	获取指令类型
 	sendOrders[2] = orderType
 	//	获取接收器ID
-	for recId := 0; recId < len(ref_RcvID); recId++ {
+	for recId := 0; recId < 4; recId++ {
 		sendOrders[recId+3] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, ref_RcvID[recId]))
 	}
 	// 如果与检测器相关的操作(添加、删除、检查)
@@ -38,11 +38,13 @@ func CmdOperateDetect(orderType byte, ref_RcvID []byte, detectAmount int, ref_De
 			// 检测器数量内容到slice
 			sendOrders = append(sendOrders, byte(detectAmount))
 			//	添加检测器id到slice
-			for devId := 0; devId < len(ref_DetectID); devId++ {
+			for devId := 0; devId < 4; devId++ {
 				sendOrders = append(sendOrders, ConvertBasStrToUint(16, ConvertBasNumberToStr(16, ref_DetectID[devId])))
 			}
 		}
 	}
+	// 根据长度调整第二位
+	sendOrders[1] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, len(sendOrders)))
 	return sendOrders
 }
 
