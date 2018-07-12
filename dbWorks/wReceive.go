@@ -70,6 +70,8 @@ func ReceiveRcvStat(packData []byte, ipAddr string) bool {
 
 //获取检测器信息
 func ReceiveDetectStat(packData []byte, ipAddr string) bool {
+	Msg("start receive detect status")
+	Msg(packData)
 	var dDet []Detector
 	var strSql string
 	var err error

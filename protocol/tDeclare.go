@@ -36,13 +36,13 @@ func init() {
 	G_TsCmd.SetRcvNetCfgState = 0x04
 	G_TsCmd.SetReconnTimeState = 0x05
 	////////////action cmd///////////////
-	G_TsCmd.GetRcv = 0x0a
-	G_TsCmd.GetDetect = 0x0b
-	G_TsCmd.AddDetect = 0x0c
-	G_TsCmd.DelDetect = 0x0d
+	G_TsCmd.GetRcv = 0x10
+	G_TsCmd.GetDetect = 0x11
+	G_TsCmd.AddDetect = 0x12
+	G_TsCmd.DelDetect = 0x13
 	//	设置接收器网络配置（IP和port) (16进制)
-	G_TsCmd.SetRcvNetCfg = 0x0e
+	G_TsCmd.SetRcvNetCfg = 0x14
 	//	设备接收器重连接时间
-	G_TsCmd.SetReconnTime = 0x0f
+	G_TsCmd.SetReconnTime = 0x15
 
 }

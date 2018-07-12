@@ -98,8 +98,6 @@ func receiveData(c *net.TCPConn) {
 	dtID := comm.ConvertPerTwoOxCharOfStrToBytes("B0000000")
 	rvID := comm.ConvertPerTwoOxCharOfStrToBytes("A0000000")
 	orders := ep.CmdOperateDetect(ep.G_TsCmd.GetDetect, rvID, 1, dtID)
-	// // logs.LogMain.Debug(orders)
-	// comm.Msg(orders)
 	SendData(c, orders)
 	defer c.Close()
 	for {
