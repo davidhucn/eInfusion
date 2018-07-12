@@ -345,7 +345,7 @@ func ReceiveSetRcvNetCfgStat(packData []byte, ipAddr string) bool {
 	//存在指定的接收器
 	if (*mRcvId)["receiver_id"] != "" {
 		//更新IP地址和端口设置
-		strSql = "UPDATE t_receiver_dict SET last_time=?,ip_addr=?,server_ip=?,server_port=? WHERE receiver_id=?"
+		strSql = "UPDATE t_receiver_dict SET last_time=?,ip_addr=?,target_ip=?,target_port=? WHERE receiver_id=?"
 		_, err = ExecSQL(strSql, GetCurrentTime(), ipAddr, strServerIP, intServerPort, strRcvID)
 		if err != nil {
 			logs.LogMain.Error(MsgDB.UpdateDataErr, err)
