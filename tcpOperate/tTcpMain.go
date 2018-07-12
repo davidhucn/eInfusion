@@ -93,7 +93,10 @@ func lostConn(conn *net.TCPConn) {
 
 //echo server Goroutine
 func receiveData(c *net.TCPConn) {
-	// TODO:test the detect operate
+	t := "A000"
+	d := comm.ConvertBasNumberToStr(16, comm.ConvertPerTwoOxCharOfStrToBytes(t))
+	comm.Msg(comm.ConvertBasNumberToStr(2, d[0]))
+	// TODO:测试包
 	// SendData(c, ep.CmdGetRcvStatus(comm.ConvertPerTwoOxCharOfStrToBytes("A0000000")))
 	dtID := comm.ConvertPerTwoOxCharOfStrToBytes("B0000000")
 	rvID := comm.ConvertPerTwoOxCharOfStrToBytes("A0000000")
