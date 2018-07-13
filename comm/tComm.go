@@ -145,6 +145,18 @@ func GetPartOfStrToStr(ref_strContent string, ref_intBegin int, ref_intEnd int) 
 	return strR
 }
 
+// 转换byte内的数据为2进制的byte切片
+func ConvertByteToBinaryOfByte(rByte byte) []byte {
+	var bT []byte
+	s := ConvertBasNumberToStr(2, rByte)
+	for i := 0; i < len(s); i++ {
+		t, _ := strconv.ParseUint(string(s[i]), 10, 64)
+		tt := uint8(t)
+		bT = append(bT, tt)
+	}
+	return bT
+}
+
 //把字符串内容按每两字符对应一个byte组成新的bytes，返回[]byte
 func ConvertPerTwoOxCharOfStrToBytes(ref_s string) []byte {
 	var bT []byte

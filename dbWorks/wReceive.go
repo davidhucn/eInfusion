@@ -2,8 +2,7 @@
 package dbWorks
 
 import (
-	"eInfusion/comm"
-	. "eInfusion/comm"
+	cm "eInfusion/comm"
 	. "eInfusion/dbOperate"
 	"eInfusion/logs"
 )
@@ -14,7 +13,7 @@ func InitDetInfoToDB(amount int) bool {
 	var dd []Detector
 	for i := 0; i < amount; i++ {
 		var di Detector
-		di.ID = "B000000" + ConvertIntToStr(i)
+		di.ID = "B000000" + cm.ConvertIntToStr(i)
 		di.Disable = false
 		// di.Stat = ConvertIntToStr(2)
 		di.QRCode = CreateQRID(di.ID)
@@ -23,7 +22,7 @@ func InitDetInfoToDB(amount int) bool {
 	for i := 0; i < amount; i++ {
 		strSQL = "Insert Into t_device_dict(detector_id,qcode,disable) Values(?,?,?)"
 		_, err := ExecSQL(strSQL, dd[i].ID, dd[i].QRCode, dd[i].Disable)
-		_ = comm.CkErr(MsgDB.InsertDataErr, err)
+		_ = cm.CkErr(MsgDB.InsertDataErr, err)
 	}
 	return true
 }
@@ -35,9 +34,9 @@ func ReceiveRcvStat(packData []byte, ipAddr string) bool {
 	//数据包内数量位置
 	intAmountCursor := 4
 	//接收器ID
-	strRcvID := comm.ConvertOxBytesToStr(packData[:4])
+	strRcvID := cm.ConvertOxBytesToStr(packData[:4])
 	//检测器数量
-	strDetectAmount := comm.ConvertBasNumberToStr(10, packData[intAmountCursor])
+	strDetectAmount := cm.ConvertBasNumberToStr(10, packData[intAmountCursor])
 	//查询用 接收器ID map
 	var mRcvID *map[string]string
 	strSQL = "SELECT receiver_id FROM t_receiver_dict WHERE receiver_id=?"
@@ -50,7 +49,7 @@ func ReceiveRcvStat(packData []byte, ipAddr string) bool {
 	if (*mRcvID)["receiver_id"] == "" {
 		//如果没有插入数据
 		strSQL = "Insert Into t_receiver_dict(receiver_id,detector_amount,last_time,ip_addr) Values(?,?,?,?)"
-		_, err = ExecSQL(strSQL, strRcvID, strDetectAmount, GetCurrentTime(), ipAddr)
+		_, err = ExecSQL(strSQL, strRcvID, strDetectAmount, cm.GetCurrentTime(), ipAddr)
 		if err != nil {
 			logs.LogMain.Error(MsgDB.InsertDataErr, err)
 			return false
@@ -58,7 +57,7 @@ func ReceiveRcvStat(packData []byte, ipAddr string) bool {
 	} else {
 		//如果已有则更新
 		strSQL = "UPDATE t_receiver_dict SET detector_amount=?,last_time=?,ip_addr=? WHERE receiver_id=?"
-		_, err = ExecSQL(strSQL, strDetectAmount, GetCurrentTime(), strRcvID, ipAddr)
+		_, err = ExecSQL(strSQL, strDetectAmount, cm.GetCurrentTime(), strRcvID, ipAddr)
 		if err != nil {
 			logs.LogMain.Error(MsgDB.UpdateDataErr, err)
 			return false
@@ -76,9 +75,9 @@ func ReceiveDetectStat(packData []byte, ipAddr string) bool {
 	//检测器数量所在位置
 	intDetAmountCursor := 4
 	//	接收器Id
-	strRcvID := comm.ConvertOxBytesToStr(packData[0:4])
+	strRcvID := cm.ConvertOxBytesToStr(packData[0:4])
 	//检测器数量
-	intDetAmount := comm.ConvertBasStrToInt(10, comm.ConvertBasNumberToStr(10, packData[intDetAmountCursor]))
+	intDetAmount := cm.ConvertBasStrToInt(10, cm.ConvertBasNumberToStr(10, packData[intDetAmountCursor]))
 	//根据数量来存储
 	if intDetAmount > 0 {
 		for i := 0; i < intDetAmount; i++ {
@@ -87,15 +86,18 @@ func ReceiveDetectStat(packData []byte, ipAddr string) bool {
 			end := begin + 4
 			var di Detector
 			di.RcvID = strRcvID
-			di.ID = comm.ConvertOxBytesToStr(packData[begin:end])
-			/*FIXME:接收器状态位，须针对位处理*/
-			// di.Stat = comm.ConvertBasNumberToStr(10, packData[end])
-			di.Disable = false
+			di.ID = cm.ConvertOxBytesToStr(packData[begin:end])
+			/*FIXME:接收器状态位，须针对位处理*/ /////////////////////////////////////
+			// di.Stat = cm.ConvertBasNumberToStr(10, packData[end])
+			cm.Msg("detID:", di.ID)
+			cm.Msg(packData[begin])
+			BinDetectorStat(packData[begin], &di)
+			// di.Disable = false///////////////////////////////////////////////////
 			begin = end
 			//	判断该检测器是否为device_dict表内已注册设备，如果不是,退出
 			strSQL = "Select detector_id From t_device_dict Where detector_id=?"
 			mDetID, err = QueryOneRow(strSQL, di.ID)
-			if !comm.CkErr(MsgDB.QueryDataErr, err) {
+			if !cm.CkErr(MsgDB.QueryDataErr, err) {
 				if (*mDetID)["detector_id"] != "" {
 					dDet = append(dDet, di)
 				} else {
@@ -118,7 +120,7 @@ func ReceiveDetectStat(packData []byte, ipAddr string) bool {
 		if (*mDetID)["receiver_id"] == "" {
 			strSQL = `Insert Into t_receiver_dict(receiver_id,detector_amount,last_time,ip_addr)
 			 		Values(?,?,?,?)`
-			_, err = ExecSQL(strSQL, dDet[i].RcvID, len(dDet), GetCurrentTime(), ipAddr)
+			_, err = ExecSQL(strSQL, dDet[i].RcvID, len(dDet), cm.GetCurrentTime(), ipAddr)
 			if err != nil {
 				logs.LogMain.Error(MsgDB.InsertDataErr, err)
 				return false
@@ -127,7 +129,7 @@ func ReceiveDetectStat(packData []byte, ipAddr string) bool {
 			//如果已有则更新
 			strSQL = `UPDATE t_receiver_dict SET receiver_id=?,detector_amount=?,last_time=?,
 					ip_addr=? WHERE receiver_id=?`
-			_, err = ExecSQL(strSQL, dDet[i].RcvID, len(dDet), GetCurrentTime(), ipAddr, dDet[i].RcvID)
+			_, err = ExecSQL(strSQL, dDet[i].RcvID, len(dDet), cm.GetCurrentTime(), ipAddr, dDet[i].RcvID)
 			if err != nil {
 				logs.LogMain.Error(MsgDB.UpdateDataErr, err)
 				return false
@@ -147,16 +149,16 @@ func ReceiveDeleteDetect(packData []byte, ipAddr string) bool {
 	//检测器数量所在位置
 	intDetAmountCursor := 4
 	//接收器id
-	strRcvID := comm.ConvertOxBytesToStr(packData[:4])
+	strRcvID := cm.ConvertOxBytesToStr(packData[:4])
 	//检测器数量
-	intDetAmount = comm.ConvertBasStrToInt(10, comm.ConvertBasNumberToStr(10, packData[intDetAmountCursor]))
+	intDetAmount = cm.ConvertBasStrToInt(10, cm.ConvertBasNumberToStr(10, packData[intDetAmountCursor]))
 
 	for i := 0; i < intDetAmount; i++ {
 		begin := 5
 		end := begin + 4
 		var di Detector
 		di.RcvID = strRcvID
-		di.ID = comm.ConvertOxBytesToStr(packData[begin:end])
+		di.ID = cm.ConvertOxBytesToStr(packData[begin:end])
 		di.Disable = true
 		begin = end
 		//	判断该检测器是否为device_dict表内已注册设备，如果不是,则不记录
@@ -178,22 +180,22 @@ func ReceiveDeleteDetect(packData []byte, ipAddr string) bool {
 	for i := 0; i < len(dDet); i++ {
 		strSQL = "DELETE FROM t_device_dict WHERE detector_id=?"
 		_, err = ExecSQL(strSQL, dDet[i].ID)
-		if CkErr(MsgDB.DeleteDataErr, err) {
+		if cm.CkErr(MsgDB.DeleteDataErr, err) {
 			return false
 		}
 		strSQL = "DELETE FROM t_match_dict WHERE detector_id=?"
 		_, err = ExecSQL(strSQL, dDet[i].ID)
-		if CkErr(MsgDB.DeleteDataErr, err) {
+		if cm.CkErr(MsgDB.DeleteDataErr, err) {
 			return false
 		}
 		//获取现有的检测器数量
 		strSQL = "Select detector_amount FROM t_receiver_dict WHERE receiver_id=?"
 		mDetID, err = QueryOneRow(strSQL, dDet[i].RcvID)
-		if CkErr(MsgDB.QueryDataErr, err) {
+		if cm.CkErr(MsgDB.QueryDataErr, err) {
 			return false
 		}
 		if (*mDetID)["detector_amount"] != "" {
-			intDetAmount = comm.ConvertBasStrToInt(10, (*mDetID)["detector_amount"])
+			intDetAmount = cm.ConvertBasStrToInt(10, (*mDetID)["detector_amount"])
 		} else {
 			logs.LogMain.Error(MsgDB.QueryDataErr, err)
 			return false
@@ -202,14 +204,14 @@ func ReceiveDeleteDetect(packData []byte, ipAddr string) bool {
 		intDetAmount = intDetAmount - 1
 		strSQL = `UPDATE t_receiver_dict SET detector_amount=?,last_time=?,ip_addr=?
 		 		WHERE receiver_id=?`
-		_, err = ExecSQL(strSQL, intDetAmount, GetCurrentTime(), ipAddr, dDet[i].RcvID)
-		if CkErr(MsgDB.UpdateDataErr, err) {
+		_, err = ExecSQL(strSQL, intDetAmount, cm.GetCurrentTime(), ipAddr, dDet[i].RcvID)
+		if cm.CkErr(MsgDB.UpdateDataErr, err) {
 			return false
 		}
 		//册除应用信息表
 		strSQL = "DELETE FROM t_apply_dict WHERE qcode=?"
 		_, err = ExecSQL(strSQL, dDet[i].QRCode)
-		if CkErr(MsgDB.DeleteDataErr, err) {
+		if cm.CkErr(MsgDB.DeleteDataErr, err) {
 			return false
 		}
 	}
@@ -226,16 +228,16 @@ func ReceiveAddDetect(packData []byte, ipAddr string) bool {
 	//检测器数量所在位置
 	intDetAmountCursor := 4
 	//接收器id
-	strRcvID := comm.ConvertOxBytesToStr(packData[:4])
+	strRcvID := cm.ConvertOxBytesToStr(packData[:4])
 	//检测器数量
-	intDetAmount = comm.ConvertBasStrToInt(10, comm.ConvertBasNumberToStr(10, packData[intDetAmountCursor]))
+	intDetAmount = cm.ConvertBasStrToInt(10, cm.ConvertBasNumberToStr(10, packData[intDetAmountCursor]))
 
 	for i := 0; i < intDetAmount; i++ {
 		begin := 5
 		end := begin + 4
 		var di Detector
 		di.RcvID = strRcvID
-		di.ID = comm.ConvertOxBytesToStr(packData[begin:end])
+		di.ID = cm.ConvertOxBytesToStr(packData[begin:end])
 		di.QRCode = CreateQRID(di.ID)
 		di.Disable = false
 		begin = end
@@ -245,22 +247,22 @@ func ReceiveAddDetect(packData []byte, ipAddr string) bool {
 	for i := 0; i < len(dDet); i++ {
 		strSQL = "Insert Into t_device_dict(detector_id,qcode,disable) Values(?,?,?)"
 		_, err = ExecSQL(strSQL, dDet[i].ID, dDet[i].QRCode, dDet[i].Disable)
-		if CkErr(MsgDB.InsertDataErr, err) {
+		if cm.CkErr(MsgDB.InsertDataErr, err) {
 			return false
 		}
 		strSQL = "Insert Into t_match_dict(detector_id,receiver_id) Values(?,?)"
 		_, err = ExecSQL(strSQL, dDet[i].ID, dDet[i].RcvID)
-		if CkErr(MsgDB.InsertDataErr, err) {
+		if cm.CkErr(MsgDB.InsertDataErr, err) {
 			return false
 		}
 		//获取现有的检测器数量
 		strSQL = "Select detector_amount FROM t_receiver_dict WHERE receiver_id=?"
 		mDetID, err = QueryOneRow(strSQL, dDet[i].RcvID)
-		if CkErr(MsgDB.QueryDataErr, err) {
+		if cm.CkErr(MsgDB.QueryDataErr, err) {
 			return false
 		}
 		if (*mDetID)["detector_amount"] != "" {
-			intDetAmount = comm.ConvertBasStrToInt(10, (*mDetID)["detector_amount"])
+			intDetAmount = cm.ConvertBasStrToInt(10, (*mDetID)["detector_amount"])
 		} else {
 			logs.LogMain.Error(MsgDB.QueryDataErr, err)
 			return false
@@ -269,8 +271,8 @@ func ReceiveAddDetect(packData []byte, ipAddr string) bool {
 		intDetAmount = intDetAmount + 1
 		strSQL = `Insert Into t_receiver_dict(detector_id,detector_amount,last_time,ip_addr) 
 				Values(?,?,?,?)`
-		_, err = ExecSQL(strSQL, dDet[i].ID, intDetAmount, GetCurrentTime(), ipAddr, dDet[i].RcvID)
-		if CkErr(MsgDB.InsertDataErr, err) {
+		_, err = ExecSQL(strSQL, dDet[i].ID, intDetAmount, cm.GetCurrentTime(), ipAddr, dDet[i].RcvID)
+		if cm.CkErr(MsgDB.InsertDataErr, err) {
 			return false
 		}
 	}
@@ -282,17 +284,17 @@ func ReceiveSetRcvNetCfgStat(packData []byte, ipAddr string) bool {
 	var strSQL string
 	var err error
 	//接收器ID
-	strRcvID := comm.ConvertOxBytesToStr(packData[:4])
+	strRcvID := cm.ConvertOxBytesToStr(packData[:4])
 	//ServerIP地址
 	var strServerIP string
 	for i := 4; i <= 7; i++ {
-		strServerIP += comm.ConvertBasNumberToStr(10, packData[i])
+		strServerIP += cm.ConvertBasNumberToStr(10, packData[i])
 		if i < 7 {
 			strServerIP += "."
 		}
 	}
 	//	ServerPort
-	intServerPort := comm.ConvertBasStrToInt(16, comm.ConvertOxBytesToStr(packData[8:10]))
+	intServerPort := cm.ConvertBasStrToInt(16, cm.ConvertOxBytesToStr(packData[8:10]))
 	//查询用 接收器ID map
 	var mRcvID *map[string]string
 	strSQL = "SELECT receiver_id FROM t_receiver_dict WHERE receiver_id=?"
@@ -305,7 +307,7 @@ func ReceiveSetRcvNetCfgStat(packData []byte, ipAddr string) bool {
 	if (*mRcvID)["receiver_id"] != "" {
 		//更新IP地址和端口设置
 		strSQL = "UPDATE t_receiver_dict SET last_time=?,ip_addr=?,target_ip=?,target_port=? WHERE receiver_id=?"
-		_, err = ExecSQL(strSQL, GetCurrentTime(), ipAddr, strServerIP, intServerPort, strRcvID)
+		_, err = ExecSQL(strSQL, cm.GetCurrentTime(), ipAddr, strServerIP, intServerPort, strRcvID)
 		if err != nil {
 			logs.LogMain.Error(MsgDB.UpdateDataErr, err)
 			return false
@@ -323,8 +325,8 @@ func ReceiveSetReconnTimeStat(packData []byte, ipAddr string) bool {
 	var strSQL string
 	var err error
 	//接收器ID
-	strRcvID := comm.ConvertOxBytesToStr(packData[:4])
-	intReconnTime := comm.ConvertBasStrToInt(16, comm.ConvertOxBytesToStr(packData[4:6]))
+	strRcvID := cm.ConvertOxBytesToStr(packData[:4])
+	intReconnTime := cm.ConvertBasStrToInt(16, cm.ConvertOxBytesToStr(packData[4:6]))
 	//查询用 接收器ID map
 	var mRcvID *map[string]string
 	strSQL = "SELECT receiver_id FROM t_receiver_dict WHERE receiver_id=?"
@@ -337,7 +339,7 @@ func ReceiveSetReconnTimeStat(packData []byte, ipAddr string) bool {
 	if (*mRcvID)["receiver_id"] != "" {
 		//更新重新连接时间设置
 		strSQL = "UPDATE t_receiver_dict SET last_time=?,ip_addr=?,reconn_time=? WHERE receiver_id=?"
-		_, err = ExecSQL(strSQL, GetCurrentTime(), ipAddr, intReconnTime, strRcvID)
+		_, err = ExecSQL(strSQL, cm.GetCurrentTime(), ipAddr, intReconnTime, strRcvID)
 		if err != nil {
 			logs.LogMain.Error(MsgDB.UpdateDataErr, err)
 			return false

@@ -1,10 +1,9 @@
 package dbWorks
 
 import (
-	"eInfusion/comm"
-	. "eInfusion/comm"
-
+	cm "eInfusion/comm"
 	"time"
+	// "unicode/utf8"
 )
 
 //检测器对象
@@ -21,13 +20,23 @@ type Detector struct {
 }
 
 //根据数据生成检测器状态信息
-func BinDetectorStat(da byte,
+func BinDetectorStat(rdata byte, dt *Detector) {
+	// t, _ := strconv.ParseUint(string(sMeta[1]), 10, 64)
+	bib := cm.ConvertByteToBinaryOfByte(rdata)
+	// TODO:完成数据解析
 
-// FIXME:测试，须修改
-// dt *Detector
-) []byte {
-	meta := comm.ConvertBasNumberToStr(2, da)
-	return comm.ConvertPerTwoOxCharOfStrToBytes(meta)
+	// dt.Disable = bib[0]
+	// dt.Stat = bib[1]
+	// dt.Capacity = bib[2:3]
+	// dt.Alarm = bib[4]
+	for _, v := range bib {
+		cm.Msg(v)
+	}
+	// cm.Msg(cm.ConvertBasNumberToStr(10, sMeta[0]))
+	// if cm.ConvertBasNumberToStr(2, sMeta[0]) == 48 {
+	// 	cm.Msg("zero")
+	// }
+
 }
 
 //生成索引编号
@@ -37,7 +46,7 @@ func CreateQRID(ref_strID string) string {
 	strCategoryCode := "CP"
 	//批号
 	strPHCode := "xx1"
-	strTime := ConvertIntToStr(time.Now().Hour()) + ConvertIntToStr(time.Now().Minute()) + ConvertIntToStr(time.Now().Second())
+	strTime := cm.ConvertIntToStr(time.Now().Hour()) + cm.ConvertIntToStr(time.Now().Minute()) + cm.ConvertIntToStr(time.Now().Second())
 
 	return strBranchCode + strCategoryCode + strPHCode + strTime + ref_strID
 }
@@ -46,8 +55,8 @@ func CreateQRID(ref_strID string) string {
 func StartCreateQRCode() {
 	//auto create the qrcode
 	for i := 0; i < 10; i++ {
-		strName := "B000000" + ConvertIntToStr(i)
+		strName := "B000000" + cm.ConvertIntToStr(i)
 		strContent := CreateQRID(strName)
-		CreateQRCodePngFile(strContent, 128, strName+".png")
+		cm.CreateQRCodePngFile(strContent, 128, strName+".png")
 	}
 }
