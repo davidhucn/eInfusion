@@ -24,14 +24,17 @@ func BinDetectorStat(rdata byte, dt *Detector) {
 	// t, _ := strconv.ParseUint(string(sMeta[1]), 10, 64)
 	bib := cm.ConvertByteToBinaryOfByte(rdata)
 	// TODO:完成数据解析
-
+	if bib[0] == 1 {
+		cm.Msg("开始打印二进制")
+		for _, v := range bib {
+			cm.Msg(v)
+		}
+	}
 	// dt.Disable = bib[0]
 	// dt.Stat = bib[1]
 	// dt.Capacity = bib[2:3]
 	// dt.Alarm = bib[4]
-	for _, v := range bib {
-		cm.Msg(v)
-	}
+
 	// cm.Msg(cm.ConvertBasNumberToStr(10, sMeta[0]))
 	// if cm.ConvertBasNumberToStr(2, sMeta[0]) == 48 {
 	// 	cm.Msg("zero")

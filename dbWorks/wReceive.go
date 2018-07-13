@@ -90,7 +90,7 @@ func ReceiveDetectStat(packData []byte, ipAddr string) bool {
 			/*FIXME:接收器状态位，须针对位处理*/ /////////////////////////////////////
 			// di.Stat = cm.ConvertBasNumberToStr(10, packData[end])
 			cm.Msg("detID:", di.ID)
-			cm.Msg(packData[begin])
+			cm.Msg("status:", packData[end])
 			BinDetectorStat(packData[begin], &di)
 			// di.Disable = false///////////////////////////////////////////////////
 			begin = end

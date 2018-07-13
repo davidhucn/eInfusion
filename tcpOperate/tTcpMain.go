@@ -34,7 +34,7 @@ func initClisConnMap() {
 //   发送数据
 func SendData(conn *net.TCPConn, data []byte) (n int, err error) {
 	ip := comm.GetRealIPAddr(conn.RemoteAddr().String())
-	//FIXME:未考虑网络延迟、断网问题
+	//FIXME:未考虑网络延迟、断网问题，另外发送两个数据须间隔10毫秒(millionseconds)
 	n, err = conn.Write(data)
 	if err == nil {
 		logs.LogMain.Info("=>"+ip, "完成数据发送")
@@ -94,7 +94,9 @@ func lostConn(conn *net.TCPConn) {
 //echo server Goroutine
 func receiveData(c *net.TCPConn) {
 	// TODO:测试包
-	// SendData(c, ep.CmdGetRcvStatus(comm.ConvertPerTwoOxCharOfStrToBytes("A0000000")))
+	SendData(c, ep.CmdGetRcvStatus(comm.ConvertPerTwoOxCharOfStrToBytes("A0000000")))
+
+	time.Sleep(10 * time.Millisecond)
 	dtID := comm.ConvertPerTwoOxCharOfStrToBytes("B0000000")
 	rvID := comm.ConvertPerTwoOxCharOfStrToBytes("A0000000")
 	orders := ep.CmdOperateDetect(ep.G_TsCmd.GetDetect, rvID, 1, dtID)
