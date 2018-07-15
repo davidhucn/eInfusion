@@ -14,14 +14,13 @@ func InitDetInfoToDB(amount int) bool {
 	for i := 0; i < amount; i++ {
 		var di Detector
 		di.ID = "B000000" + cm.ConvertIntToStr(i)
-		di.Disable = false
 		// di.Stat = ConvertIntToStr(2)
 		di.QRCode = CreateQRID(di.ID)
 		dd = append(dd, di)
 	}
 	for i := 0; i < amount; i++ {
-		strSQL = "Insert Into t_device_dict(detector_id,qcode,disable) Values(?,?,?)"
-		_, err := ExecSQL(strSQL, dd[i].ID, dd[i].QRCode, dd[i].Disable)
+		strSQL = "Insert Into t_device_dict(detector_id,qcode) Values(?,?,?)"
+		_, err := ExecSQL(strSQL, dd[i].ID, dd[i].QRCode)
 		_ = cm.CkErr(MsgDB.InsertDataErr, err)
 	}
 	return true
@@ -84,6 +83,7 @@ func ReceiveDetectStat(packData []byte, ipAddr string) bool {
 			//检测器ID起始位置
 			begin := 5
 			end := begin + 4
+			// 在循环内定义检测器对象
 			var di Detector
 			di.RcvID = strRcvID
 			di.ID = cm.ConvertOxBytesToStr(packData[begin:end])
@@ -92,7 +92,7 @@ func ReceiveDetectStat(packData []byte, ipAddr string) bool {
 			cm.Msg("detID:", di.ID)
 			cm.Msg("status:", packData[end])
 			BinDetectorStat(packData[begin], &di)
-			// di.Disable = false///////////////////////////////////////////////////
+			////////////////////////////////////////////////////////////////////////
 			begin = end
 			//	判断该检测器是否为device_dict表内已注册设备，如果不是,退出
 			strSQL = "Select detector_id From t_device_dict Where detector_id=?"
@@ -159,7 +159,6 @@ func ReceiveDeleteDetect(packData []byte, ipAddr string) bool {
 		var di Detector
 		di.RcvID = strRcvID
 		di.ID = cm.ConvertOxBytesToStr(packData[begin:end])
-		di.Disable = true
 		begin = end
 		//	判断该检测器是否为device_dict表内已注册设备，如果不是,则不记录
 		strSQL = "Select detector_id,qcode FROM t_device_dict Where detector_id=?"
@@ -239,14 +238,13 @@ func ReceiveAddDetect(packData []byte, ipAddr string) bool {
 		di.RcvID = strRcvID
 		di.ID = cm.ConvertOxBytesToStr(packData[begin:end])
 		di.QRCode = CreateQRID(di.ID)
-		di.Disable = false
 		begin = end
 		dDet = append(dDet, di)
 	}
 	//插入 t_device_dict,t_match_dict,t_receiver_dict
 	for i := 0; i < len(dDet); i++ {
-		strSQL = "Insert Into t_device_dict(detector_id,qcode,disable) Values(?,?,?)"
-		_, err = ExecSQL(strSQL, dDet[i].ID, dDet[i].QRCode, dDet[i].Disable)
+		strSQL = "Insert Into t_device_dict(detector_id,qcode) Values(?,?)"
+		_, err = ExecSQL(strSQL, dDet[i].ID, dDet[i].QRCode)
 		if cm.CkErr(MsgDB.InsertDataErr, err) {
 			return false
 		}

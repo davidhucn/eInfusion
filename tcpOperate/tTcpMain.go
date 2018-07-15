@@ -35,6 +35,7 @@ func initClisConnMap() {
 func SendData(conn *net.TCPConn, data []byte) (n int, err error) {
 	ip := comm.GetRealIPAddr(conn.RemoteAddr().String())
 	//FIXME:未考虑网络延迟、断网问题，另外发送两个数据须间隔10毫秒(millionseconds)
+	time.Sleep(10 * time.Millisecond)
 	n, err = conn.Write(data)
 	if err == nil {
 		logs.LogMain.Info("=>"+ip, "完成数据发送")

@@ -13,9 +13,8 @@ type Detector struct {
 	QRCode   string
 	ID       string
 	RcvID    string
-	Capacity int //0,1,2,3
-	Stat     int //工作状态：0-关机，1-开机
-	Disable  bool
+	Capacity int  //0,1,2,3
+	Stat     int  //工作状态：0-关机，1-开机
 	Alarm    bool //是否报警，输液条没有液体
 }
 
