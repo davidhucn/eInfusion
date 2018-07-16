@@ -89,7 +89,7 @@ func lostConn(conn *net.TCPConn) {
 	ip := comm.GetRealIPAddr(conn.RemoteAddr().String())
 	delClisConn(ip) // 删除关闭的连接对应的clisMap项
 	logs.LogMain.Info("IP:", ip, "下线")
-	comm.SepLi(20, "*")
+	comm.SepLi(30, "*")
 }
 
 //echo server Goroutine

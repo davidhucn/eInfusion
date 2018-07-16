@@ -21,14 +21,16 @@ type Detector struct {
 //根据数据生成检测器状态信息
 func BinDetectorStat(rdata byte, dt *Detector) {
 	// t, _ := strconv.ParseUint(string(sMeta[1]), 10, 64)
+	cm.Msg(rdata)
 	bib := cm.ConvertByteToBinaryOfByte(rdata)
 	// TODO:完成数据解析
-	if bib[0] == 1 {
-		cm.Msg("开始打印二进制")
-		for _, v := range bib {
-			cm.Msg(v)
+	if len(rdata)<8 {
+		for i:=0;i<len(rdata);i++{
+			
 		}
 	}
+
+
 	// dt.Disable = bib[0]
 	// dt.Stat = bib[1]
 	// dt.Capacity = bib[2:3]

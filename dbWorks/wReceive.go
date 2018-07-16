@@ -88,10 +88,8 @@ func ReceiveDetectStat(packData []byte, ipAddr string) bool {
 			di.RcvID = strRcvID
 			di.ID = cm.ConvertOxBytesToStr(packData[begin:end])
 			/*FIXME:接收器状态位，须针对位处理*/ /////////////////////////////////////
-			// di.Stat = cm.ConvertBasNumberToStr(10, packData[end])
-			cm.Msg("detID:", di.ID)
-			cm.Msg("status:", packData[end])
-			BinDetectorStat(packData[begin], &di)
+			BinDetectorStat(packData[end], &di)
+			// cm.Msg("test:", di.Capacity, di.Stat, di.Alarm)
 			////////////////////////////////////////////////////////////////////////
 			begin = end
 			//	判断该检测器是否为device_dict表内已注册设备，如果不是,退出
