@@ -11,7 +11,7 @@
  Target Server Version : 80011
  File Encoding         : 65001
 
- Date: 22/07/2018 20:10:13
+ Date: 22/07/2018 23:32:33
 */
 
 SET NAMES utf8mb4;
@@ -56,10 +56,10 @@ INSERT INTO `t_device_dict` VALUES ('1x0CPxx1B0000006', 'B0000006', NULL, 0);
 INSERT INTO `t_device_dict` VALUES ('1x0CPxx1B0000007', 'B0000007', NULL, 0);
 
 -- ----------------------------
--- Table structure for t_rcv_dict
+-- Table structure for t_rcv
 -- ----------------------------
-DROP TABLE IF EXISTS `t_rcv_dict`;
-CREATE TABLE `t_rcv_dict`  (
+DROP TABLE IF EXISTS `t_rcv`;
+CREATE TABLE `t_rcv`  (
   `receiver_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `detector_amount` int(11) NULL DEFAULT NULL,
   `reconn_time` int(11) NULL DEFAULT NULL,
@@ -74,9 +74,9 @@ CREATE TABLE `t_rcv_dict`  (
 ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Records of t_rcv_dict
+-- Records of t_rcv
 -- ----------------------------
-INSERT INTO `t_rcv_dict` VALUES ('A0000000', 1, NULL, NULL, '2018-07-20 01:23:22', '192.168.20.146', '192.168.0.107', '[30]', NULL, NULL);
+INSERT INTO `t_rcv` VALUES ('A0000000', 1, NULL, NULL, '2018-07-20 01:23:22', '192.168.20.146', '192.168.0.107', '[30]', NULL, NULL);
 
 -- ----------------------------
 -- Table structure for t_rcv_vs_det
@@ -86,6 +86,7 @@ CREATE TABLE `t_rcv_vs_det`  (
   `detID` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `rcvID` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `remark` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `time` datetime(0) NULL DEFAULT NULL,
   PRIMARY KEY (`detID`, `rcvID`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = latin1 COLLATE = latin1_swedish_ci ROW_FORMAT = Dynamic;
 
