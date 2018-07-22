@@ -38,7 +38,7 @@ func ReceiveRcvStat(packData []byte, ipAddr string) bool {
 	strDetectAmount := cm.ConvertBasNumberToStr(10, packData[intAmountCursor])
 	//查询用 接收器ID map
 	var mRcvID *map[string]string
-	strSQL = "SELECT receiver_id FROM t_receiver_dict WHERE receiver_id=?"
+	strSQL = "SELECT receiver_id FROM t_rcv_dict WHERE receiver_id=?"
 	mRcvID, err = QueryOneRow(strSQL, strRcvID)
 	if err != nil {
 		logs.LogMain.Error(MsgDB.InsertDataErr, err)
@@ -47,7 +47,7 @@ func ReceiveRcvStat(packData []byte, ipAddr string) bool {
 	//是否已存在指定的接收器号
 	if (*mRcvID)["receiver_id"] == "" {
 		//如果没有插入数据
-		strSQL = "Insert Into t_receiver_dict(receiver_id,detector_amount,last_time,ip_addr) Values(?,?,?,?)"
+		strSQL = "Insert Into t_rcv_dict(receiver_id,detector_amount,last_time,ip_addr) Values(?,?,?,?)"
 		_, err = ExecSQL(strSQL, strRcvID, strDetectAmount, cm.GetCurrentTime(), ipAddr)
 		if err != nil {
 			logs.LogMain.Error(MsgDB.InsertDataErr, err)
@@ -55,7 +55,7 @@ func ReceiveRcvStat(packData []byte, ipAddr string) bool {
 		}
 	} else {
 		//如果已有则更新
-		strSQL = "UPDATE t_receiver_dict SET detector_amount=?,last_time=?,ip_addr=? WHERE receiver_id=?"
+		strSQL = "UPDATE t_rcv_dict SET detector_amount=?,last_time=?,ip_addr=? WHERE receiver_id=?"
 		_, err = ExecSQL(strSQL, strDetectAmount, cm.GetCurrentTime(), strRcvID, ipAddr)
 		if err != nil {
 			logs.LogMain.Error(MsgDB.UpdateDataErr, err)
@@ -65,7 +65,7 @@ func ReceiveRcvStat(packData []byte, ipAddr string) bool {
 	return true
 }
 
-//获取检测器状态信息
+//ReceiveDetectStat 目的：获取检测器状态信息
 func ReceiveDetectStat(packData []byte, ipAddr string) bool {
 	var dDet []Detector
 	var strSQL string
@@ -87,14 +87,15 @@ func ReceiveDetectStat(packData []byte, ipAddr string) bool {
 			var di Detector
 			di.RcvID = strRcvID
 			di.ID = cm.ConvertOxBytesToStr(packData[begin:end])
+			// 获取检测器状态
 			BinDetectorStat(packData[end], &di)
-			cm.Msg("test:", di.Capacity, di.PowerOn, di.Alarm)
 			begin = end
 			//	判断该检测器是否为device_dict表内已注册设备，如果不是,退出
-			strSQL = "Select detector_id From t_device_dict Where detector_id=?"
+			// TODO:  目前只核查设备登记表（device_dict）,没有核对配对表（rcv_vs_det），后期考虑更改为配对表
+			strSQL = "select did From t_device_dict Where did=?"
 			mDetID, err = QueryOneRow(strSQL, di.ID)
 			if !cm.CkErr(MsgDB.QueryDataErr, err) {
-				if (*mDetID)["detector_id"] != "" {
+				if (*mDetID)["did"] != "" {
 					dDet = append(dDet, di)
 				} else {
 					logs.LogMain.Warn(di.ID, "不是注册设备，来自ip：", ipAddr)
@@ -102,33 +103,35 @@ func ReceiveDetectStat(packData []byte, ipAddr string) bool {
 				}
 			}
 		}
-	}
-	//开始存入数据库（t_main）
-	//	遍历整个slice
-	for i := 0; i < len(dDet); i++ {
-		/////////////////////确定 t_receiver_dict
-		strSQL = "Select receiver_id From t_receiver_dict Where receiver_id=?"
-		mDetID, err = QueryOneRow(strSQL, dDet[i].RcvID)
-		if cm.CkErr(MsgDB.QueryDataErr, err) {
-			return false
-		}
-		// FIXME:存入t_main表中，不是t_receiver_dict
-		if (*mDetID)["receiver_id"] == "" {
-			strSQL = `Insert Into t_receiver_dict(receiver_id,detector_amount,last_time,ip_addr)
-			 		Values(?,?,?,?)`
-			_, err = ExecSQL(strSQL, dDet[i].RcvID, len(dDet), cm.GetCurrentTime(), ipAddr)
-			if cm.CkErr(MsgDB.InsertDataErr, err) {
+		// 通过验证后，记录检测器信息(t_running表)
+		for i := 0; i < len(dDet); i++ {
+			// 判断运行状态表内是否存在
+			strSQL = "Select did From t_running Where did=?"
+			mDetID, err = QueryOneRow(strSQL, dDet[i].ID)
+			if cm.CkErr(MsgDB.QueryDataErr, err) {
 				return false
 			}
-		} else {
-			//如果已有则更新
-			strSQL = `UPDATE t_receiver_dict SET receiver_id=?,detector_amount=?,last_time=?,
-					ip_addr=? WHERE receiver_id=?`
-			_, err = ExecSQL(strSQL, dDet[i].RcvID, len(dDet), cm.GetCurrentTime(), ipAddr, dDet[i].RcvID)
-			if cm.CkErr(MsgDB.UpdateDataErr, err) {
-				return false
+			// 如果运行状态表内没有相关数据,则插入
+			if (*mDetID)["did"] == "" {
+				strSQL = `Insert Into t_running(did,time,capacity,alarm)
+						 Values(?,?,?,?)`
+				_, err = ExecSQL(strSQL, dDet[i].ID, cm.GetCurrentTime(), dDet[i].Capacity, dDet[i].Alarm)
+				if cm.CkErr(MsgDB.InsertDataErr, err) {
+					return false
+				}
+			} else {
+				//如果已有则更新
+				strSQL = `UPDATE t_running SET time=?,capacity=?,alarm=? WHERE did=?`
+				_, err = ExecSQL(strSQL, cm.GetCurrentTime(), dDet[i].Capacity, dDet[i].Alarm, dDet[i].ID)
+				if cm.CkErr(MsgDB.UpdateDataErr, err) {
+					return false
+				}
 			}
 		}
+	} else {
+		// 返回检测器为零,则退出并报错
+		logs.LogMain.Error("错误 ！获取检测器数量为0")
+		return false
 	}
 	return true
 }
@@ -169,7 +172,7 @@ func ReceiveDeleteDetect(packData []byte, ipAddr string) bool {
 		}
 	}
 
-	//册除：t_device_dict,t_match_dict,t_receiver_dict,t_apply_dict
+	//册除：t_device_dict,t_match_dict,t_rcv_dict,t_apply_dict
 	for i := 0; i < len(dDet); i++ {
 		strSQL = "DELETE FROM t_device_dict WHERE detector_id=?"
 		_, err = ExecSQL(strSQL, dDet[i].ID)
@@ -182,7 +185,7 @@ func ReceiveDeleteDetect(packData []byte, ipAddr string) bool {
 			return false
 		}
 		//获取现有的检测器数量
-		strSQL = "Select detector_amount FROM t_receiver_dict WHERE receiver_id=?"
+		strSQL = "Select detector_amount FROM t_rcv_dict WHERE receiver_id=?"
 		mDetID, err = QueryOneRow(strSQL, dDet[i].RcvID)
 		if cm.CkErr(MsgDB.QueryDataErr, err) {
 			return false
@@ -195,7 +198,7 @@ func ReceiveDeleteDetect(packData []byte, ipAddr string) bool {
 		}
 		//更新接收器对的检测器数量
 		intDetAmount = intDetAmount - 1
-		strSQL = `UPDATE t_receiver_dict SET detector_amount=?,last_time=?,ip_addr=?
+		strSQL = `UPDATE t_rcv_dict SET detector_amount=?,last_time=?,ip_addr=?
 		 		WHERE receiver_id=?`
 		_, err = ExecSQL(strSQL, intDetAmount, cm.GetCurrentTime(), ipAddr, dDet[i].RcvID)
 		if cm.CkErr(MsgDB.UpdateDataErr, err) {
@@ -235,7 +238,7 @@ func ReceiveAddDetect(packData []byte, ipAddr string) bool {
 		begin = end
 		dDet = append(dDet, di)
 	}
-	//插入 t_device_dict,t_match_dict,t_receiver_dict
+	//插入 t_device_dict,t_match_dict,t_rcv_dict
 	for i := 0; i < len(dDet); i++ {
 		strSQL = "Insert Into t_device_dict(detector_id,qcode) Values(?,?)"
 		_, err = ExecSQL(strSQL, dDet[i].ID, dDet[i].QRCode)
@@ -248,7 +251,7 @@ func ReceiveAddDetect(packData []byte, ipAddr string) bool {
 			return false
 		}
 		//获取现有的检测器数量
-		strSQL = "Select detector_amount FROM t_receiver_dict WHERE receiver_id=?"
+		strSQL = "Select detector_amount FROM t_rcv_dict WHERE receiver_id=?"
 		mDetID, err = QueryOneRow(strSQL, dDet[i].RcvID)
 		if cm.CkErr(MsgDB.QueryDataErr, err) {
 			return false
@@ -261,7 +264,7 @@ func ReceiveAddDetect(packData []byte, ipAddr string) bool {
 		}
 		//更新接收器对应的检测器数量
 		intDetAmount = intDetAmount + 1
-		strSQL = `Insert Into t_receiver_dict(detector_id,detector_amount,last_time,ip_addr) 
+		strSQL = `Insert Into t_rcv_dict(detector_id,detector_amount,last_time,ip_addr) 
 				Values(?,?,?,?)`
 		_, err = ExecSQL(strSQL, dDet[i].ID, intDetAmount, cm.GetCurrentTime(), ipAddr, dDet[i].RcvID)
 		if cm.CkErr(MsgDB.InsertDataErr, err) {
@@ -289,7 +292,7 @@ func ReceiveSetRcvNetCfgStat(packData []byte, ipAddr string) bool {
 	intServerPort := cm.ConvertBasStrToInt(16, cm.ConvertOxBytesToStr(packData[8:10]))
 	//查询用 接收器ID map
 	var mRcvID *map[string]string
-	strSQL = "SELECT receiver_id FROM t_receiver_dict WHERE receiver_id=?"
+	strSQL = "SELECT receiver_id FROM t_rcv_dict WHERE receiver_id=?"
 	mRcvID, err = QueryOneRow(strSQL, strRcvID)
 	if err != nil {
 		logs.LogMain.Error(MsgDB.InsertDataErr, err)
@@ -298,7 +301,7 @@ func ReceiveSetRcvNetCfgStat(packData []byte, ipAddr string) bool {
 	//存在指定的接收器
 	if (*mRcvID)["receiver_id"] != "" {
 		//更新IP地址和端口设置
-		strSQL = "UPDATE t_receiver_dict SET last_time=?,ip_addr=?,target_ip=?,target_port=? WHERE receiver_id=?"
+		strSQL = "UPDATE t_rcv_dict SET last_time=?,ip_addr=?,target_ip=?,target_port=? WHERE receiver_id=?"
 		_, err = ExecSQL(strSQL, cm.GetCurrentTime(), ipAddr, strServerIP, intServerPort, strRcvID)
 		if err != nil {
 			logs.LogMain.Error(MsgDB.UpdateDataErr, err)
@@ -321,7 +324,7 @@ func ReceiveSetReconnTimeStat(packData []byte, ipAddr string) bool {
 	intReconnTime := cm.ConvertBasStrToInt(16, cm.ConvertOxBytesToStr(packData[4:6]))
 	//查询用 接收器ID map
 	var mRcvID *map[string]string
-	strSQL = "SELECT receiver_id FROM t_receiver_dict WHERE receiver_id=?"
+	strSQL = "SELECT receiver_id FROM t_rcv_dict WHERE receiver_id=?"
 	mRcvID, err = QueryOneRow(strSQL, strRcvID)
 	if err != nil {
 		logs.LogMain.Error(MsgDB.InsertDataErr, err)
@@ -330,7 +333,7 @@ func ReceiveSetReconnTimeStat(packData []byte, ipAddr string) bool {
 	//存在指定的接收器
 	if (*mRcvID)["receiver_id"] != "" {
 		//更新重新连接时间设置
-		strSQL = "UPDATE t_receiver_dict SET last_time=?,ip_addr=?,reconn_time=? WHERE receiver_id=?"
+		strSQL = "UPDATE t_rcv_dict SET last_time=?,ip_addr=?,reconn_time=? WHERE receiver_id=?"
 		_, err = ExecSQL(strSQL, cm.GetCurrentTime(), ipAddr, intReconnTime, strRcvID)
 		if err != nil {
 			logs.LogMain.Error(MsgDB.UpdateDataErr, err)
