@@ -12,7 +12,7 @@ import (
 // Stat:工作状态,0-关机，1-开机
 // Alarm: 是否报警，输液条没有液体
 type Detector struct {
-	QRCode   string
+	// QRCode   string
 	ID       string
 	RcvID    string
 	Capacity uint8 //0,1,2,3
