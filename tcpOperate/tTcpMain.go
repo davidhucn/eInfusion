@@ -34,7 +34,7 @@ func initClisConnMap() {
 //   发送数据
 func SendData(conn *net.TCPConn, data []byte) (n int, err error) {
 	ip := comm.GetRealIPAddr(conn.RemoteAddr().String())
-	//FIXME:未考虑网络延迟、断网问题，另外发送两个数据须间隔10毫秒(millionseconds)
+	//FIXME:未考虑网络延迟、断网问题，另外发送两个数据须间隔15毫秒(millionseconds)
 	time.Sleep(15 * time.Millisecond)
 	n, err = conn.Write(data)
 	if err == nil {
@@ -43,7 +43,7 @@ func SendData(conn *net.TCPConn, data []byte) (n int, err error) {
 	return
 }
 
-//广播数据
+// 广播数据
 func Broadcast(tclisMap map[string]*net.TCPConn, data []byte) {
 	for _, conn := range tclisMap {
 		SendData(conn, data)
@@ -95,13 +95,12 @@ func lostConn(conn *net.TCPConn) {
 //echo server Goroutine
 func receiveData(c *net.TCPConn) {
 	// TODO:测试包
-	SendData(c, ep.CmdGetRcvStatus(comm.ConvertPerTwoOxCharOfStrToBytes("A0000000")))
-
-	time.Sleep(10 * time.Millisecond)
-	dtID := comm.ConvertPerTwoOxCharOfStrToBytes("B0000000")
-	rvID := comm.ConvertPerTwoOxCharOfStrToBytes("A0000000")
-	orders := ep.CmdOperateDetect(ep.G_TsCmd.GetDetect, rvID, 1, dtID)
-	SendData(c, orders)
+	// SendData(c, ep.CmdGetRcvStatus(comm.ConvertPerTwoOxCharOfStrToBytes("A0000000")))
+	// time.Sleep(10 * time.Millisecond)
+	// dtID := comm.ConvertPerTwoOxCharOfStrToBytes("B0000000")
+	// rvID := comm.ConvertPerTwoOxCharOfStrToBytes("A0000000")
+	// orders := ep.CmdOperateDetect(ep.G_TsCmd.GetDetect, rvID, 1, dtID)
+	// SendData(c, orders)
 	defer c.Close()
 	for {
 		setReadTimeout(c, 5*time.Minute)
@@ -142,7 +141,7 @@ func receiveData(c *net.TCPConn) {
 }
 
 //initial listener and run
-func StartTcpServer(port int) {
+func StartTCPServer(port int) {
 	host := ":" + strconv.Itoa(port)
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", host)
 	if comm.CkErr("TCP资源错误", err) {
