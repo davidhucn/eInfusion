@@ -2,8 +2,10 @@ package dbWorks
 
 import (
 	cm "eInfusion/comm"
+	"eInfusion/logs"
 	"time"
-	// "unicode/utf8"
+
+	"github.com/imroc/biu"
 )
 
 //检测器对象
@@ -13,46 +15,39 @@ type Detector struct {
 	QRCode   string
 	ID       string
 	RcvID    string
-	Capacity int  //0,1,2,3
-	Stat     int  //工作状态：0-关机，1-开机
-	Alarm    bool //是否报警，输液条没有液体
+	Capacity uint8 //0,1,2,3
+	PowerOn  uint8 //工作状态：0-关机，1-开机
+	Alarm    uint8 //是否报警，0-正常，1－报警，无药水
 }
 
 //根据数据生成检测器状态信息
+// 注：目前夹断功能没有开放
 func BinDetectorStat(rdata byte, dt *Detector) {
-	// t, _ := strconv.ParseUint(string(sMeta[1]), 10, 64)
-	cm.Msg(rdata)
-	bib := cm.ConvertByteToBinaryOfByte(rdata)
-	// TODO:完成数据解析
-	if len(rdata)<8 {
-		for i:=0;i<len(rdata);i++{
-			
-		}
+	smd := biu.ByteToBinaryString(rdata)
+	// 数据为7位表示检测器状态,如果为0则表示没有打开（如：没电，等)，不进行后续解析
+	if string(smd[6]) != "0" {
+		dt.PowerOn = cm.ConvertBasStrToUint(10, string(smd[6]))
+		dt.Alarm = cm.ConvertBasStrToUint(10, string(smd[3]))
+		st := "000000" + string(smd[5]) + string(smd[4])
+		biu.ReadBinaryString(st, &dt.Capacity)
+	} else {
+		dt.PowerOn = 0
+		dt.Alarm = 0
+		dt.Capacity = 0
+		logs.LogMain.Info("试图获取检测器：[", dt.ID, "]信息无效，可能没电或者未启动！")
 	}
-
-
-	// dt.Disable = bib[0]
-	// dt.Stat = bib[1]
-	// dt.Capacity = bib[2:3]
-	// dt.Alarm = bib[4]
-
-	// cm.Msg(cm.ConvertBasNumberToStr(10, sMeta[0]))
-	// if cm.ConvertBasNumberToStr(2, sMeta[0]) == 48 {
-	// 	cm.Msg("zero")
-	// }
-
 }
 
 //生成索引编号
 //TODO:等待下一步细化
-func CreateQRID(ref_strID string) string {
+func CreateQRID(rID string) string {
 	strBranchCode := "1x0"
 	strCategoryCode := "CP"
 	//批号
 	strPHCode := "xx1"
 	strTime := cm.ConvertIntToStr(time.Now().Hour()) + cm.ConvertIntToStr(time.Now().Minute()) + cm.ConvertIntToStr(time.Now().Second())
 
-	return strBranchCode + strCategoryCode + strPHCode + strTime + ref_strID
+	return strBranchCode + strCategoryCode + strPHCode + strTime + rID
 }
 
 // 生成二维码

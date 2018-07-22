@@ -146,7 +146,7 @@ func GetPartOfStrToStr(ref_strContent string, ref_intBegin int, ref_intEnd int) 
 }
 
 // 转换byte内的数据为2进制的byte切片
-func ConvertByteToBinaryOfByte(rByte byte) []byte {
+func ConvertByteToBinaryOfBytes(rByte byte) []byte {
 	var bT []byte
 	s := ConvertBasNumberToStr(2, rByte)
 	for i := 0; i < len(s); i++ {

@@ -87,10 +87,8 @@ func ReceiveDetectStat(packData []byte, ipAddr string) bool {
 			var di Detector
 			di.RcvID = strRcvID
 			di.ID = cm.ConvertOxBytesToStr(packData[begin:end])
-			/*FIXME:接收器状态位，须针对位处理*/ /////////////////////////////////////
 			BinDetectorStat(packData[end], &di)
-			// cm.Msg("test:", di.Capacity, di.Stat, di.Alarm)
-			////////////////////////////////////////////////////////////////////////
+			cm.Msg("test:", di.Capacity, di.PowerOn, di.Alarm)
 			begin = end
 			//	判断该检测器是否为device_dict表内已注册设备，如果不是,退出
 			strSQL = "Select detector_id From t_device_dict Where detector_id=?"
@@ -111,16 +109,15 @@ func ReceiveDetectStat(packData []byte, ipAddr string) bool {
 		/////////////////////确定 t_receiver_dict
 		strSQL = "Select receiver_id From t_receiver_dict Where receiver_id=?"
 		mDetID, err = QueryOneRow(strSQL, dDet[i].RcvID)
-		if err != nil {
-			logs.LogMain.Error(MsgDB.QueryDataErr, err)
+		if cm.CkErr(MsgDB.QueryDataErr, err) {
 			return false
 		}
+		// FIXME:存入t_main表中，不是t_receiver_dict
 		if (*mDetID)["receiver_id"] == "" {
 			strSQL = `Insert Into t_receiver_dict(receiver_id,detector_amount,last_time,ip_addr)
 			 		Values(?,?,?,?)`
 			_, err = ExecSQL(strSQL, dDet[i].RcvID, len(dDet), cm.GetCurrentTime(), ipAddr)
-			if err != nil {
-				logs.LogMain.Error(MsgDB.InsertDataErr, err)
+			if cm.CkErr(MsgDB.InsertDataErr, err) {
 				return false
 			}
 		} else {
@@ -128,8 +125,7 @@ func ReceiveDetectStat(packData []byte, ipAddr string) bool {
 			strSQL = `UPDATE t_receiver_dict SET receiver_id=?,detector_amount=?,last_time=?,
 					ip_addr=? WHERE receiver_id=?`
 			_, err = ExecSQL(strSQL, dDet[i].RcvID, len(dDet), cm.GetCurrentTime(), ipAddr, dDet[i].RcvID)
-			if err != nil {
-				logs.LogMain.Error(MsgDB.UpdateDataErr, err)
+			if cm.CkErr(MsgDB.UpdateDataErr, err) {
 				return false
 			}
 		}
