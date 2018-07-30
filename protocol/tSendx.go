@@ -49,6 +49,7 @@ func CmdOperateDetect(orderType uint8, ref_RcvID []byte, detectAmount int, ref_D
 }
 
 // 修改接收器网络配置
+// FIXME:生成的数据有问题 ，再核对
 func CmdSetRcvCfg(ref_RcvID []byte, ref_IP []byte, ref_Port []byte) []byte {
 	var intOrderDataLength = 13
 	//	基本指令内容

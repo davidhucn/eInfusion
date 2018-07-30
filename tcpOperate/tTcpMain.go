@@ -4,6 +4,7 @@ package tcpOperate
 //@Date:2018/06/29
 //@Purpose: Tcp Socket Server(Epoll模型）
 import (
+	// "github.com/imroc/biu"
 	"eInfusion/comm"
 	"eInfusion/logs"
 	ep "eInfusion/protocol"
@@ -98,9 +99,13 @@ func receiveData(c *net.TCPConn) {
 	// SendData(c, ep.CmdGetRcvStatus(comm.ConvertPerTwoOxCharOfStrToBytes("A0000000")))
 	// time.Sleep(10 * time.Millisecond)
 	// dtID := comm.ConvertPerTwoOxCharOfStrToBytes("B0000000")
-	// rvID := comm.ConvertPerTwoOxCharOfStrToBytes("A0000000")
-	// orders := ep.CmdOperateDetect(ep.G_TsCmd.GetDetect, rvID, 1, dtID)
-	// SendData(c, orders)
+	rvID := comm.ConvertPerTwoOxCharOfStrToBytes("A0000000")
+	bIP := comm.ConvertStrIPToBytes("192.168.121.12")
+	// FIXME:端口错误 ，IP地址可以用，HEX包学习
+	bPort := comm.ConvertStrPortToBytes("7778")
+	// orders := ep.CmdOperateDetect(ep.G_TsCmd.DelDetect, rvID, 1, dtID)
+	orders := ep.CmdSetRcvCfg(rvID, bIP, bPort)
+	SendData(c, orders)
 	defer c.Close()
 	for {
 		setReadTimeout(c, 5*time.Minute)

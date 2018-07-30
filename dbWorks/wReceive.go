@@ -194,19 +194,25 @@ func ReceiveDeleteDetect(packData []byte, ipAddr string) bool {
 			return false
 		}
 		//更新接收器对的检测器数量
-		intDetAmount = intDetAmount - 1
-		strSQL = `UPDATE t_rcv SET detector_amount=?,last_time=?,ip_addr=? WHERE receiver_id=?`
-		_, err = ExecSQL(strSQL, intDetAmount, cm.GetCurrentTime(), ipAddr, dDet[i].RcvID)
-		if cm.CkErr(MsgDB.UpdateDataErr, err) {
+		if intDetAmount > 0 {
+			intDetAmount = intDetAmount - 1
+			strSQL = `UPDATE t_rcv SET detector_amount=?,last_time=?,ip_addr=? WHERE receiver_id=?`
+			_, err = ExecSQL(strSQL, intDetAmount, cm.GetCurrentTime(), ipAddr, dDet[i].RcvID)
+			if cm.CkErr(MsgDB.UpdateDataErr, err) {
+				return false
+			}
+			//册除应用信息表
+			// strSQL = "DELETE FROM t_apply_dict WHERE qcode=?"
+			// _, err = ExecSQL(strSQL, dDet[i].QRCode)
+			// if cm.CkErr(MsgDB.DeleteDataErr, err) {
+			// 	return false
+			// }
+			logs.LogMain.Info("成功册除检测器[", dDet[i].ID, "]")
+		} else {
+			// 接收器附属检测器小于等于0时，提醒出错
+			logs.LogMain.Info("册除指定检测器时出错，当前接收器下已无注册检测器！")
 			return false
 		}
-		//册除应用信息表
-		// strSQL = "DELETE FROM t_apply_dict WHERE qcode=?"
-		// _, err = ExecSQL(strSQL, dDet[i].QRCode)
-		// if cm.CkErr(MsgDB.DeleteDataErr, err) {
-		// 	return false
-		// }
-		logs.LogMain.Info("成功册除检测器[", dDet[i].ID, "]")
 	}
 	return true
 }
@@ -230,6 +236,7 @@ func ReceiveAddDetect(packData []byte, ipAddr string) bool {
 		var di Detector
 		di.RcvID = strRcvID
 		di.ID = cm.ConvertOxBytesToStr(packData[begin:end])
+		// FIXME:检测器QR需要重做接口链接,等蒋
 		di.QRCode = CreateQRID(di.ID)
 		begin = end
 		dDet = append(dDet, di)

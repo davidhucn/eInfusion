@@ -4,8 +4,7 @@ import (
 	"bytes"
 	"eInfusion/logs"
 	"encoding/binary"
-
-	// "encoding/hex"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"reflect"
@@ -111,7 +110,40 @@ func ConvertBasStrToInt(ref_intBase int, ref_content string) int {
 	return int(intRetValue)
 }
 
+// 把指定十进制IP地址转换成为bytes
+func ConvertStrIPToBytes(rIP string) []byte {
+	st := strings.SplitN(rIP, ".", 4)
+	var bs []byte
+	for i := 0; i < len(st); i++ {
+		mv, _ := strconv.ParseUint(st[i], 10, 64)
+		t := ConvertBasStrToUint(16, ConvertBasNumberToStr(16, mv))
+		bs = append(bs, byte(t))
+	}
+	return bs
+}
+
+// 指定十进制IP地址的端口换为bytes
+// 先规定为四位数
+func ConvertStrPortToBytes(rPort string) []byte {
+	// var bs []byte
+	s, _ := hex.DecodeString(rPort)
+	// if len(rPort)>3 {
+	// 	for i := 0; i < len(rPort); i++ {
+	// 		if next < len(rPort) {
+	// 			next = i + 1
+	// 		}
+	// 		st := rPort[i] + rPort[next]
+
+	// 	}
+
+	// }else{
+
+	// }
+	return s
+}
+
 //	根据指定进制要求，把字符串转换成数字Uint8型
+// 注意：本函数只能还原ref_content数值本意的数值，不能直接转换进制
 func ConvertBasStrToUint(ref_intBase int, ref_content string) uint8 {
 	intRetValue, err := strconv.ParseUint(ref_content, ref_intBase, 64)
 	if err != nil {
@@ -145,7 +177,7 @@ func GetPartOfStrToStr(ref_strContent string, ref_intBegin int, ref_intEnd int) 
 	return strR
 }
 
-// 转换byte内的数据为2进制的byte切片
+// 转换byte内的数据为二进制的byte切片
 func ConvertByteToBinaryOfBytes(rByte byte) []byte {
 	var bT []byte
 	s := ConvertBasNumberToStr(2, rByte)
