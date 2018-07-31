@@ -133,9 +133,9 @@ func ConvertStrIPToBytes(rIP string) []byte {
 	return bs
 }
 
-// ConvertStrPortToBytes :指定十进制IP地址的端口换为bytes
+// ConvertStrToBytes :指定十进制IP地址的端口换为bytes
 // 先规定为四位数
-func ConvertStrPortToBytes(rPort string) []byte {
+func ConvertStrToBytes(rPort string) []byte {
 	// var bs []byte
 	s, _ := hex.DecodeString(rPort)
 	// if len(rPort)>3 {

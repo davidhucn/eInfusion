@@ -34,7 +34,7 @@ func initClisConnMap() {
 
 //   发送数据
 func SendData(conn *net.TCPConn, data []byte) (n int, err error) {
-	ip := comm.GetRealIPAddr(conn.RemoteAddr().String())
+	ip := comm.GetPureIPAddr(conn.RemoteAddr().String())
 	//FIXME:未考虑网络延迟、断网问题，另外发送两个数据须间隔15毫秒(millionseconds)
 	time.Sleep(15 * time.Millisecond)
 	n, err = conn.Write(data)
@@ -76,8 +76,8 @@ func Broadcast(tclisMap map[string]*net.TCPConn, data []byte) {
 func madeConn(conn *net.TCPConn) {
 	//初始化连接这个函数被调用
 
-	mkClisConn(comm.GetRealIPAddr(conn.RemoteAddr().String()), conn)
-	logs.LogMain.Info("IP:", comm.GetRealIPAddr(conn.RemoteAddr().String()), "上线")
+	mkClisConn(comm.GetPureIPAddr(conn.RemoteAddr().String()), conn)
+	logs.LogMain.Info("IP:", comm.GetPureIPAddr(conn.RemoteAddr().String()), "上线")
 	comm.SepLi(20, "-")
 	// ****定时处理(心跳等)
 	//	go loopingCall(conn)
@@ -87,7 +87,7 @@ func madeConn(conn *net.TCPConn) {
 func lostConn(conn *net.TCPConn) {
 	//连接断开这个函数被调用
 
-	ip := comm.GetRealIPAddr(conn.RemoteAddr().String())
+	ip := comm.GetPureIPAddr(conn.RemoteAddr().String())
 	delClisConn(ip) // 删除关闭的连接对应的clisMap项
 	logs.LogMain.Info("IP:", ip, "下线")
 	comm.SepLi(30, "*")
@@ -102,7 +102,7 @@ func receiveData(c *net.TCPConn) {
 	rvID := comm.ConvertPerTwoOxCharOfStrToBytes("A0000000")
 	bIP := comm.ConvertStrIPToBytes("192.168.121.12")
 	// FIXME:端口错误 ，IP地址可以用，HEX包学习
-	bPort := comm.ConvertStrPortToBytes("7778")
+	bPort := comm.ConvertStrToBytes("7778")
 	// orders := ep.CmdOperateDetect(ep.G_TsCmd.DelDetect, rvID, 1, dtID)
 	orders := ep.CmdSetRcvCfg(rvID, bIP, bPort)
 	SendData(c, orders)
@@ -119,7 +119,7 @@ func receiveData(c *net.TCPConn) {
 		var intPckContentLength int
 		// 判断包头是否正确，如果正确，获取长度
 		if !ep.DecodeHeader(recDataHeader, &intPckContentLength) {
-			logs.LogMain.Info(comm.GetRealIPAddr(c.RemoteAddr().String()), "的数据包头异常,强制下线!")
+			logs.LogMain.Info(comm.GetPureIPAddr(c.RemoteAddr().String()), "的数据包头异常,强制下线!")
 			//	如果包头不正确，断开连接
 			break
 			//	continue 退出本次
@@ -131,7 +131,7 @@ func receiveData(c *net.TCPConn) {
 			//	实际长度和包头内规定长度不一致
 			if n == intPckContentLength {
 				// 处理报文数据内容
-				ep.DecodeRcvData(r, comm.GetRealIPAddr(c.RemoteAddr().String()))
+				ep.DecodeRcvData(r, comm.GetPureIPAddr(c.RemoteAddr().String()))
 			} else {
 				/*如果长度不一致，退出*/
 				//	continue
