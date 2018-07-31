@@ -13,65 +13,65 @@ import (
 	"time"
 )
 
-//获取时间戳
+// GetTimeStamp :获取时间戳
 func GetTimeStamp() string {
 	return string(time.Now().Unix())
 }
 
-func GetRealIPAddr(ip string) string {
+// GetPureIPAddr : 获取IP中纯的地址，去除字符串中的端口数据
+func GetPureIPAddr(ip string) string {
 	return strings.Split(ip, ":")[0]
 }
 
-// 获取当前时间
+// GetCurrentTime : 获取当前时间
 func GetCurrentTime() string {
 	strTime := time.Now().Format("2006-01-02 15:04:05") //后面的参数是固定的 否则将无法正常输出
 	return strTime
 }
 
-//获取当前日期
+// GetCurrentDate :获取当前日期
 func GetCurrentDate() string {
 	return time.Now().Format("2006-01-02")
 }
 
-//生成分隔行
-func SepLi(ref_num int, ref_Char string) {
+// SepLi :生成分隔行
+func SepLi(rN int, rChar string) {
 	s := "-"
-	if ref_Char != "" {
-		s = ref_Char
+	if rChar != "" {
+		s = rChar
 	}
-	Msg(strings.Repeat(s, ref_num))
+	Msg(strings.Repeat(s, rN))
 }
 
-//去除左右空格
-func TrimSpc(ref_str string) string {
-	return strings.TrimSpace(ref_str)
+// TrimSpc :去除左右空格
+func TrimSpc(rStr string) string {
+	return strings.TrimSpace(rStr)
 }
 
-// 打印到屏幕
+// Msg :打印到屏幕
 func Msg(v ...interface{}) {
 	fmt.Println(v...)
 }
 
-//获取变量类型
-func GetVarType(ref_var interface{}) string {
-	return fmt.Sprint(reflect.TypeOf(ref_var))
+// GetVarType :获取变量类型
+func GetVarType(rVal interface{}) string {
+	return fmt.Sprint(reflect.TypeOf(rVal))
 }
 
-//处理错误
-//如果有错误，返回true,无错则返回false
-func CkErr(ref_MsgTitle string, ref_err error) bool {
-	if ref_err != nil {
-		logs.LogMain.Error(ref_MsgTitle, ref_err)
+// CkErr :处理错误(如果有错误，返回true,无错则返回false),同时记录日志
+func CkErr(rMsgTitle string, rErr error) bool {
+	if rErr != nil {
+		logs.LogMain.Error(rMsgTitle, rErr)
 		return true
 	}
 	return false
 }
 
-//把数字内容（int/uint）根据参数base转换成指定进制，返回
-func ConvertBasNumberToStr(ref_intBase int, ref_varContent interface{}) string {
+// ConvertBasNumberToStr :把数值类型数据（仅支持int/uint）转换成指定进制数值，返回字符串
+func ConvertBasNumberToStr(rBase int, rVal interface{}) string {
 	//	reflect.TypeOf(ref_varContent)
 	var strBaseValue string
-	switch ref_intBase {
+	switch rBase {
 	case 16:
 		strBaseValue = "X"
 	case 10:
@@ -83,16 +83,16 @@ func ConvertBasNumberToStr(ref_intBase int, ref_varContent interface{}) string {
 	default:
 		strBaseValue = "x"
 	}
-	strRetValue := fmt.Sprintf("%"+strBaseValue, ref_varContent)
+	strRetValue := fmt.Sprintf("%"+strBaseValue, rVal)
 	return strRetValue
 }
 
-//转换16进制Bytes为string
+// ConvertOxBytesToStr :转换Bytes为十六进制字符串 (此方法没有用HEX包)
 //转换过程中可能会丢失0，因此需要补0
-func ConvertOxBytesToStr(ref_content []byte) string {
+func ConvertOxBytesToStr(rCnt []byte) string {
 	var strRet string
-	for i := 0; i < len(ref_content); i++ {
-		strCon := ConvertBasNumberToStr(16, ref_content[i])
+	for i := 0; i < len(rCnt); i++ {
+		strCon := ConvertBasNumberToStr(16, rCnt[i])
 		if len(strCon) == 1 {
 			strCon = "0" + strCon
 		}
@@ -101,16 +101,27 @@ func ConvertOxBytesToStr(ref_content []byte) string {
 	return strRet
 }
 
-//	把指定进制的字符转换成为十进制数值（int型）
-func ConvertBasStrToInt(ref_intBase int, ref_content string) int {
-	intRetValue, err := strconv.ParseInt(ref_content, ref_intBase, 64)
+// ConvertBasStrToInt :把指定进制的字符转换成为十进制数值（int型）
+// 请注意，只能还原数值的进制，并不能转换进制
+func ConvertBasStrToInt(rBase int, rStrCnt string) int {
+	intRetValue, err := strconv.ParseInt(rStrCnt, rBase, 64)
 	if err != nil {
 		intRetValue = 0
 	}
 	return int(intRetValue)
 }
 
-// 把指定十进制IP地址转换成为bytes
+// ConvertBasStrToUint :根据指定进制要求，把字符串转换成数字Uint8型
+//  请注意，只能还原数值的进制，并不能转换进制
+func ConvertBasStrToUint(rBase int, rStrCnt string) uint8 {
+	intRetValue, err := strconv.ParseUint(rStrCnt, rBase, 64)
+	if err != nil {
+		intRetValue = 0
+	}
+	return uint8(intRetValue)
+}
+
+// ConvertStrIPToBytes :把指定十进制IP地址转换成为bytes
 func ConvertStrIPToBytes(rIP string) []byte {
 	st := strings.SplitN(rIP, ".", 4)
 	var bs []byte
@@ -122,7 +133,7 @@ func ConvertStrIPToBytes(rIP string) []byte {
 	return bs
 }
 
-// 指定十进制IP地址的端口换为bytes
+// ConvertStrPortToBytes :指定十进制IP地址的端口换为bytes
 // 先规定为四位数
 func ConvertStrPortToBytes(rPort string) []byte {
 	// var bs []byte
@@ -142,42 +153,32 @@ func ConvertStrPortToBytes(rPort string) []byte {
 	return s
 }
 
-//	根据指定进制要求，把字符串转换成数字Uint8型
-// 注意：本函数只能还原ref_content数值本意的数值，不能直接转换进制
-func ConvertBasStrToUint(ref_intBase int, ref_content string) uint8 {
-	intRetValue, err := strconv.ParseUint(ref_content, ref_intBase, 64)
-	if err != nil {
-		intRetValue = 0
-	}
-	return uint8(intRetValue)
-}
-
-//根据开始、结束下标返回相应的字符串内容返回bytes
-func ConvertBasStrToBytes(ref_strContent string, ref_intBegin int, ref_intEnd int, ref_intBase int) []byte {
+// ConvertBasStrToBytes :根据开始、结束下标返回相应的字符串内容返回bytes
+func ConvertBasStrToBytes(rStrCnt string, rBegin int, rEnd int, rBase int) []byte {
 	var bT []byte
-	n := len(ref_strContent)
-	if ref_intEnd < n && ref_intBegin > 0 {
-		for i := ref_intBegin; i <= ref_intEnd; i++ {
-			strT := string(ref_strContent[i])
-			bT = append(bT, ConvertBasStrToUint(ref_intBase, strT))
+	n := len(rStrCnt)
+	if rEnd < n && rBegin > 0 {
+		for i := rBegin; i <= rEnd; i++ {
+			strT := string(rStrCnt[i])
+			bT = append(bT, ConvertBasStrToUint(rBase, strT))
 		}
 	}
 	return bT
 }
 
-//根据开始、结束下标返回相应的字符串内容返回string
-func GetPartOfStrToStr(ref_strContent string, ref_intBegin int, ref_intEnd int) string {
+//GetPartOfStrToStr :根据开始、结束下标返回相应的字符串内容返回string
+func GetPartOfStrToStr(rStrCnt string, rBegin int, rEnd int) string {
 	var strR string
-	n := len(ref_strContent)
-	if ref_intEnd < n && ref_intBegin >= 0 {
-		for i := ref_intBegin; i <= ref_intEnd; i++ {
-			strR += string(ref_strContent[i])
+	n := len(rStrCnt)
+	if rEnd < n && rBegin >= 0 {
+		for i := rBegin; i <= rEnd; i++ {
+			strR += string(rStrCnt[i])
 		}
 	}
 	return strR
 }
 
-// 转换byte内的数据为二进制的byte切片
+// ConvertByteToBinaryOfBytes :转换byte内的数据为二进制的byte切片
 func ConvertByteToBinaryOfBytes(rByte byte) []byte {
 	var bT []byte
 	s := ConvertBasNumberToStr(2, rByte)
@@ -189,28 +190,28 @@ func ConvertByteToBinaryOfBytes(rByte byte) []byte {
 	return bT
 }
 
-//把字符串内容按每两字符对应一个byte组成新的bytes，返回[]byte
-func ConvertPerTwoOxCharOfStrToBytes(ref_s string) []byte {
+// ConvertPerTwoOxCharOfStrToBytes :把字符串内容按每两字符对应一个byte组成新的bytes，返回[]byte
+func ConvertPerTwoOxCharOfStrToBytes(rStrCnt string) []byte {
 	var bT []byte
-	var n int = len(ref_s)
+	n := len(rStrCnt)
 	for i := 0; i < n-1; i++ {
 		j := i + 1
-		strP := string(ref_s[i]) + string(ref_s[j])
+		strP := string(rStrCnt[i]) + string(rStrCnt[j])
 		bT = append(bT, ConvertBasStrToUint(16, string(strP)))
 	}
 	return bT
 }
 
-//判断是否存在,true表示存在
-func IsExists(ref_Path string) bool {
-	_, err := os.Stat(ref_Path)
+// IsExists :判断是否存在,true表示存在
+func IsExists(rPath string) bool {
+	_, err := os.Stat(rPath)
 	if err != nil {
 		return false
 	}
 	return true
 }
 
-// 获取当然路径
+// GetCurrentDirectory :获取当然路径
 func GetCurrentDirectory() string {
 	var strPath string
 	if os.IsPathSeparator('\\') { //前边的判断是否是系统的分隔符
@@ -223,7 +224,7 @@ func GetCurrentDirectory() string {
 	return strPath
 }
 
-//根据环境，返回分隔符
+// GetPathSeparator :根据操作系统环境，返回分隔符
 func GetPathSeparator() string {
 	var strPath string
 	if os.IsPathSeparator('\\') { //前边的判断是否是系统的分隔符
@@ -234,12 +235,12 @@ func GetPathSeparator() string {
 	return strPath
 }
 
-// 转化整形成字符型
+// ConvertIntToStr :转化整形成字符型
 func ConvertIntToStr(intContent int) string {
 	return strconv.Itoa(intContent)
 }
 
-//整形转换成字节
+// ConvertIntToBytes :整形转换成字节
 func ConvertIntToBytes(n int) []byte {
 	tmp := int32(n)
 	bytesBuffer := bytes.NewBuffer([]byte{})
@@ -247,21 +248,21 @@ func ConvertIntToBytes(n int) []byte {
 	return bytesBuffer.Bytes()
 }
 
-// 写入指定文件，如果没有该文件自动生成
-func WrToFilWithBuffer(f_strPath string, f_strContent string, f_boolWriteAppend bool) bool {
+// WrToFilWithBuffer :写入指定文件，如果没有该文件自动生成
+func WrToFilWithBuffer(rFilePath string, rStrCnt string, rIsAppend bool) bool {
 	//	this function for complex content to file
 	var intFileOpenMode int
-	if f_boolWriteAppend {
+	if rIsAppend {
 		intFileOpenMode = os.O_WRONLY | os.O_CREATE | os.O_APPEND
 	} else {
 		intFileOpenMode = os.O_WRONLY | os.O_CREATE | os.O_TRUNC
 	}
-	fileHandle, err := os.OpenFile(f_strPath, intFileOpenMode, 0666)
+	fileHandle, err := os.OpenFile(rFilePath, intFileOpenMode, 0666)
 	if err != nil {
 		return false
 	} else {
 		// write to the file
-		fileHandle.WriteString("\r\n" + f_strContent)
+		fileHandle.WriteString("\r\n" + rStrCnt)
 	}
 	defer fileHandle.Close()
 	return true
