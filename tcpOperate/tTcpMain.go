@@ -101,8 +101,10 @@ func receiveData(c *net.TCPConn) {
 	// dtID := comm.ConvertPerTwoOxCharOfStrToBytes("B0000000")
 	rvID := comm.ConvertPerTwoOxCharOfStrToBytes("A0000000")
 	bIP := comm.ConvertStrIPToBytes("192.168.121.12")
-	bPort := comm.ConvertPortToBytes("7778")
+	bPort := comm.ConvertEvenDecToBytes("7778")
+
 	// orders := ep.CmdOperateDetect(ep.G_TsCmd.DelDetect, rvID, 1, dtID)
+	// orders := ep.CmdSetRcvReconTime(rvID)
 	orders := ep.CmdSetRcvCfg(rvID, bIP, bPort)
 	SendData(c, orders)
 	defer c.Close()

@@ -49,7 +49,6 @@ func CmdOperateDetect(orderType uint8, rRcvID []byte, detectAmount int, rDetID [
 }
 
 // CmdSetRcvCfg :生成指令，修改接收器网络配置
-// FIXME:生成的数据有问题 ，再核对
 func CmdSetRcvCfg(rRcvID []byte, rIP []byte, rPort []byte) []byte {
 	var intOrderDataLength = 13
 	//	基本指令内容
@@ -77,7 +76,7 @@ func CmdSetRcvCfg(rRcvID []byte, rIP []byte, rPort []byte) []byte {
 
 // CmdSetRcvReconTime :设置接收器重连接时间
 // FIXME:错误，需要修改，发现遗漏重新连接参数
-func CmdSetRcvReconTime(rRcvID []byte, rIP []byte, rReconTime int) []byte {
+func CmdSetRcvReconTime(rRcvID []byte, rReconTime []byte) []byte {
 	var intOrderDataLength = 9
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)
@@ -91,7 +90,7 @@ func CmdSetRcvReconTime(rRcvID []byte, rIP []byte, rReconTime int) []byte {
 	}
 	// 连接时间
 	for period := 0; period < 2; period++ {
-		sendOrders[period+7] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, rIP[period]))
+		sendOrders[period+7] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, rReconTime[period]))
 	}
 	return sendOrders
 }

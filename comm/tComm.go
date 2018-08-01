@@ -132,11 +132,11 @@ func ConvertStrIPToBytes(rIP string) []byte {
 	return bs
 }
 
-// ConvertPortToBytes :指定十进制IP地址的端口换为bytes
-// 请注意：目前只支持四位数端口
-func ConvertPortToBytes(rPort string) []byte {
+// ConvertEvenDecToBytes :偶数十进制数值转换为十六进制bytes
+// 请注意：只支持偶数位
+func ConvertEvenDecToBytes(rStrCnt string) []byte {
 	var bs []byte
-	ms := ConvertBasNumberToStr(16, ConvertBasStrToInt(10, rPort))
+	ms := ConvertBasNumberToStr(16, ConvertBasStrToInt(10, rStrCnt))
 	if len(ms) > 2 {
 		t := ConvertPerTwoOxCharOfStrToBytes(ms)
 		for i := 0; i < len(t); i++ {
@@ -145,6 +145,15 @@ func ConvertPortToBytes(rPort string) []byte {
 	}
 	return bs
 }
+
+// ConvertOddDecToBytes :奇数十进制数值转换为十六进制bytes
+// func ConvertOddDecToBytes(rStrCnt string) []byte {
+// 	var bs []byte
+// 	ms := ConvertBasNumberToStr(16, ConvertBasStrToInt(10, rStrCnt))
+// 	if len(ms)%2 !=0{
+
+// 	}
+// }
 
 // ConvertBasStrToBytes :根据开始、结束下标返回相应的字符串内容返回bytes
 func ConvertBasStrToBytes(rStrCnt string, rBegin int, rEnd int, rBase int) []byte {
