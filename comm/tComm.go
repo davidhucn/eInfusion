@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"eInfusion/logs"
 	"encoding/binary"
-	"encoding/hex"
 	"fmt"
 	"os"
 	"reflect"
@@ -133,31 +132,25 @@ func ConvertStrIPToBytes(rIP string) []byte {
 	return bs
 }
 
-// ConvertStrToBytes :指定十进制IP地址的端口换为bytes
-// 先规定为四位数
-func ConvertStrToBytes(rPort string) []byte {
-	// var bs []byte
-	s, _ := hex.DecodeString(rPort)
-	// if len(rPort)>3 {
-	// 	for i := 0; i < len(rPort); i++ {
-	// 		if next < len(rPort) {
-	// 			next = i + 1
-	// 		}
-	// 		st := rPort[i] + rPort[next]
-
-	// 	}
-
-	// }else{
-
-	// }
-	return s
+// ConvertPortToBytes :指定十进制IP地址的端口换为bytes
+// 请注意：目前只支持四位数端口
+func ConvertPortToBytes(rPort string) []byte {
+	var bs []byte
+	ms := ConvertBasNumberToStr(16, ConvertBasStrToInt(10, rPort))
+	if len(ms) > 2 {
+		t := ConvertPerTwoOxCharOfStrToBytes(ms)
+		for i := 0; i < len(t); i++ {
+			bs = append(bs, t[i])
+		}
+	}
+	return bs
 }
 
 // ConvertBasStrToBytes :根据开始、结束下标返回相应的字符串内容返回bytes
 func ConvertBasStrToBytes(rStrCnt string, rBegin int, rEnd int, rBase int) []byte {
 	var bT []byte
 	n := len(rStrCnt)
-	if rEnd < n && rBegin > 0 {
+	if rEnd <= n && rBegin >= 0 {
 		for i := rBegin; i <= rEnd; i++ {
 			strT := string(rStrCnt[i])
 			bT = append(bT, ConvertBasStrToUint(rBase, strT))
@@ -166,8 +159,8 @@ func ConvertBasStrToBytes(rStrCnt string, rBegin int, rEnd int, rBase int) []byt
 	return bT
 }
 
-//GetPartOfStrToStr :根据开始、结束下标返回相应的字符串内容返回string
-func GetPartOfStrToStr(rStrCnt string, rBegin int, rEnd int) string {
+//GetPartOfStr :根据开始、结束下标返回相应的字符串内容返回string
+func GetPartOfStr(rStrCnt string, rBegin int, rEnd int) string {
 	var strR string
 	n := len(rStrCnt)
 	if rEnd < n && rBegin >= 0 {
@@ -191,13 +184,16 @@ func ConvertByteToBinaryOfBytes(rByte byte) []byte {
 }
 
 // ConvertPerTwoOxCharOfStrToBytes :把字符串内容按每两字符对应一个byte组成新的bytes，返回[]byte
+// 注意：目前只支持偶数位字符转换
 func ConvertPerTwoOxCharOfStrToBytes(rStrCnt string) []byte {
 	var bT []byte
 	n := len(rStrCnt)
-	for i := 0; i < n-1; i++ {
+	i := 0
+	for i < n-1 {
 		j := i + 1
 		strP := string(rStrCnt[i]) + string(rStrCnt[j])
 		bT = append(bT, ConvertBasStrToUint(16, string(strP)))
+		i = j + 1
 	}
 	return bT
 }

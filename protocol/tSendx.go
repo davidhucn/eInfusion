@@ -68,9 +68,10 @@ func CmdSetRcvCfg(rRcvID []byte, rIP []byte, rPort []byte) []byte {
 	}
 	//	端口号
 	for portNum := 0; portNum < 2; portNum++ {
-		// sendOrders[portNum+11] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, rPort[portNum]))
-		sendOrders[portNum+11] = rPort[portNum]
+		sendOrders[portNum+11] = ConvertBasStrToUint(10, ConvertBasNumberToStr(10, rPort[portNum]))
+		// sendOrders[portNum+11] = rPort[portNum]
 	}
+
 	return sendOrders
 }
 
