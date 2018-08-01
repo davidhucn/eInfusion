@@ -2,8 +2,8 @@ package protocol
 
 import . "eInfusion/comm"
 
-// 获取指定接收器的状态
-func CmdGetRcvStatus(ref_RcvID []byte) []byte {
+// CmdGetRcvStatus :获取指定接收器的状态
+func CmdGetRcvStatus(rRcvID []byte) []byte {
 	var intOrderDataLength = 7
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)
@@ -12,15 +12,15 @@ func CmdGetRcvStatus(ref_RcvID []byte) []byte {
 	//	获取指令类型
 	sendOrders[2] = G_TsCmd.GetRcv
 	//	获取接收器ID
-	for recId := 0; recId < 4; recId++ {
-		sendOrders[recId+3] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, ref_RcvID[recId]))
+	for recID := 0; recID < 4; recID++ {
+		sendOrders[recID+3] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, rRcvID[recID]))
 	}
 	return sendOrders
 }
 
-// 对检测器进行操作（检测、册除、新增）
+// CmdOperateDetect :对检测器进行操作（检测、册除、新增）
 // 一个设备ID 占4个byte
-func CmdOperateDetect(orderType uint8, ref_RcvID []byte, detectAmount int, ref_DetectID []byte) []byte {
+func CmdOperateDetect(orderType uint8, rRcvID []byte, detectAmount int, rDetID []byte) []byte {
 	var intOrderDataLength = 7
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)
@@ -29,8 +29,8 @@ func CmdOperateDetect(orderType uint8, ref_RcvID []byte, detectAmount int, ref_D
 	//	获取指令类型
 	sendOrders[2] = orderType
 	//	获取接收器ID
-	for recId := 0; recId < 4; recId++ {
-		sendOrders[recId+3] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, ref_RcvID[recId]))
+	for recID := 0; recID < 4; recID++ {
+		sendOrders[recID+3] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, rRcvID[recID]))
 	}
 	// 如果与检测器相关的操作(添加、删除、检查)
 	if orderType == G_TsCmd.AddDetect || orderType == G_TsCmd.DelDetect || orderType == G_TsCmd.GetDetect {
@@ -38,8 +38,8 @@ func CmdOperateDetect(orderType uint8, ref_RcvID []byte, detectAmount int, ref_D
 			// 检测器数量内容到slice
 			sendOrders = append(sendOrders, byte(detectAmount))
 			//	添加检测器id到slice
-			for devId := 0; devId < 4; devId++ {
-				sendOrders = append(sendOrders, ConvertBasStrToUint(16, ConvertBasNumberToStr(16, ref_DetectID[devId])))
+			for devID := 0; devID < 4; devID++ {
+				sendOrders = append(sendOrders, ConvertBasStrToUint(16, ConvertBasNumberToStr(16, rDetID[devID])))
 			}
 		}
 	}
@@ -48,9 +48,9 @@ func CmdOperateDetect(orderType uint8, ref_RcvID []byte, detectAmount int, ref_D
 	return sendOrders
 }
 
-// 修改接收器网络配置
+// CmdSetRcvCfg :生成指令，修改接收器网络配置
 // FIXME:生成的数据有问题 ，再核对
-func CmdSetRcvCfg(ref_RcvID []byte, ref_IP []byte, ref_Port []byte) []byte {
+func CmdSetRcvCfg(rRcvID []byte, rIP []byte, rPort []byte) []byte {
 	var intOrderDataLength = 13
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)
@@ -59,22 +59,24 @@ func CmdSetRcvCfg(ref_RcvID []byte, ref_IP []byte, ref_Port []byte) []byte {
 	//	获取指令类型
 	sendOrders[2] = G_TsCmd.SetRcvNetCfg
 	//	获取接收器ID
-	for recId := 0; recId < 4; recId++ {
-		sendOrders[recId+3] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, ref_RcvID[recId]))
+	for recID := 0; recID < 4; recID++ {
+		sendOrders[recID+3] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, rRcvID[recID]))
 	}
 	// IP地址
 	for ipAdd := 0; ipAdd < 4; ipAdd++ {
-		sendOrders[ipAdd+7] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, ref_IP[ipAdd]))
+		sendOrders[ipAdd+7] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, rIP[ipAdd]))
 	}
 	//	端口号
 	for portNum := 0; portNum < 2; portNum++ {
-		sendOrders[portNum+11] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, ref_Port[portNum]))
+		// sendOrders[portNum+11] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, rPort[portNum]))
+		sendOrders[portNum+11] = rPort[portNum]
 	}
 	return sendOrders
 }
 
-// 设置接收器重连接时间
-func CmdSetRcvReconTime(ref_RcvID []byte, ref_IP []byte, ref_ReconTime int) []byte {
+// CmdSetRcvReconTime :设置接收器重连接时间
+// FIXME:错误，需要修改，发现遗漏重新连接参数
+func CmdSetRcvReconTime(rRcvID []byte, rIP []byte, rReconTime int) []byte {
 	var intOrderDataLength = 9
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)
@@ -83,12 +85,12 @@ func CmdSetRcvReconTime(ref_RcvID []byte, ref_IP []byte, ref_ReconTime int) []by
 	//	获取指令类型
 	sendOrders[2] = G_TsCmd.SetReconnTime
 	//	获取接收器ID
-	for recId := 0; recId < 4; recId++ {
-		sendOrders[recId+3] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, ref_RcvID[recId]))
+	for recID := 0; recID < 4; recID++ {
+		sendOrders[recID+3] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, rRcvID[recID]))
 	}
 	// 连接时间
 	for period := 0; period < 2; period++ {
-		sendOrders[period+7] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, ref_IP[period]))
+		sendOrders[period+7] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, rIP[period]))
 	}
 	return sendOrders
 }

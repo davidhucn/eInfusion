@@ -103,6 +103,7 @@ func receiveData(c *net.TCPConn) {
 	bIP := comm.ConvertStrIPToBytes("192.168.121.12")
 	// FIXME:端口错误 ，IP地址可以用，HEX包学习
 	bPort := comm.ConvertStrToBytes("7778")
+
 	// orders := ep.CmdOperateDetect(ep.G_TsCmd.DelDetect, rvID, 1, dtID)
 	orders := ep.CmdSetRcvCfg(rvID, bIP, bPort)
 	SendData(c, orders)
