@@ -99,9 +99,10 @@ func receiveData(c *net.TCPConn) {
 	// SendData(c, ep.CmdGetRcvStatus(comm.ConvertPerTwoOxCharOfStrToBytes("A0000000")))
 	// time.Sleep(10 * time.Millisecond)
 	// dtID := comm.ConvertPerTwoOxCharOfStrToBytes("B0000000")
-	rvID := comm.ConvertPerTwoOxCharOfStrToBytes("A0000000")
+	rvID := comm.ConvertStrToBytesByPerTwoChar("A0000000")
 	bIP := comm.ConvertStrIPToHexBytes("192.168.121.12")
 	bPort := comm.ConvertStrIPToHexBytes("7778")
+	comm.Msg(comm.ConvertDecToHexBytes(300))
 	comm.Msg(comm.ConvertIntToBytes(7778))
 
 	// orders := ep.CmdOperateDetect(ep.G_TsCmd.DelDetect, rvID, 1, dtID)
