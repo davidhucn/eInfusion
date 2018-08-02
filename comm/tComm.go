@@ -120,21 +120,21 @@ func ConvertBasStrToUint(rBase int, rStrCnt string) uint8 {
 	return uint8(intRetValue)
 }
 
-// ConvertStrIPToHexBytes :把指定十进制IP地址转换成为十六进制bytes
-func ConvertStrIPToHexBytes(rIP string) []byte {
+// ConvertStrIPToBytes :把指定十进制IP地址转换成为bytes
+func ConvertStrIPToBytes(rIP string) []byte {
 	st := strings.SplitN(rIP, ".", 4)
 	var bs []byte
 	for i := 0; i < len(st); i++ {
 		mv, _ := strconv.ParseUint(st[i], 10, 64)
-		t := ConvertBasStrToUint(16, ConvertBasNumberToStr(16, mv))
+		t := ConvertBasStrToUint(10, ConvertBasNumberToStr(10, mv))
 		bs = append(bs, byte(t))
 	}
 	return bs
 }
 
-// ConvertEvenDecToHexBytes :偶数十进制数值转换为十六进制bytes
+// ConvertEvenDecToBytes :偶数十进制数值转换为bytes
 // 请注意：只支持偶数位
-func ConvertEvenDecToHexBytes(rStrCnt string) []byte {
+func ConvertEvenDecToBytes(rStrCnt string) []byte {
 	var bs []byte
 	ms := ConvertBasNumberToStr(16, ConvertBasStrToInt(10, rStrCnt))
 	if len(ms) > 2 {
@@ -146,16 +146,13 @@ func ConvertEvenDecToHexBytes(rStrCnt string) []byte {
 	return bs
 }
 
-// ConvertDecToHexBytes :十进制数值转换为十六进制bytes
-func ConvertDecToHexBytes(rIntCnt int) []byte {
-	// FIXME: 转换成为十六进制还有问题
+// ConvertDecToBytes :十进制数值转换为bytes
+func ConvertDecToBytes(rValue int64) []byte {
 	var rbs []byte
-	mbs := ConvertIntToBytes(rIntCnt)
+	mbs := ConvertIntToBytes(rValue)
 	for i := 0; i < len(mbs); i++ {
 		if mbs[i] != 0 {
-			ts := ConvertBasNumberToStr(10, mbs[i])
-
-			rbs = append(rbs, ConvertBasStrToUint(16, ts))
+			rbs = append(rbs, mbs[i])
 		}
 	}
 	return rbs
@@ -252,8 +249,9 @@ func ConvertIntToStr(intContent int) string {
 }
 
 // ConvertIntToBytes :整形转换成bytes
-func ConvertIntToBytes(n int) []byte {
-	tmp := int32(n)
+// 注意：64位数字，可能会产生几位0的数值byte
+func ConvertIntToBytes(n int64) []byte {
+	tmp := int64(n)
 	bytesBuffer := bytes.NewBuffer([]byte{})
 	binary.Write(bytesBuffer, binary.BigEndian, tmp)
 	// binary.Write(bytesBuffer, binary.LittleEndian, tmp)
