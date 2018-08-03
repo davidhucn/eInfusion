@@ -104,8 +104,12 @@ func receiveData(c *net.TCPConn) {
 	// bPort := comm.ConvertPortToBytes(7778)
 	// comm.Msg(bPort)
 	// comm.Msg(comm.ConvertPortToBytes(300))
+	comm.Msg(comm.ConvertDecToBytes(7778)[0])
+	comm.Msg(comm.ConvertBasNumberToStr(16, comm.ConvertDecToBytes(7778)[0]))
+
+	comm.Msg(comm.ConvertDecToBytes(7778)[1])
 	// comm.Msg(comm.ConvertIntToBytes(7778))
-	comm.Msg(comm.GetVarType(7878))
+	// comm.Msg(comm.GetVarType(7878))
 	// orders := ep.CmdOperateDetect(ep.G_TsCmd.DelDetect, rvID, 1, dtID)
 	// orders := ep.CmdSetRcvReconTime(rvID)
 	// orders := ep.CmdSetRcvCfg(rvID, bIP, bPort)
