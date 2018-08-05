@@ -1,19 +1,17 @@
 package protocol
 
-import . "eInfusion/comm"
-
 // CmdGetRcvStatus :获取指定接收器的状态
 func CmdGetRcvStatus(rRcvID []byte) []byte {
 	var intOrderDataLength = 7
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)
 	sendOrders[0] = G_TsCmd.Header
-	sendOrders[1] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, intOrderDataLength))
+	sendOrders[1] = byte(intOrderDataLength)
 	//	获取指令类型
 	sendOrders[2] = G_TsCmd.GetRcv
 	//	获取接收器ID
 	for recID := 0; recID < 4; recID++ {
-		sendOrders[recID+3] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, rRcvID[recID]))
+		sendOrders[recID+3] = rRcvID[recID]
 	}
 	return sendOrders
 }
@@ -25,12 +23,12 @@ func CmdOperateDetect(orderType uint8, rRcvID []byte, detectAmount int, rDetID [
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)
 	sendOrders[0] = G_TsCmd.Header
-	sendOrders[1] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, intOrderDataLength))
+	sendOrders[1] = byte(intOrderDataLength)
 	//	获取指令类型
 	sendOrders[2] = orderType
 	//	获取接收器ID
 	for recID := 0; recID < 4; recID++ {
-		sendOrders[recID+3] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, rRcvID[recID]))
+		sendOrders[recID+3] = rRcvID[recID]
 	}
 	// 如果与检测器相关的操作(添加、删除、检查)
 	if orderType == G_TsCmd.AddDetect || orderType == G_TsCmd.DelDetect || orderType == G_TsCmd.GetDetect {
@@ -39,12 +37,12 @@ func CmdOperateDetect(orderType uint8, rRcvID []byte, detectAmount int, rDetID [
 			sendOrders = append(sendOrders, byte(detectAmount))
 			//	添加检测器id到slice
 			for devID := 0; devID < 4; devID++ {
-				sendOrders = append(sendOrders, ConvertBasStrToUint(16, ConvertBasNumberToStr(16, rDetID[devID])))
+				sendOrders = append(sendOrders, rDetID[devID])
 			}
 		}
 	}
 	// 根据长度调整第二位
-	sendOrders[1] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, len(sendOrders)))
+	sendOrders[1] = byte(len(sendOrders))
 	return sendOrders
 }
 
@@ -54,21 +52,23 @@ func CmdSetRcvCfg(rRcvID []byte, rIP []byte, rPort []byte) []byte {
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)
 	sendOrders[0] = G_TsCmd.Header
-	sendOrders[1] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, intOrderDataLength))
+	// sendOrders[1] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, intOrderDataLength))
+	sendOrders[1] = byte(intOrderDataLength)
 	//	获取指令类型
 	sendOrders[2] = G_TsCmd.SetRcvNetCfg
 	//	获取接收器ID
 	for recID := 0; recID < 4; recID++ {
-		sendOrders[recID+3] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, rRcvID[recID]))
+		sendOrders[recID+3] = rRcvID[recID]
 	}
 	// IP地址
 	for ipAdd := 0; ipAdd < 4; ipAdd++ {
-		sendOrders[ipAdd+7] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, rIP[ipAdd]))
+		// sendOrders[ipAdd+7] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, rIP[ipAdd]))
+		sendOrders[ipAdd+7] = rIP[ipAdd]
 	}
 	//	端口号
 	for portNum := 0; portNum < 2; portNum++ {
-		sendOrders[portNum+11] = ConvertBasStrToUint(10, ConvertBasNumberToStr(10, rPort[portNum]))
-		// sendOrders[portNum+11] = rPort[portNum]
+		// sendOrders[portNum+11] = ConvertBasStrToUint(10, ConvertBasNumberToStr(10, rPort[portNum]))
+		sendOrders[portNum+11] = rPort[portNum]
 	}
 
 	return sendOrders
@@ -81,16 +81,16 @@ func CmdSetRcvReconTime(rRcvID []byte, rReconTime []byte) []byte {
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)
 	sendOrders[0] = G_TsCmd.Header
-	sendOrders[1] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, intOrderDataLength))
+	sendOrders[1] = byte(intOrderDataLength)
 	//	获取指令类型
 	sendOrders[2] = G_TsCmd.SetReconnTime
 	//	获取接收器ID
 	for recID := 0; recID < 4; recID++ {
-		sendOrders[recID+3] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, rRcvID[recID]))
+		sendOrders[recID+3] = rRcvID[recID]
 	}
 	// 连接时间
 	for period := 0; period < 2; period++ {
-		sendOrders[period+7] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, rReconTime[period]))
+		sendOrders[period+7] = rReconTime[period]
 	}
 	return sendOrders
 }

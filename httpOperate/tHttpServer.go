@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	//	gin "gopkg.in/gin-gonic/gin.v1"
 	//	"encoding/json"
 )
@@ -16,13 +17,14 @@ func StartHttpServer(iPort int) {
 
 	gin.SetMode(gin.DebugMode) //全局设置环境，此为开发环境，线上环境为gin.ReleaseMode
 	router := gin.Default()    //获得路由实例
-
+	router.LoadHTMLFiles("indexTemple.html")
 	//注册接口
 	//	router.GET("/simple/server/get", GetHandler)
-	router.POST("/r/", PostHandler)
-	//	router.PUT("/simple/server/put", PutHandler)
-	//	router.DELETE("/simple/server/delete", DeleteHandler)
-
+	router.POST("/", PostHandler)
+	// websocket处理方法
+	router.GET("/ws", func(c *gin.Context) {
+		wshandler(c.Writer, c.Request)
+	})
 	router.Run(":" + comm.ConvertIntToStr(iPort))
 }
 
@@ -35,12 +37,33 @@ func PostHandler(c *gin.Context) {
 	//	}
 	//	holder := JsonHolder{Id: 1, Name: "my name"}
 	//若返回json数据，可以直接使用gin封装好的JSON方法
-	buf := make([]byte, 1024)
-	n, _ := c.Request.Body.Read(buf)
-	comm.SepLi(60, "")
-	comm.Msg(string(buf[0:n]))
-	comm.SepLi(60, "")
-	resp := map[string]string{"hello": "world"}
-	c.JSON(http.StatusOK, resp)
-	return
+	// buf := make([]byte, 1024)
+	// n, _ := c.Request.Body.Read(buf)
+	// comm.SepLi(60, "")
+	// comm.Msg(string(buf[0:n]))
+	// comm.SepLi(60, "")
+	// resp := map[string]string{"hello": "world"}
+	// c.JSON(http.StatusOK, resp)
+	// return
+	c.HTML(http.StatusOK, "indexTemple.html", nil)
+}
+
+var wsupgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
+
+func wshandler(w http.ResponseWriter, r *http.Request) {
+	conn, err := wsupgrader.Upgrade(w, r, nil)
+	if err != nil {
+		comm.Msg("Failed to set websocket upgrade: %+v", err)
+		return
+	}
+	for {
+		t, msg, err := conn.ReadMessage()
+		if err != nil {
+			break
+		}
+		conn.WriteMessage(t, msg)
+	}
 }
