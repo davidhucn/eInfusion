@@ -1,0 +1,47 @@
+<html>
+<head>
+
+</head>
+<body>
+	<script type="text/javascript">
+		var sock = null;
+        var port={{.port}};
+		var wsuri = url = 'ws://localhost:12312/ws'
+		window.onload = function() 
+		{
+			console.log("onload");
+			sock = new WebSocket(wsuri);
+			sock.onopen = function() {
+				console.log("connected to " + wsuri);
+			}
+
+			sock.onclose = function(e) {
+				console.log("connection closed (" + e.code + ")");
+			}
+
+			sock.onmessage = function(e) {
+				console.log("message received: " + e.data);
+				document.getElementById('result').value=e.data
+			}
+		};
+
+		function send() {
+			var msg = document.getElementById('message').value;
+			sock.send(msg);
+		};
+	</script>
+	<h1>web test</h1>
+	<form>
+		<p>
+			Message: <input id="message" type="text" value="Hello, world!">
+		</p>
+
+	</form>
+			<p>
+			result: <input id="result" type="text" value="">
+		</p>
+	<button onclick="send();">Send Message</button>
+
+
+</body>
+</html>
