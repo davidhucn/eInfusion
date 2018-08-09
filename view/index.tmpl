@@ -6,7 +6,8 @@
 	<script type="text/javascript">
 		var sock = null;
         var port={{.port}};
-		var wsuri = url = 'ws://localhost:12312/ws'
+		var wsuri = 'ws://localhost:'+ port + '/ws';
+
 		window.onload = function() 
 		{
 			console.log("onload");
