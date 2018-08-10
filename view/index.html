@@ -4,11 +4,10 @@
   </head>
 
   <body>
-    <h3>WebSocket Go</h3>
+    <h3>WebSocket Test</h3>
     <pre id="output"></pre>
 
     <script>
-        // FIXME:端口需要重新处理
       url = 'ws://localhost:12312/ws';
       c = new WebSocket(url);
       
@@ -23,10 +22,8 @@
       }
 
       c.onopen = function(){
-        setInterval( 
-          function(){ send("ping") }
-        , 1000 )
-      }
+        setInterval(function(){send("ping")}, 1000 )
+          }
     </script>
 
   </body>

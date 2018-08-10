@@ -1,0 +1,45 @@
+<html>
+  <head>
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script> 
+      url = 'ws://localhost:12312/ws';
+      c = new WebSocket(url);
+    
+      c.onmessage = function(e){
+        $("#status").text(e.data)
+        console.log(e)
+      }
+
+      c.onerror=function(){
+        $("#status").text("Connect Failure!")
+      }
+
+     c.onopen = function(){
+       $("#status").text("Connect Success!")
+      }
+
+        $("#switch").click(function()
+          {
+            if ($("#switch").text()=="Alarm Closed" ){
+              $("#switch").text("Alarm Opened")
+              c.send(1)
+            }
+            if ($("#switch").text()=="Alarm Opened" ){
+              $("#switch").text("Alarm Closed")
+              c.send(0)
+            }
+          }
+    // $("#status").html("<b>Hello world!</b>");
+    );
+
+    </script>
+  </head>
+  <body>
+    <h1 align='center'>Transfusion Test </h1> 
+    <button id='switch'>Alarm Closed</button> &nbsp;&nbsp;&nbsp; <label id="status">Waiting...</label>
+    <p></p>
+    <p>&nbsp;</p>
+
+  </body>
+
+</html>

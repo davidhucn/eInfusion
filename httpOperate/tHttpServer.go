@@ -3,6 +3,7 @@ package httpOperate
 import (
 	cm "eInfusion/comm"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -15,18 +16,18 @@ func StartHTTPServer(iPort int) {
 
 	gin.SetMode(gin.DebugMode) //全局设置环境，此为开发环境，线上环境为gin.ReleaseMode
 	r := gin.Default()         //获得路由实例
-	r.LoadHTMLGlob("view/ping.tmpl")
-	// r.LoadHTMLFiles("view/index.html")
+	// r.LoadHTMLGlob("view/ping.tmpl")
+	r.LoadHTMLFiles("view/alarm.html")
 	//	router.GET("/simple/server/get", GetHandler)
 	r.GET("/", func(c *gin.Context) {
-		// st := cm.ConvertIntToStr(iPort)
-		// resp := map[string]string{"port": st}
+		// st := "ws://localhost:12312/ws"
+		// resp := map[string]string{"url": st}
 		// c.JSON(http.StatusOK, resp)
-		// c.HTML(http.StatusOK, "index.html", resp)
-		c.HTML(http.StatusOK, "ping.tmpl", gin.H{
-			"url": "ws://localhost:12312/ws",
-		})
-		// c.HTML(http.StatusOK, "index.html", nil)
+		// c.HTML(http.StatusOK, "ping.tmpl", resp)
+		// c.HTML(http.StatusOK, "ping.tmpl", gin.H{
+		// 	"url": "ws://localhost:12312/ws",
+		// })
+		c.HTML(http.StatusOK, "alarm.html", nil)
 	})
 	// websocket处理方法
 	r.GET("/ws", func(c *gin.Context) {
@@ -69,11 +70,35 @@ func wshandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ticker := time.NewTicker(5 * time.Second)
+	for range ticker.C {
+		data := []byte("Running")
+		conn.WriteMessage(1, data)
+	}
+	// msg := []byte("running")
+	// ticker := time.NewTicker(5 * time.Second)
+	// for range ticker.C {
+	// 	conn.WriteMessage(1, msg)
+	// }
+	// conn.WriteMessage(len(msg), msg)
+
 	for {
-		t, msg, err := conn.ReadMessage()
+		_, m, err := conn.ReadMessage()
 		if err != nil {
 			break
 		}
-		conn.WriteMessage(t, msg)
+
+		if m[0] == 1 {
+			// open
+
+		}
+		if m[0] == 0 {
+			// close
+		}
+		// 	// cm.Msg("rec:", t, msg)
+		// 	tt := []byte("running")
+		// 	// cm.Msg("build:", 1, tt)
+		// 	conn.WriteMessage(1, tt)
 	}
+
 }
