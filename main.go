@@ -1,10 +1,10 @@
 package main
 
 import (
-	eh "eInfusion/httpOperate"
 	"eInfusion/logs"
+	eh "eInfusion/thttp"
 
-	et "eInfusion/tcpOperate"
+	et "eInfusion/ttcp"
 	"runtime"
 )
 

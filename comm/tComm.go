@@ -66,6 +66,15 @@ func CkErr(rMsgTitle string, rErr error) bool {
 	return false
 }
 
+// ConvertBytesOfAscToStr :转换ascii为字符串，可用于http前端数据传至后端
+func ConvertBytesOfAscToStr(rMetBt []byte) string {
+	var s string
+	for i := 0; i < len(rMetBt); i++ {
+		s += fmt.Sprintf("%c", rMetBt[i])
+	}
+	return s
+}
+
 // ConvertBasNumberToStr :把数值类型数据（仅支持int/uint）转换成指定进制数值，返回字符串
 func ConvertBasNumberToStr(rBase int, rVal interface{}) string {
 	//	reflect.TypeOf(ref_varContent)

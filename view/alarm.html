@@ -1,42 +1,64 @@
 <html>
   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
     <script> 
       url = 'ws://localhost:12312/ws';
       c = new WebSocket(url);
     
       c.onmessage = function(e){
-        $("#status").text(e.data)
-        console.log(e)
-      }
+        $("#status").text(e.data);
+        alert(e.data)
+        console.log(e);
+        
+      };
 
       c.onerror=function(){
-        $("#status").text("Connect Failure!")
-      }
+        $("#status").text("Server Connect Failure!")
+      };
 
      c.onopen = function(){
-       $("#status").text("Connect Success!")
-      }
+       $("#status").text("Server Connect Success!")
+      };
 
-        $("#switch").click(function()
-          {
-            if ($("#switch").text()=="Alarm Closed" ){
-              $("#switch").text("Alarm Opened")
-              c.send(1)
+    $("document").ready(function(){
+      $("#s").click(function()
+        {
+          var jstr;
+          var txt = $("#s").text();
+          if (txt=="Alarm Closed"){
+              $("#s").text("Alarm Opened...");
+              jstr = [{"ID":"B0000000","Action":"1"}];
             }
-            if ($("#switch").text()=="Alarm Opened" ){
-              $("#switch").text("Alarm Closed")
-              c.send(0)
+            if (txt=="Alarm Opened"){
+              $("#s").text("Alarm Closed");
+              jstr = [{"ID":"B0000000","Action":"0"}];
             }
-          }
-    // $("#status").html("<b>Hello world!</b>");
+            var ret =JSON.stringify(jstr);
+            // if (ret==null){
+            //   alert("null");
+            // } 
+            // else{
+            //   // alert("ret type:"+typeof(ret));
+            //   alert("jstr type:"+typeof(jstr))
+            //   // alert("ret:"+ret);
+            // }
+            // alert(ret);
+            // var ret = jQuery.parseJSON(jstr);
+            // alert("convert:"+ ret.replace(new RegExp('\\"',"gm"), '"' ));
+            c.send(ret);
+        }
+            // $("#status").html("<b>Hello world!</b>");
     );
-
+})
     </script>
+    <title>Transfusion</title>
   </head>
   <body>
-    <h1 align='center'>Transfusion Test </h1> 
-    <button id='switch'>Alarm Closed</button> &nbsp;&nbsp;&nbsp; <label id="status">Waiting...</label>
+    <h1 align="center">Transfusion Test </h1> 
+    <hr style="height:1px;border:none;border-top:1px dashed #093834;" />
+
+    <center>Switch: &nbsp;&nbsp;&nbsp;<button id="s">Alarm Closed</button> &nbsp;&nbsp;&nbsp; <label id="status">Waiting...</label></center>
     <p></p>
     <p>&nbsp;</p>
 
