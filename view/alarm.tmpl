@@ -1,13 +1,67 @@
 <html>
   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script> 
+      url = 'ws://localhost:12312/ws';
+      c = new WebSocket(url);
+    
+      c.onmessage = function(e){
+        $("#status").text(e.data);
+        alert(e.data)
+        console.log(e);
+        
+      };
+
+      c.onerror=function(){
+        $("#status").text("Server Connect Failure!")
+      };
+
+     c.onopen = function(){
+       $("#status").text("Server Connect Success!")
+      };
+
+    $("document").ready(function(){
+      $("#s").click(function()
+        {
+          var jstr;
+          var txt = $("#s").text();
+          if (txt=="Alarm Closed"){
+              $("#s").text("Alarm Opened...");
+              jstr = [{"ID":"B0000000","Action":"1"}];
+            }
+            if (txt=="Alarm Opened"){
+              $("#s").text("Alarm Closed");
+              jstr = [{"ID":"B0000000","Action":"0"}];
+            }
+            var ret =JSON.stringify(jstr);
+            // if (ret==null){
+            //   alert("null");
+            // } 
+            // else{
+            //   // alert("ret type:"+typeof(ret));
+            //   alert("jstr type:"+typeof(jstr))
+            //   // alert("ret:"+ret);
+            // }
+            // alert(ret);
+            // var ret = jQuery.parseJSON(jstr);
+            // alert("convert:"+ ret.replace(new RegExp('\\"',"gm"), '"' ));
+            c.send(ret);
+        }
+            // $("#status").html("<b>Hello world!</b>");
+    );
+})
+    </script>
+    <title>Transfusion</title>
   </head>
-
   <body>
-    <button id='B0000000'>报警器1</button>
+    <h1 align="center">Transfusion Test </h1> 
+    <hr style="height:1px;border:none;border-top:1px dashed #093834;" />
 
-    <button id='B0000001'>报警器2</button>
-
+    <center>Switch: &nbsp;&nbsp;&nbsp;<button id="s">Alarm Closed</button> &nbsp;&nbsp;&nbsp; <label id="status">Waiting...</label></center>
+    <p></p>
+    <p>&nbsp;</p>
 
   </body>
+
 </html>
