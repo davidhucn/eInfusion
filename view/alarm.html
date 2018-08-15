@@ -30,11 +30,13 @@
               $("#s").text("Alarm Opened...");
               jstr = [{"ID":"B0000000","Action":"1"}];
             }
-            if (txt=="Alarm Opened"){
+            if (txt=="Alarm Opened..."){
               $("#s").text("Alarm Closed");
               jstr = [{"ID":"B0000000","Action":"0"}];
             }
             var ret =JSON.stringify(jstr);
+            // alert(jQuery.parseJSON(jstr));
+
             // if (ret==null){
             //   alert("null");
             // } 

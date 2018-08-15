@@ -129,8 +129,8 @@ func ConvertBasStrToUint(rBase int, rStrCnt string) uint8 {
 	return uint8(intRetValue)
 }
 
-// ConvertStrIPToBytes :把指定十进制IP地址转换成为bytes
-func ConvertStrIPToBytes(rIP string) []byte {
+// ConvertStrIPAddToBytes :把指定十进制IP地址转换成为bytes
+func ConvertStrIPAddToBytes(rIP string) []byte {
 	st := strings.SplitN(rIP, ".", 4)
 	var bs []byte
 	for i := 0; i < len(st); i++ {
@@ -167,8 +167,8 @@ func ConvertDecToBytes(rValue int64) []byte {
 	return rbs
 }
 
-// ConvertBasStrToBytes :根据开始、结束下标返回相应的字符串内容返回bytes
-func ConvertBasStrToBytes(rStrCnt string, rBegin int, rEnd int, rBase int) []byte {
+// ConvertBasPartOfStrToBytes :根据开始、结束下标返回相应的字符串内容返回bytes
+func ConvertBasPartOfStrToBytes(rStrCnt string, rBegin int, rEnd int, rBase int) []byte {
 	var bT []byte
 	n := len(rStrCnt)
 	if rEnd <= n && rBegin >= 0 {
@@ -202,6 +202,15 @@ func ConvertByteToBinaryOfBytes(rByte byte) []byte {
 		bT = append(bT, tt)
 	}
 	return bT
+}
+
+// ConvertBytesToInt :字节转换成整形
+func ConvertBytesToInt(n []byte) int {
+	bytesbuffer := bytes.NewBuffer(n)
+	var x int32
+	binary.Read(bytesbuffer, binary.BigEndian, &x)
+
+	return int(x)
 }
 
 // ConvertStrToBytesByPerTwoChar :把字符串内容按每两字符对应一个byte组成新的bytes，返回[]byte

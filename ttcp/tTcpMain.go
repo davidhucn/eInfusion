@@ -95,18 +95,20 @@ func lostConn(conn *net.TCPConn) {
 
 //echo server Goroutine
 func receiveData(c *net.TCPConn) {
-	// TODO:测试包
-	// SendData(c, ep.CmdGetRcvStatus(comm.ConvertPerTwoOxCharOfStrToBytes("A0000000")))
-	// time.Sleep(10 * time.Millisecond)
-	dtID := comm.ConvertStrToBytesByPerTwoChar("B0000000")
-	rvID := comm.ConvertStrToBytesByPerTwoChar("A0000000")
 
-	// bIP := comm.ConvertStrIPToBytes("192.168.121.12")
-	// bPort := comm.ConvertDecToBytes(7778)
-	orders := ep.CmdOperateDetect(ep.G_TsCmd.DelDetect, rvID, 1, dtID)
-	// orders := ep.CmdSetRcvReconTime(rvID, comm.ConvertDecToBytes(900))
-	// orders := ep.CmdSetRcvCfg(rvID, bIP, bPort)
-	SendData(c, orders)
+	{ // TODO:测试包
+		// SendData(c, ep.CmdGetRcvStatus(comm.ConvertPerTwoOxCharOfStrToBytes("A0000000")))
+		// time.Sleep(10 * time.Millisecond)
+		// dtID := comm.ConvertStrToBytesByPerTwoChar("B0000000")
+		// rvID := comm.ConvertStrToBytesByPerTwoChar("A0000000")
+
+		// // bIP := comm.ConvertStrIPToBytes("192.168.121.12")
+		// // bPort := comm.ConvertDecToBytes(7778)
+		// orders := ep.CmdOperateDetect(ep.G_TsCmd.DelDetect, rvID, 1, dtID)
+		// // orders := ep.CmdSetRcvReconTime(rvID, comm.ConvertDecToBytes(900))
+		// // orders := ep.CmdSetRcvCfg(rvID, bIP, bPort)
+		// SendData(c, orders)
+	}
 	defer c.Close()
 	for {
 		setReadTimeout(c, 5*time.Minute)
