@@ -17,19 +17,19 @@ import (
 func mkClisConn(key string, conn *net.TCPConn) {
 	connMkMutex.Lock()
 	defer connMkMutex.Unlock()
-	clisConnMap[key] = conn
+	ClisConnMap[key] = conn
 }
 
 //  删除socket conn 映射
 func delClisConn(key string) {
 	connDelMutex.Lock()
 	defer connDelMutex.Unlock()
-	delete(clisConnMap, key)
+	delete(ClisConnMap, key)
 }
 
 //  初始化socket conn 映射
 func initClisConnMap() {
-	clisConnMap = make(map[string]*net.TCPConn)
+	ClisConnMap = make(map[string]*net.TCPConn)
 }
 
 //   发送数据

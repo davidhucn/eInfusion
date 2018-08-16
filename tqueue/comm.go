@@ -1,10 +1,14 @@
 package tqueue
 
-type sTrsfusionCtrl struct {
+type TrsfusionCtrl struct {
 	rcvID string
 	detID string
-	// 命令 、 参数数据
-	cmd []byte
+	cmd   []byte // 命令 、 参数数据
+	// ipAdd string
 }
 
-var G_TsReq sTrsfusionCtrl
+var HTTPReqStream chan TrsfusionCtrl
+
+func init() {
+	HTTPReqStream = make(chan TrsfusionCtrl, 1024)
+}

@@ -21,5 +21,12 @@ var (
 	connDelMutex sync.Mutex
 )
 
+// type sTrsfusionObj struct {
+// 	rcvID    string
+// 	detID    string
+// 	clisConn *net.TCPConn
+// 	ipAdd    string
+// }
+
 //全局tcp连接对象
-var clisConnMap map[string]*net.TCPConn
+var ClisConnMap map[string]*net.TCPConn

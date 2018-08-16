@@ -1,10 +1,10 @@
 //此包涉及具体业务的数据库操作
-package dbWorks
+package dbworks
 
 import (
 	cm "eInfusion/comm"
-	. "eInfusion/dbOperate"
 	"eInfusion/logs"
+	. "eInfusion/tdb"
 )
 
 // 初始化生成8个检测器信息到数据库-> t_device_dict

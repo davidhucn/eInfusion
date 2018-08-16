@@ -2,7 +2,7 @@ package protocol
 
 import (
 	"eInfusion/comm"
-	. "eInfusion/dbWorks"
+	wk "eInfusion/dbworks"
 )
 
 //	判断包头是否正确（进制转换）
@@ -38,17 +38,17 @@ func DecodeRcvData(ref_packData []byte, ref_ipAddr string) {
 	switch ref_packData[0] {
 	//取得接收器状态（得接收器数目）
 	case G_TsCmd.RcvState:
-		ReceiveRcvStat(ref_packData[1:], ref_ipAddr)
+		wk.ReceiveRcvStat(ref_packData[1:], ref_ipAddr)
 	case G_TsCmd.DetectState:
-		ReceiveDetectStat(ref_packData[1:], ref_ipAddr)
+		wk.ReceiveDetectStat(ref_packData[1:], ref_ipAddr)
 	case G_TsCmd.DelDetectState:
-		ReceiveDeleteDetect(ref_packData[1:], ref_ipAddr)
+		wk.ReceiveDeleteDetect(ref_packData[1:], ref_ipAddr)
 	case G_TsCmd.AddDetectState:
-		ReceiveAddDetect(ref_packData[1:], ref_ipAddr)
+		wk.ReceiveAddDetect(ref_packData[1:], ref_ipAddr)
 	case G_TsCmd.SetRcvNetCfgState:
-		ReceiveSetRcvNetCfgStat(ref_packData[1:], ref_ipAddr)
+		wk.ReceiveSetRcvNetCfgStat(ref_packData[1:], ref_ipAddr)
 	case G_TsCmd.SetReconnTimeState:
-		ReceiveSetReconnTimeStat(ref_packData[1:], ref_ipAddr)
+		wk.ReceiveSetReconnTimeStat(ref_packData[1:], ref_ipAddr)
 	default:
 		comm.Msg("调试信息，无效数据...")
 		//		return

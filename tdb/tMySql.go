@@ -5,7 +5,7 @@
 //						Date:2018.03.22						*
 //				Remark:use the comm sql.Db object			*
 //***********************************************************
-package dbOperate
+package tdb
 
 import (
 	"database/sql"

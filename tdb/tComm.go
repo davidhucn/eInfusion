@@ -1,6 +1,6 @@
-package dbOperate
+package tdb
 
-type sDB_Msg struct {
+type dbMsg struct {
 	ConnectDBErr  string
 	InsertDataErr string
 	DeleteDataErr string
@@ -8,7 +8,7 @@ type sDB_Msg struct {
 	UpdateDataErr string
 }
 
-var MsgDB sDB_Msg
+var MsgDB dbMsg
 
 func init() {
 	MsgDB.ConnectDBErr = "错误,无法连接到指定数据库！"
