@@ -14,11 +14,11 @@
       };
 
       c.onerror=function(){
-        $("#status").text("Server Connect Failure!")
+        $("#status").text("Connect Failure!")
       };
 
      c.onopen = function(){
-       $("#status").text("Server Connect Success!")
+       $("#status").text(" Connect Success!")
       };
 
     $("document").ready(function(){
@@ -28,11 +28,11 @@
           var txt = $("#s").text();
           if (txt=="Alarm Closed"){
               $("#s").text("Alarm Opened...");
-              jstr = [{"ID":"B0000000","Action":"1"}];
+              jstr = [{"ID":"B0000000","CmdType":"12"}];
             }
             if (txt=="Alarm Opened..."){
               $("#s").text("Alarm Closed");
-              jstr = [{"ID":"B0000000","Action":"0"}];
+              jstr = [{"ID":"B0000000","CmdType":"13"}];
             }
             var ret =JSON.stringify(jstr);
             c.send(ret);

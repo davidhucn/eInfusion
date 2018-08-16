@@ -3,8 +3,8 @@ package ttcp
 //@Author:david
 //@Date:2018/06/29
 //@Purpose: Tcp Socket Server(Epoll模型）
+
 import (
-	// "github.com/imroc/biu"
 	"eInfusion/comm"
 	"eInfusion/logs"
 	ep "eInfusion/protocol"
@@ -32,7 +32,7 @@ func initClisConnMap() {
 	ClisConnMap = make(map[string]*net.TCPConn)
 }
 
-//   发送数据
+// SendData :发送命令和数据
 func SendData(conn *net.TCPConn, data []byte) (n int, err error) {
 	ip := comm.GetPureIPAddr(conn.RemoteAddr().String())
 	//FIXME:未考虑网络延迟、断网问题，另外发送两个数据须间隔15毫秒(millionseconds)
@@ -113,7 +113,7 @@ func receiveData(c *net.TCPConn) {
 	for {
 		setReadTimeout(c, 5*time.Minute)
 		//	指定接收数据包头的帧长
-		recDataHeader := make([]byte, ep.G_TsCmd.HeaderLength)
+		recDataHeader := make([]byte, ep.TrsDefin.HeaderLength)
 		_, err := c.Read(recDataHeader)
 		if err != nil {
 			break

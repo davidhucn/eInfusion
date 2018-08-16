@@ -5,10 +5,10 @@ func CmdGetRcvStatus(rRcvID []byte) []byte {
 	var intOrderDataLength = 7
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)
-	sendOrders[0] = G_TsCmd.Header
+	sendOrders[0] = TrsDefin.Header
 	sendOrders[1] = byte(intOrderDataLength)
 	//	获取指令类型
-	sendOrders[2] = G_TsCmd.GetRcv
+	sendOrders[2] = TrsCmdType.GetRcv
 	//	获取接收器ID
 	for recID := 0; recID < 4; recID++ {
 		sendOrders[recID+3] = rRcvID[recID]
@@ -22,7 +22,7 @@ func CmdOperateDetect(orderType uint8, rRcvID []byte, detectAmount int, rDetID [
 	var intOrderDataLength = 7
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)
-	sendOrders[0] = G_TsCmd.Header
+	sendOrders[0] = TrsDefin.Header
 	sendOrders[1] = byte(intOrderDataLength)
 	//	获取指令类型
 	sendOrders[2] = orderType
@@ -31,7 +31,7 @@ func CmdOperateDetect(orderType uint8, rRcvID []byte, detectAmount int, rDetID [
 		sendOrders[recID+3] = rRcvID[recID]
 	}
 	// 如果与检测器相关的操作(添加、删除、检查)
-	if orderType == G_TsCmd.AddDetect || orderType == G_TsCmd.DelDetect || orderType == G_TsCmd.GetDetect {
+	if orderType == TrsCmdType.AddDetect || orderType == TrsCmdType.DelDetect || orderType == TrsCmdType.GetDetect {
 		if detectAmount > 0 {
 			// 检测器数量内容到slice
 			sendOrders = append(sendOrders, byte(detectAmount))
@@ -51,11 +51,11 @@ func CmdSetRcvCfg(rRcvID []byte, rIP []byte, rPort []byte) []byte {
 	var intOrderDataLength = 13
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)
-	sendOrders[0] = G_TsCmd.Header
+	sendOrders[0] = TrsDefin.Header
 	// sendOrders[1] = ConvertBasStrToUint(16, ConvertBasNumberToStr(16, intOrderDataLength))
 	sendOrders[1] = byte(intOrderDataLength)
 	//	获取指令类型
-	sendOrders[2] = G_TsCmd.SetRcvNetCfg
+	sendOrders[2] = TrsCmdType.SetRcvNetCfg
 	//	获取接收器ID
 	for recID := 0; recID < 4; recID++ {
 		sendOrders[recID+3] = rRcvID[recID]
@@ -80,10 +80,10 @@ func CmdSetRcvReconTime(rRcvID []byte, rReconTime []byte) []byte {
 	var intOrderDataLength = 9
 	//	基本指令内容
 	sendOrders := make([]byte, intOrderDataLength)
-	sendOrders[0] = G_TsCmd.Header
+	sendOrders[0] = TrsDefin.Header
 	sendOrders[1] = byte(intOrderDataLength)
 	//	获取指令类型
-	sendOrders[2] = G_TsCmd.SetReconnTime
+	sendOrders[2] = TrsCmdType.SetReconnTime
 	//	获取接收器ID
 	for recID := 0; recID < 4; recID++ {
 		sendOrders[recID+3] = rRcvID[recID]

@@ -28,6 +28,6 @@ func StartQueueWait() {
 	// }
 }
 
-func AddReqQueue(HTTPReqStream chan TrsfusionCtrl) {
+func AddReqQueue(TargetID chan string, CmdType chan uint8, Args chan string) {
 
 }
