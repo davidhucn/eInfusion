@@ -20,7 +20,7 @@ func wshandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for {
-		err := conn.ReadJSON(&cliMsg)
+		err := conn.ReadJSON(&clisMsg)
 		// _, m, err := conn.ReadMessage()
 		if cm.CkErr("websocket接收前端数据出错!", err) {
 			// FIXME:制定通讯标准，此处应返回前端页面出错信息
@@ -29,13 +29,13 @@ func wshandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// 根据前端应用需求信息发送指令
-		for i := 0; i < len(cliMsg); i++ {
-			if va(cliMsg[i]) {
+		for i := 0; i < len(clisMsg); i++ {
+			if GetclisCmd(clisMsg[i]) {
 
 			}
 		}
 		// 回传前端
-		conn.WriteJSON(cliMsg)
+		conn.WriteJSON(clisMsg)
 
 		// conn.WriteMessage(1, []byte(cliMsg[0].Action))
 	}

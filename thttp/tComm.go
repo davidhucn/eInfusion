@@ -14,18 +14,24 @@ type reqMsg struct {
 
 var clisMsg []reqMsg
 
-// cvtDec :用于当下转换
+// cvtDec :用于简便转换成decimal
 func cvtDec(rData uint8) uint8 {
 	return cm.ConvertBasStrToUint(10, cm.ConvertBasNumberToStr(16, rData))
 }
 
-// verifyReqWS :判断websocket数据执行标志是否为真
-func va(rReq reqMsg) bool {
+// GetclisCmd :确定websocket指令
+func GetclisCmd(rReq reqMsg) bool {
 	// TODO: 处理客户端发来的指令
 	switch cm.ConvertBasStrToUint(10, rReq.CmdType) {
 	case cvtDec(ep.TrsCmdType.AddDetect):
 
+		return true
 	case cvtDec(ep.TrsCmdType.DelDetect):
+
+		return true
+	case cvtDec(ep.TrsCmdType.SetRcvNetCfg):
+
+		return true
 	}
 
 	return false
