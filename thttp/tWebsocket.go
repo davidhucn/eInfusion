@@ -30,7 +30,7 @@ func wshandler(w http.ResponseWriter, r *http.Request) {
 
 		// 根据前端应用需求信息发送指令
 		for i := 0; i < len(clisMsg); i++ {
-			if GetclisCmd(clisMsg[i]) {
+			if GetClisCmd(clisMsg[i]) {
 
 			}
 		}

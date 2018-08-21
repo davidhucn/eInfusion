@@ -8,6 +8,7 @@ import (
 	"golang.org/x/net/websocket"
 )
 
+//Echo :
 func Echo(ws *websocket.Conn) {
 	var err error
 	for {

@@ -8,7 +8,7 @@ import (
 	"github.com/imroc/biu"
 )
 
-//检测器对象
+//Detector :检测器对象
 // Stat:工作状态,0-关机，1-开机
 // Alarm: 是否报警，输液条没有液体
 type Detector struct {
@@ -20,7 +20,7 @@ type Detector struct {
 	Alarm    uint8 //是否报警，0-正常，1－报警，无药水
 }
 
-//根据数据生成检测器状态信息
+//BinDetectorStat :根据数据生成检测器状态信息
 // 注：目前夹断功能没有开放
 func BinDetectorStat(rdata byte, dt *Detector) {
 	smd := biu.ByteToBinaryString(rdata)
@@ -38,7 +38,7 @@ func BinDetectorStat(rdata byte, dt *Detector) {
 	}
 }
 
-//生成索引编号
+//CreateQRID ：生成索引编号
 //TODO:等待下一步细化
 func CreateQRID(rID string) string {
 	strBranchCode := "1x0"
@@ -50,7 +50,7 @@ func CreateQRID(rID string) string {
 	return strBranchCode + strCategoryCode + strPHCode + strTime + rID
 }
 
-// 生成二维码
+//StartCreateQRCode ：生成二维码
 func StartCreateQRCode() {
 	//auto create the qrcode
 	for i := 0; i < 10; i++ {

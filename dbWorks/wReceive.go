@@ -1,4 +1,4 @@
-//此包涉及具体业务的数据库操作
+//Package dbworks :此包涉及具体业务的数据库操作
 package dbworks
 
 import (
@@ -7,7 +7,7 @@ import (
 	. "eInfusion/tdb"
 )
 
-// 初始化生成8个检测器信息到数据库-> t_device_dict
+//InitDetInfoToDB :初始化生成8个检测器信息到数据库-> t_device_dict
 func InitDetInfoToDB(amount int) bool {
 	var strSQL string
 	var dd []Detector
@@ -26,7 +26,7 @@ func InitDetInfoToDB(amount int) bool {
 	return true
 }
 
-//获取接收器状态
+//ReceiveRcvStat :获取接收器状态
 func ReceiveRcvStat(packData []byte, ipAddr string) bool {
 	var strSQL string
 	var err error
@@ -136,7 +136,7 @@ func ReceiveDetectStat(packData []byte, ipAddr string) bool {
 	return true
 }
 
-//获取删除检测器结果信息
+//ReceiveDeleteDetect :获取删除检测器结果信息
 func ReceiveDeleteDetect(packData []byte, ipAddr string) bool {
 	var intDetAmount int
 	var err error
@@ -217,7 +217,7 @@ func ReceiveDeleteDetect(packData []byte, ipAddr string) bool {
 	return true
 }
 
-//获取添加检测器结果信息
+//ReceiveAddDetect :获取添加检测器结果信息
 func ReceiveAddDetect(packData []byte, ipAddr string) bool {
 	var intDetAmount int
 	var err error
@@ -278,7 +278,7 @@ func ReceiveAddDetect(packData []byte, ipAddr string) bool {
 	return true
 }
 
-//获取设置网络配置操作结果信息
+//ReceiveSetRcvNetCfgStat ：获取设置网络配置操作结果信息
 func ReceiveSetRcvNetCfgStat(packData []byte, ipAddr string) bool {
 	var strSQL string
 	var err error
@@ -320,7 +320,7 @@ func ReceiveSetRcvNetCfgStat(packData []byte, ipAddr string) bool {
 	return true
 }
 
-//获取设置重新连接时间
+//ReceiveSetReconnTimeStat ：获取设置重新连接时间
 func ReceiveSetReconnTimeStat(packData []byte, ipAddr string) bool {
 	var strSQL string
 	var err error

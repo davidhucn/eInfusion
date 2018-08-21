@@ -286,12 +286,11 @@ func WrToFilWithBuffer(rFilePath string, rStrCnt string, rIsAppend bool) bool {
 		intFileOpenMode = os.O_WRONLY | os.O_CREATE | os.O_TRUNC
 	}
 	fileHandle, err := os.OpenFile(rFilePath, intFileOpenMode, 0666)
-	if err != nil {
-		return false
-	} else {
-		// write to the file
-		fileHandle.WriteString("\r\n" + rStrCnt)
-	}
 	defer fileHandle.Close()
+	if CkErr("获取文件句柄失败！", err) {
+		fileHandle.WriteString("\r\n" + rStrCnt)
+	} else {
+		return false
+	}
 	return true
 }
