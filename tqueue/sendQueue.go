@@ -1,7 +1,7 @@
 package tqueue
 
-// StartTrsfusionQueue :启动队列处理平台
-func StartQueueWait() {
+// StartSendQueueListener :启动队列处理平台
+func StartSendQueueListener() {
 	// pingTicker := time.NewTicker(10 * time.Second) // 定时
 	// testAfter := time.After(5 * time.Second)       // 延时
 
@@ -28,6 +28,7 @@ func StartQueueWait() {
 	// }
 }
 
-func AddReqQueue(TargetID chan string, CmdType chan uint8, Args chan string) {
+// AddToSendQueue :添加指令到统一队列
+func AddToSendQueue() {
 
 }

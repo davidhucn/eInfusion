@@ -129,6 +129,11 @@ func ConvertBasStrToUint(rBase int, rStrCnt string) uint8 {
 	return uint8(intRetValue)
 }
 
+// ConvertHexUnitToDecUnit :16进制数字字符转换成10进制unit
+func ConvertHexUnitToDecUnit(rData uint8) uint8 {
+	return ConvertBasStrToUint(10, ConvertBasNumberToStr(16, rData))
+}
+
 // ConvertStrIPAddToBytes :把指定十进制IP地址转换成为bytes
 func ConvertStrIPAddToBytes(rIP string) []byte {
 	st := strings.SplitN(rIP, ".", 4)
