@@ -28,7 +28,17 @@ func StartSendQueueListener() {
 	// }
 }
 
-// AddToSendQueue :添加指令到统一队列
-func AddToSendQueue() {
+/////////////////////////sample////////////////////////////////
+// var tc Clienter
+// 	tc.SendStr = make(chan *Request, 1000)
+// 	tc.RecvStr = make(chan string)
+// 	tc.Connect()
+
+// 	go ProxySendLoop(&tc)
+// 	go ProxyRecvLoop(&tc)
+//////////////////////////////////////////////////////////////
+
+// AddToSendQueue :根据参数生成为统一MAP对象(sendOrders)，等待发送
+func AddToSendQueue(rCmd *ReqCmd) {
 
 }

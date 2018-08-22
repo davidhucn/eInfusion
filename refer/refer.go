@@ -1,4 +1,4 @@
-package tcpBackup
+package refer
 
 // import (
 // 	"encoding/json"
@@ -181,9 +181,9 @@ package tcpBackup
 // 	tc.SendStr = make(chan *Request, 1000)
 // 	tc.RecvStr = make(chan string)
 // 	tc.Connect()
+
 // 	go ProxySendLoop(&tc)
 // 	go ProxyRecvLoop(&tc)
-
 // 	//listen new request
 // 	requestMap = make(map[int]*Request)
 // 	var id int = 0
