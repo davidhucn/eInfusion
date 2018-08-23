@@ -38,7 +38,7 @@ func StartSendQueueListener() {
 // 	go ProxyRecvLoop(&tc)
 //////////////////////////////////////////////////////////////
 
-// AddToSendQueue :根据参数生成为统一MAP对象(sendOrders)，等待发送
-func AddToSendQueue(rCmd *ReqCmd) {
+// AddToSendQueue :根据参数生成为统一MAP对象(sOrders)，等待发送
+func AddToSendQueue(rID string, rCmdType uint8, rArgs string) {
 
 }

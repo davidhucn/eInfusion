@@ -17,8 +17,15 @@ var clisMsg []reqData
 // GetClisCmd :确定websocket指令
 func GetClisCmd(rReq reqData) {
 	// TODO: 处理客户端发来的指令
+
 	switch cm.ConvertBasStrToUint(10, rReq.CmdType) {
 	case cm.ConvertHexUnitToDecUnit(ep.TrsCmdType.AddDetect):
+		// var tt eq.ReqCmd
+		// tt.TargetID
+		// tt.CmdType
+		// tt.Args
+
+		// eq.AddToSendQueue()
 
 	case cm.ConvertHexUnitToDecUnit(ep.TrsCmdType.DelDetect):
 
