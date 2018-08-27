@@ -8,13 +8,13 @@ type ReqCmd struct {
 }
 
 // sendOrder :全局指令map,MAP索引为时间戳
-var sendOrders chan map[string][]byte
+var sOrders chan map[string][]byte
+var m2 chan map[string]string
 
 // var sOrders chan []byte
 
 func init() {
-	sendOrders = make(chan map[string][]byte, 1024)
-
+	sOrders = make(chan map[string][]byte, 1024)
 	// sOrders = make(chan []byte, 1024)
-
+	m2 = make(chan map[string]string)
 }

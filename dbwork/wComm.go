@@ -1,4 +1,4 @@
-package dbworks
+package dbwork
 
 import (
 	cm "eInfusion/comm"

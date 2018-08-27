@@ -1,5 +1,11 @@
 package tqueue
 
+import (
+	cm "eInfusion/comm"
+	wk "eInfusion/dbwork"
+	ep "eInfusion/protocol"
+)
+
 // StartSendQueueListener :启动队列处理平台
 func StartSendQueueListener() {
 	// pingTicker := time.NewTicker(10 * time.Second) // 定时
@@ -39,6 +45,12 @@ func StartSendQueueListener() {
 //////////////////////////////////////////////////////////////
 
 // AddToSendQueue :根据参数生成为统一MAP对象(sOrders)，等待发送
-func AddToSendQueue(rID string, rCmdType uint8, rArgs string) {
-
+func AddToSendQueue(rSorderID string, rTargetID string, rCmdType uint8, rArgs string) {
+	if rCmdType == cm.ConvertHexUnitToDecUnit(ep.TrsCmdType.AddDetect) || rCmdType == cm.ConvertHexUnitToDecUnit(ep.TrsCmdType.DelDetect) {
+		// 根据DetID获取RcvID
+		rcvID := cm.ConvertStrToBytesByPerTwoChar(wk.GetRcvID(rTargetID))
+		detID := cm.ConvertStrToBytesByPerTwoChar(rTargetID)
+		// sOrders[rSorderID] <- ep.CmdOperateDetect(rCmdType, rcvID, 1, detID)
+		// m2[rSorderID] <- "chan"
+	}
 }

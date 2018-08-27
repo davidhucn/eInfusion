@@ -31,10 +31,14 @@ func wshandler(w http.ResponseWriter, r *http.Request) {
 
 		// 根据前端应用需求信息发送指令
 		for i := 0; i < len(clisMsg); i++ {
+			// 获取时间戳，来生成orders
+			ssn := cm.GetTimeStamp()
 			// 加入发送消息队列
-			eq.AddToSendQueue(clisMsg[i].ID, cm.ConvertBasStrToUint(10, clisMsg[i].CmdType), clisMsg[i].Args)
+			eq.AddToSendQueue(ssn, clisMsg[i].ID, cm.ConvertBasStrToUint(10, clisMsg[i].CmdType), clisMsg[i].Args)
 
 		}
+
+		// TODO: 引入chan，接收返回指令结果，再回写前端
 		// 回传前端
 		conn.WriteJSON(clisMsg)
 
