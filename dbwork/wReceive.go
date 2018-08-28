@@ -21,6 +21,19 @@ func GetRcvID(rDetID string) string {
 	return (*mRcvID)["rcvID"]
 }
 
+// GetRcvIP :根据RcvID获取其IP地址
+func GetRcvIP(rRcvID string) string {
+	var strSQL string
+	var mRcvIP *map[string]string
+	var err error
+	strSQL = "SELECT ip_addr FROM t_rcv WHERE receiver_id=?"
+	mRcvIP, err = db.QueryOneRow(strSQL, rRcvID)
+	if cm.CkErr(db.MsgDB.QueryDataErr, err) {
+		return ""
+	}
+	return (*mRcvIP)["ip_addr"]
+}
+
 //InitDetInfoToDB :初始化生成8个检测器信息到数据库-> t_device_dict
 func InitDetInfoToDB(amount int) bool {
 	var strSQL string

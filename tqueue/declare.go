@@ -1,5 +1,7 @@
 package tqueue
 
+import "sync"
+
 // ReqCmd :指令类型
 type ReqCmd struct {
 	TargetID chan string
@@ -7,14 +9,18 @@ type ReqCmd struct {
 	Args     chan string // 相关参数 (例如：ip、port)
 }
 
-// sendOrder :全局指令map,MAP索引为时间戳
-var sOrders chan map[string][]byte
-var m2 chan map[string]string
+//定义锁
+var (
+	cMkMutex  sync.Mutex
+	cDelMutex sync.Mutex
+)
 
-// var sOrders chan []byte
+// sOrders :全局指令map,MAP索引为时间戳
+var sOrders map[string][]byte
+
+var sIDStream chan string
 
 func init() {
-	sOrders = make(chan map[string][]byte, 1024)
-	// sOrders = make(chan []byte, 1024)
-	m2 = make(chan map[string]string)
+	sOrders = make(map[string][]byte)
+	sIDStream = make(chan string, 1024)
 }
