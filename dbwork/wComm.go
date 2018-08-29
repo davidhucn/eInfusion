@@ -2,7 +2,7 @@ package dbwork
 
 import (
 	cm "eInfusion/comm"
-	"eInfusion/logs"
+	logs "eInfusion/tlogs"
 	"time"
 
 	"github.com/imroc/biu"

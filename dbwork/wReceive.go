@@ -3,8 +3,8 @@ package dbwork
 
 import (
 	cm "eInfusion/comm"
-	"eInfusion/logs"
 	db "eInfusion/tdb"
+	logs "eInfusion/tlogs"
 )
 
 // GetRcvID :根据DetID获取RcvID

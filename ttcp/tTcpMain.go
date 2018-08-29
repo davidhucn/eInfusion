@@ -6,8 +6,8 @@ package ttcp
 
 import (
 	"eInfusion/comm"
-	"eInfusion/logs"
 	ep "eInfusion/protocol"
+	logs "eInfusion/tlogs"
 	"net"
 	"os"
 	"strconv"

@@ -3,8 +3,8 @@ package tqueue
 import (
 	cm "eInfusion/comm"
 	wk "eInfusion/dbwork"
-	"eInfusion/logs"
 	ep "eInfusion/protocol"
+	logs "eInfusion/tlogs"
 	tcp "eInfusion/ttcp"
 	"strings"
 	"time"
@@ -43,8 +43,8 @@ func StartSendQueueListener() {
 					delSendQueueMap(sIPAddr)
 				}
 			} else {
-				// 不在线,尝试10次，判断是否在线，延时判断，如果在线即发送
-				for i := 0; i < 10; i++ {
+				// 不在线,尝试3次，判断是否在线，延时判断，如果在线即发送
+				for i := 0; i < 3; i++ {
 					select {
 					case <-cTicker.C:
 						if _, ok := tcp.ClisConnMap[sIPAddr]; ok {
@@ -58,14 +58,15 @@ func StartSendQueueListener() {
 					}
 				}
 				// 多次尝试无效，警报，记录日志
-				logs.LogMain.Critical("IP地址为：【", sIPAddr, "】多次无法发送数据！,请核查")
+				// logs.LogMain.Critical("IP地址为：【", sIPAddr, "】多次无法发送数据！,请核查")
+				logs.LogMain.Debug("IP地址为：【", sIPAddr, "】多次无法发送数据！,请核查")
 			}
-		default:
-			logs.LogMain.Debug(sdIDStream, "-- waiting for send queue!")
+			// default:
+			// 	logs.LogMain.Debug(sdIDStream, "-- waiting for send queue!")
 		}
 	}
-	close(sdIDStream)
-	cTicker.Stop()
+	// close(sdIDStream)
+	// cTicker.Stop()
 }
 
 // StartReceiveQueueListener : 监听设备返回消息队列

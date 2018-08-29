@@ -2,7 +2,7 @@ package comm
 
 import (
 	"bytes"
-	"eInfusion/logs"
+	logs "eInfusion/tlogs"
 	"encoding/binary"
 	"fmt"
 	"os"
@@ -14,7 +14,9 @@ import (
 
 // GetTimeStamp :获取时间戳
 func GetTimeStamp() string {
-	return string(time.Now().Unix())
+	return ConvertBasNumberToStr(10, time.Now().Unix())
+	// return string(time.Now().Unix())
+	// return string(time.Now().UnixNano)
 }
 
 // GetPureIPAddr : 获取IP中纯的地址，去除字符串中的端口数据

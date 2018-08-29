@@ -1,8 +1,8 @@
 package main
 
 import (
-	"eInfusion/logs"
 	eh "eInfusion/thttp"
+	logs "eInfusion/tlogs"
 	eq "eInfusion/tqueue"
 	et "eInfusion/ttcp"
 	"runtime"
