@@ -1,10 +1,5 @@
 package thttp
 
-import (
-	cm "eInfusion/comm"
-	ep "eInfusion/protocol"
-)
-
 type reqData struct {
 	ID      string `json:"ID"`
 	CmdType string `json:"CmdType"` //指令类型(代码)
@@ -12,25 +7,4 @@ type reqData struct {
 	// Action string `json:"-"`
 }
 
-var clisMsg []reqData
-
-// GetClisCmd :确定websocket指令
-func GetClisCmd(rReq reqData) {
-	// TODO: 处理客户端发来的指令
-
-	switch cm.ConvertBasStrToUint(10, rReq.CmdType) {
-	case cm.ConvertHexUnitToDecUnit(ep.TrsCmdType.AddDetect):
-		// var tt eq.ReqCmd
-		// tt.TargetID
-		// tt.CmdType
-		// tt.Args
-
-		// eq.AddToSendQueue()
-
-	case cm.ConvertHexUnitToDecUnit(ep.TrsCmdType.DelDetect):
-
-	case cm.ConvertHexUnitToDecUnit(ep.TrsCmdType.SetRcvNetCfg):
-
-	}
-
-}
+var clisData []reqData

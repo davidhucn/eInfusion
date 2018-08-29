@@ -16,11 +16,11 @@ var (
 )
 
 // sOrders :全局指令map,MAP索引为时间戳
-var sOrders map[string][]byte
+var sdOrders map[string][]byte
 
-var sIDStream chan string
+var sdIDStream chan string
 
 func init() {
-	sOrders = make(map[string][]byte)
-	sIDStream = make(chan string, 1024)
+	sdOrders = make(map[string][]byte)
+	sdIDStream = make(chan string, 1024)
 }

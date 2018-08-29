@@ -33,20 +33,21 @@ func initClisConnMap() {
 }
 
 // SendData :发送命令和数据
-func SendData(conn *net.TCPConn, data []byte) (n int, err error) {
+func SendData(conn *net.TCPConn, data []byte) (err error) {
 	ip := comm.GetPureIPAddr(conn.RemoteAddr().String())
-	//FIXME:未考虑网络延迟、断网问题，另外发送两个数据须间隔15毫秒(millionseconds)
+	//考虑网络延迟、断网问题，另外发送两个数据须间隔15毫秒(millionseconds)
 	time.Sleep(15 * time.Millisecond)
-	n, err = conn.Write(data)
+	_, err = conn.Write(data)
 	if err == nil {
 		logs.LogMain.Info("=>"+ip, "完成数据发送")
+		// 如果发送没有错误，即表示成功
 	}
 	return
 }
 
-// 广播数据
-func Broadcast(tclisMap map[string]*net.TCPConn, data []byte) {
-	for _, conn := range tclisMap {
+//Broadcast :广播数据
+func Broadcast(data []byte) {
+	for _, conn := range ClisConnMap {
 		SendData(conn, data)
 	}
 }
