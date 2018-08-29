@@ -26,7 +26,6 @@ func delSendQueueMap(rOrderID string) {
 
 // StartSendQueueListener :启动队列处理平台
 func StartSendQueueListener() {
-	cTicker := time.NewTicker(12 * time.Second) // 定时
 	// testAfter := time.After(5 * time.Second)   // 延时
 	for sdIDStream != nil {
 		select {
@@ -41,8 +40,14 @@ func StartSendQueueListener() {
 					// 发送成功
 					// TODO: 返回消息处理
 					delSendQueueMap(sIPAddr)
+					return
 				}
 			} else {
+				cTicker := time.NewTicker(12 * time.Second) // 定时
+				lastChk := time.After(8 * time.Minute)      // 延时
+				// period :=
+				defer cTicker.Stop()
+				// defer lastTicker.Stop()
 				// 不在线,尝试3次，判断是否在线，延时判断，如果在线即发送
 				for i := 0; i < 3; i++ {
 					select {
@@ -53,7 +58,21 @@ func StartSendQueueListener() {
 							} else {
 								// 发送成功
 								delSendQueueMap(sIPAddr)
+								return
 							}
+						}
+					}
+				}
+				// 最后3分钟后尝试次
+				select {
+				case <-lastChk:
+					if _, ok := tcp.ClisConnMap[sIPAddr]; ok {
+						if cm.CkErr("发送指令至设备错误，不在线！", tcp.SendData(tcp.ClisConnMap[sIPAddr], sdOrders[oid])) {
+							continue
+						} else {
+							// 发送成功
+							delSendQueueMap(sIPAddr)
+							return
 						}
 					}
 				}
@@ -61,12 +80,8 @@ func StartSendQueueListener() {
 				// logs.LogMain.Critical("IP地址为：【", sIPAddr, "】多次无法发送数据！,请核查")
 				logs.LogMain.Debug("IP地址为：【", sIPAddr, "】多次无法发送数据！,请核查")
 			}
-			// default:
-			// 	logs.LogMain.Debug(sdIDStream, "-- waiting for send queue!")
 		}
 	}
-	// close(sdIDStream)
-	// cTicker.Stop()
 }
 
 // StartReceiveQueueListener : 监听设备返回消息队列

@@ -8,6 +8,7 @@ import (
 	"eInfusion/comm"
 	ep "eInfusion/protocol"
 	logs "eInfusion/tlogs"
+	eq "eInfusion/tqueue"
 	"net"
 	"os"
 	"strconv"
@@ -18,6 +19,8 @@ func mkClisConn(key string, conn *net.TCPConn) {
 	connMkMutex.Lock()
 	defer connMkMutex.Unlock()
 	ClisConnMap[key] = conn
+	//TODO:获取等待指令，一联线就通知消息平台，由消息平台发送指令
+	
 }
 
 //  删除socket conn 映射

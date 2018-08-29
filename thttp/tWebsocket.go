@@ -17,6 +17,7 @@ var wsupgrader = ws.Upgrader{
 func wshandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := wsupgrader.Upgrade(w, r, nil)
 	defer conn.Close()
+	cm.Msg("timeout:", wsupgrader.HandshakeTimeout)
 	if cm.CkErr("链接websocket出错！", err) {
 		return
 	}
@@ -32,7 +33,6 @@ func wshandler(w http.ResponseWriter, r *http.Request) {
 		for i := 0; i < len(clisData); i++ {
 			// 获取时间戳，来生成orders
 			ssn := cm.GetTimeStamp()
-			cm.Msg("ssn:", ssn)
 			// 加入发送消息队列
 			eq.AddToSendQueue(ssn, clisData[i].ID, cm.ConvertBasStrToUint(10, clisData[i].CmdType), clisData[i].Args)
 		}
