@@ -8,7 +8,6 @@ import (
 	"eInfusion/comm"
 	ep "eInfusion/protocol"
 	logs "eInfusion/tlogs"
-	eq "eInfusion/tqueue"
 	"net"
 	"os"
 	"strconv"
@@ -20,7 +19,7 @@ func mkClisConn(key string, conn *net.TCPConn) {
 	defer connMkMutex.Unlock()
 	ClisConnMap[key] = conn
 	//TODO:获取等待指令，一联线就通知消息平台，由消息平台发送指令
-	
+
 }
 
 //  删除socket conn 映射
@@ -79,7 +78,6 @@ func Broadcast(data []byte) {
 //连接初始处理(ed)
 func madeConn(conn *net.TCPConn) {
 	//初始化连接这个函数被调用
-
 	mkClisConn(comm.GetPureIPAddr(conn.RemoteAddr().String()), conn)
 	logs.LogMain.Info("IP:", comm.GetPureIPAddr(conn.RemoteAddr().String()), "上线")
 	comm.SepLi(20, "-")
@@ -152,7 +150,7 @@ func receiveData(c *net.TCPConn) {
 	}
 }
 
-//initial listener and run
+// StartTCPServer :TCP启动服务器入口
 func StartTCPServer(port int) {
 	host := ":" + strconv.Itoa(port)
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", host)

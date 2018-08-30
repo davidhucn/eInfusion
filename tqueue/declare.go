@@ -3,11 +3,11 @@ package tqueue
 import "sync"
 
 // ReqCmd :指令类型
-type ReqCmd struct {
-	TargetID chan string
-	CmdType  chan uint8  // 指令类型(代码)
-	Args     chan string // 相关参数 (例如：ip、port)
-}
+// type ReqCmd struct {
+// 	TargetID chan string
+// 	CmdType  chan uint8  // 指令类型(代码)
+// 	Args     chan string // 相关参数 (例如：ip、port)
+// }
 
 //定义锁
 var (
@@ -15,12 +15,17 @@ var (
 	cDelMutex sync.Mutex
 )
 
-// sOrders :全局指令map,MAP索引为时间戳
+// sOrders :全局发送指令map数组,MAP索引为时间戳
 var sdOrders map[string][]byte
 
+// sdIDStream :发送指令标识，触发用
 var sdIDStream chan string
+
+// RcMsgs :执行后返回结果
+var RcMsgs map[string]string
 
 func init() {
 	sdOrders = make(map[string][]byte)
 	sdIDStream = make(chan string, 1024)
+	RcMsgs = make(map[string]string)
 }

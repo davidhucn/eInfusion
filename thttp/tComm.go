@@ -7,4 +7,4 @@ type reqData struct {
 	// Action string `json:"-"`
 }
 
-var clisData []reqData
+var clisData reqData

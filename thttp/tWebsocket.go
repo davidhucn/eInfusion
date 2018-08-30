@@ -4,6 +4,8 @@ import (
 	cm "eInfusion/comm"
 	eq "eInfusion/tqueue"
 	"net/http"
+	"sync"
+	"time"
 
 	ws "github.com/gorilla/websocket"
 )
@@ -17,7 +19,7 @@ var wsupgrader = ws.Upgrader{
 func wshandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := wsupgrader.Upgrade(w, r, nil)
 	defer conn.Close()
-	cm.Msg("timeout:", wsupgrader.HandshakeTimeout)
+	// cm.Msg("the type of conn:", cm.GetVarType(conn))
 	if cm.CkErr("链接websocket出错！", err) {
 		return
 	}
@@ -30,21 +32,27 @@ func wshandler(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		// 根据前端应用需求信息发送指令
-		for i := 0; i < len(clisData); i++ {
-			// 获取时间戳，来生成orders
-			ssn := cm.GetTimeStamp()
-			// 加入发送消息队列
-			eq.AddToSendQueue(ssn, clisData[i].ID, cm.ConvertBasStrToUint(10, clisData[i].CmdType), clisData[i].Args)
-		}
+		// 获取时间戳，来生成orders id
+		ssn := cm.GetTimeStamp()
+		// 加入发送消息队列
+		eq.AddToSendQueue(ssn, clisData.ID, cm.ConvertBasStrToUint(10, clisData.CmdType), clisData.Args)
 
-		// TODO: 引入chan，接收返回指令结果，回写前端
-		// go func() {
-		// 	for cs := range connStream {
-
-		// 	}
-		// }()
-		// 回传前端
-		conn.WriteJSON(clisData)
+		//定时检查返回数据池里面有否相应的数据
+		go func() {
+			var ms sync.Mutex
+			cT := time.NewTicker(500 * time.Millisecond) // 定时
+			select {
+			case <-cT.C:
+				if _, ok := eq.RcMsgs[ssn]; ok {
+					// 回传前端
+					conn.WriteJSON([]byte(eq.RcMsgs[ssn]))
+					// 册除该条数据
+					ms.Lock()
+					defer ms.Unlock()
+					delete(eq.RcMsgs, ssn)
+				}
+			}
+		}()
 		// conn.WriteMessage(1, []byte(cliMsg[0].Action))
 	}
 

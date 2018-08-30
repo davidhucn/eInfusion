@@ -7,6 +7,7 @@ import (
 	logs "eInfusion/tlogs"
 	tcp "eInfusion/ttcp"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -25,68 +26,79 @@ func delSendQueueMap(rOrderID string) {
 }
 
 // StartSendQueueListener :启动队列处理平台
+// 主动发送方式
 func StartSendQueueListener() {
 	// testAfter := time.After(5 * time.Second)   // 延时
 	for sdIDStream != nil {
 		select {
 		case oid := <-sdIDStream:
+			var exm sync.Mutex
 			// 获取ip地址,即指令索引
 			sIPAddr := strings.Split(oid, "@")[1]
+			ssn := strings.Split(oid, "@")[0]
 			// 确定设备是否在线
 			if _, ok := tcp.ClisConnMap[sIPAddr]; ok {
 				if cm.CkErr("发送数据错误！", tcp.SendData(tcp.ClisConnMap[sIPAddr], sdOrders[oid])) {
 					continue
 				} else {
 					// 发送成功
-					// TODO: 返回消息处理
+					// 把当前结果回写前端
+					exm.Lock()
+					defer exm.Unlock()
+					RcMsgs[ssn] = "请求执行成功，等待反馈结果..."
 					delSendQueueMap(sIPAddr)
 					return
 				}
 			} else {
 				cTicker := time.NewTicker(12 * time.Second) // 定时
-				lastChk := time.After(8 * time.Minute)      // 延时
+				lastCk := time.After(3 * time.Minute)       // 延时
 				// period :=
 				defer cTicker.Stop()
-				// defer lastTicker.Stop()
 				// 不在线,尝试3次，判断是否在线，延时判断，如果在线即发送
 				for i := 0; i < 3; i++ {
 					select {
 					case <-cTicker.C:
 						if _, ok := tcp.ClisConnMap[sIPAddr]; ok {
-							if cm.CkErr("发送指令至设备错误，不在线！", tcp.SendData(tcp.ClisConnMap[sIPAddr], sdOrders[oid])) {
+							if cm.CkErr("发送指令错误，不在线！", tcp.SendData(tcp.ClisConnMap[sIPAddr], sdOrders[oid])) {
 								continue
 							} else {
 								// 发送成功
+								// 把当前结果回写前端
+								exm.Lock()
+								defer exm.Unlock()
+								RcMsgs[ssn] = "请求执行成功，等待反馈结果..."
 								delSendQueueMap(sIPAddr)
 								return
 							}
 						}
 					}
 				}
-				// 最后3分钟后尝试次
+				// 最后3分钟后尝试1次
 				select {
-				case <-lastChk:
+				case <-lastCk:
 					if _, ok := tcp.ClisConnMap[sIPAddr]; ok {
-						if cm.CkErr("发送指令至设备错误，不在线！", tcp.SendData(tcp.ClisConnMap[sIPAddr], sdOrders[oid])) {
+						if cm.CkErr("发送指令错误，不在线！", tcp.SendData(tcp.ClisConnMap[sIPAddr], sdOrders[oid])) {
 							continue
 						} else {
 							// 发送成功
+							// 把当前结果回写前端
+							exm.Lock()
+							defer exm.Unlock()
+							RcMsgs[ssn] = "请求执行成功，等待反馈结果..."
 							delSendQueueMap(sIPAddr)
 							return
 						}
 					}
 				}
-				// 多次尝试无效，警报，记录日志
-				// logs.LogMain.Critical("IP地址为：【", sIPAddr, "】多次无法发送数据！,请核查")
-				logs.LogMain.Debug("IP地址为：【", sIPAddr, "】多次无法发送数据！,请核查")
+				// 多次尝试无效、失败，警报，记录日志
+				// 把当前结果回写前端
+				exm.Lock()
+				defer exm.Unlock()
+				RcMsgs[ssn] = "请求执行失败，设备未连线..."
+				logs.LogMain.Info("IP地址为：【", sIPAddr, "】多次无法发送数据！,请核查")
 			}
 		}
 	}
-}
-
-// StartReceiveQueueListener : 监听设备返回消息队列
-func StartReceiveQueueListener() {
-
 }
 
 /////////////////////////sample////////////////////////////////
@@ -101,7 +113,9 @@ func StartReceiveQueueListener() {
 
 // AddToSendQueue :根据参数生成为统一MAP对象(sOrders)，等待发送
 func AddToSendQueue(rSorderID string, rTargetID string, rCmdType uint8, rArgs string) {
-	if rCmdType == cm.ConvertHexUnitToDecUnit(ep.TrsCmdType.AddDetect) || rCmdType == cm.ConvertHexUnitToDecUnit(ep.TrsCmdType.DelDetect) {
+	addDet := cm.ConvertHexUnitToDecUnit(ep.TrsCmdType.AddDetect)
+	delDet := cm.ConvertHexUnitToDecUnit(ep.TrsCmdType.DelDetect)
+	if rCmdType == addDet || rCmdType == delDet {
 		// 根据DetID获取RcvID,如果rcvID不为空
 		if wk.GetRcvID(rTargetID) != "" {
 			rcvID := cm.ConvertStrToBytesByPerTwoChar(wk.GetRcvID(rTargetID))
@@ -111,6 +125,8 @@ func AddToSendQueue(rSorderID string, rTargetID string, rCmdType uint8, rArgs st
 			// 重组指令标识:由时间戳+IP地址组成
 			orderID := rSorderID + "@" + ipAddr
 			addSendQueueMap(orderID, ep.CmdOperateDetect(rCmdType, rcvID, 1, detID))
+		} else {
+			logs.LogMain.Error("错误：没有目标设备编码或者无法获取相关设备编码！")
 		}
 	}
 }
