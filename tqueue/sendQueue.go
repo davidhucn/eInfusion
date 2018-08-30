@@ -51,7 +51,7 @@ func StartSendQueueListener() {
 				}
 			} else {
 				cTicker := time.NewTicker(12 * time.Second) // 定时
-				lastCk := time.After(3 * time.Minute)       // 延时
+				lastCk := time.After(1 * time.Minute)       // 延时
 				// period :=
 				defer cTicker.Stop()
 				// 不在线,尝试3次，判断是否在线，延时判断，如果在线即发送

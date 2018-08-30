@@ -1,5 +1,7 @@
 package thttp
 
+import "golang.org/x/net/websocket"
+
 type reqData struct {
 	ID      string `json:"ID"`
 	CmdType string `json:"CmdType"` //指令类型(代码)
@@ -7,4 +9,6 @@ type reqData struct {
 	// Action string `json:"-"`
 }
 
-var clisData reqData
+var clisData []reqData
+
+var wsConn *websocket.Conn
