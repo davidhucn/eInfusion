@@ -14,10 +14,13 @@ var clisData []reqData
 
 // WSConnet :全局ws连接对象
 type WSConnet struct {
-	// websocket 连接器
-	conn *ws.Conn
-	// 发送信息的缓冲 channel
-	sdData chan []byte
+	conn   *ws.Conn    // websocket 连接器
+	sdData chan []byte // 发送信息的缓冲 channel
 }
 
-var ClisWS []*WSConnet
+// ClisWS :全局ws连接对象集
+var ClisWS map[string]*WSConnet
+
+func init() {
+	ClisWS = make(map[string]*WSConnet)
+}

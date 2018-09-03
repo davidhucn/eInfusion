@@ -22,10 +22,10 @@ var sdOrders map[string][]byte
 var sdIDStream chan string
 
 // RcMsgs :执行后返回结果
-var RcMsgs map[string]string
+// var RcMsgs map[string]string
 
 func init() {
 	sdOrders = make(map[string][]byte)
 	sdIDStream = make(chan string, 1024)
-	RcMsgs = make(map[string]string)
+	// RcMsgs = make(map[string]string)
 }

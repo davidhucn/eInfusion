@@ -4,6 +4,7 @@ import (
 	cm "eInfusion/comm"
 	eq "eInfusion/tqueue"
 	"net/http"
+	"sync"
 
 	ws "github.com/gorilla/websocket"
 )
@@ -25,7 +26,7 @@ func (c *WSConnet) WriteBack() {
 	c.conn.Close()
 }
 
-func (c *WSConnet) reader() {
+func (c *WSConnet) reader(rSn string) {
 	for {
 		err := c.conn.ReadJSON(&clisData)
 		// _, m, err := wsconnn.ReadMessage()
@@ -36,31 +37,12 @@ func (c *WSConnet) reader() {
 			break
 		}
 		// 根据前端应用需求信息发送指令
-		// 获取随机字符串生成orders id
-		ssn := cm.GetRandString(10)
-		//定时检查返回数据池里面有否相应的数据
-		// go func() {
-		// 	var ms sync.Mutex
-		// 	cT := time.NewTicker(500 * time.Millisecond) // 定时
-		// 	select {
-		// 	case <-cT.C:
-		// 		cm.Msg("i am alive!!")
-		// 		if _, ok := eq.RcMsgs[ssn]; ok {
-		// 			// 回传前端
-		// 			c.conn.WriteMessage(ws.TextMessage, []byte(eq.RcMsgs[ssn]))
-		// 			// 册除该条数据
-		// 			ms.Lock()
-		// 			defer ms.Unlock()
-		// 			delete(eq.RcMsgs, ssn)
-		// 		}
-		// 	}
-		// }()
+
 		// 加入发送消息队列
 		for i := 0; i < len(clisData); i++ {
-			eq.AddToSendQueue(ssn, clisData[i].ID, cm.ConvertBasStrToUint(10, clisData[i].CmdType), clisData[i].Args)
-			c.conn.WriteMessage(ws.TextMessage, []byte("Doing..."))
+			eq.AddToSendQueue(rSn, clisData[i].ID, cm.ConvertBasStrToUint(10, clisData[i].CmdType), clisData[i].Args)
+			c.sdData <- []byte("doing")
 		}
-
 		// wsconnn.WriteMessage(1, []byte(cliMsg[0].Action))
 	}
 }
@@ -72,10 +54,15 @@ func wshandler(w http.ResponseWriter, r *http.Request) {
 	if cm.CkErr("链接websocket出错！", err) {
 		return
 	}
+	// 获取随机字符串生成标识id
+	ssn := cm.GetRandString(10)
 	c := &WSConnet{sdData: make(chan []byte, 1024), conn: conn}
 	// 登记注册到全局wsConnect对象
-
+	var ms sync.Mutex
+	ms.Lock()
+	ClisWS[ssn] = c
+	ms.Unlock()
 	go c.WriteBack()
-	c.reader()
+	c.reader(ssn)
 
 }

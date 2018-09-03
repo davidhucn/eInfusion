@@ -45,7 +45,8 @@ func StartSendQueueListener() {
 					// 把当前结果回写前端
 					exm.Lock()
 					defer exm.Unlock()
-					RcMsgs[ssn] = "请求执行成功，等待反馈结果..."
+					// FIXME:判断是否ws在线，如果在线就发送到通道内，由通道发送到前端
+					// RcMsgs[ssn] = "请求执行成功，等待反馈结果..."
 					delSendQueueMap(sIPAddr)
 					return
 				}
@@ -66,7 +67,8 @@ func StartSendQueueListener() {
 								// 把当前结果回写前端
 								exm.Lock()
 								defer exm.Unlock()
-								RcMsgs[ssn] = "请求执行成功，等待反馈结果..."
+								// FIXME:判断是否ws在线，如果在线就发送到通道内，由通道发送到前端
+								// RcMsgs[ssn] = "请求执行成功，等待反馈结果..."
 								delSendQueueMap(sIPAddr)
 								return
 							}
@@ -84,7 +86,8 @@ func StartSendQueueListener() {
 							// 把当前结果回写前端
 							exm.Lock()
 							defer exm.Unlock()
-							RcMsgs[ssn] = "请求执行成功，等待反馈结果..."
+							// FIXME:判断是否ws在线，如果在线就发送到通道内，由通道发送到前端
+							// RcMsgs[ssn] = "请求执行成功，等待反馈结果..."
 							delSendQueueMap(sIPAddr)
 							return
 						}
@@ -94,7 +97,8 @@ func StartSendQueueListener() {
 				// 把当前结果回写前端
 				exm.Lock()
 				defer exm.Unlock()
-				RcMsgs[ssn] = "请求执行失败，设备未连线..."
+				// FIXME:判断是否ws在线，如果在线就发送到通道内，由通道发送到前端
+				// RcMsgs[ssn] = "请求执行失败，设备未连线..."
 				logs.LogMain.Info("IP地址为：【", sIPAddr, "】多次无法发送数据！,请核查")
 			}
 		}
