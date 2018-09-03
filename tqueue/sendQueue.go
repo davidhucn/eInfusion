@@ -46,60 +46,71 @@ func StartSendQueueListener() {
 					exm.Lock()
 					defer exm.Unlock()
 					// FIXME:判断是否ws在线，如果在线就发送到通道内，由通道发送到前端
-					// RcMsgs[ssn] = "请求执行成功，等待反馈结果..."
-					delSendQueueMap(sIPAddr)
-					return
-				}
-			} else {
-				cTicker := time.NewTicker(12 * time.Second) // 定时
-				lastCk := time.After(1 * time.Minute)       // 延时
-				// period :=
-				defer cTicker.Stop()
-				// 不在线,尝试3次，判断是否在线，延时判断，如果在线即发送
-				for i := 0; i < 3; i++ {
-					select {
-					case <-cTicker.C:
-						if _, ok := tcp.ClisConnMap[sIPAddr]; ok {
-							if cm.CkErr("发送指令错误，不在线！", tcp.SendData(tcp.ClisConnMap[sIPAddr], sdOrders[oid])) {
-								continue
-							} else {
-								// 发送成功
-								// 把当前结果回写前端
-								exm.Lock()
-								defer exm.Unlock()
-								// FIXME:判断是否ws在线，如果在线就发送到通道内，由通道发送到前端
-								// RcMsgs[ssn] = "请求执行成功，等待反馈结果..."
-								delSendQueueMap(sIPAddr)
-								return
+					if _, yes := RetMsg[ssn]; yes {
+						RetMsg[ssn] = []byte("请求执行成功，等待反馈结果...")
+						delSendQueueMap(sIPAddr)
+					} else {
+						cTicker := time.NewTicker(12 * time.Second) // 定时
+						lastCk := time.After(1 * time.Minute)       // 延时
+						// period :=
+						defer cTicker.Stop()
+						// 不在线,尝试3次，判断是否在线，延时判断，如果在线即发送
+						for i := 0; i < 3; i++ {
+							select {
+							case <-cTicker.C:
+								if _, ok := tcp.ClisConnMap[sIPAddr]; ok {
+									if cm.CkErr("发送指令错误，不在线！", tcp.SendData(tcp.ClisConnMap[sIPAddr], sdOrders[oid])) {
+										continue
+									} else {
+										// 发送成功
+										// 把当前结果回写前端
+										exm.Lock()
+										defer exm.Unlock()
+										// FIXME:判断是否ws在线，如果在线就发送到通道内，由通道发送到前端
+										if _, yes := ClisWS[ssn]; yes {
+											ClisWS[ssn].sdData <- []byte("请求执行成功，等待反馈结果...")
+											delSendQueueMap(sIPAddr)
+											return
+										}
+									}
+								}
 							}
 						}
-					}
-				}
-				// 最后3分钟后尝试1次
-				select {
-				case <-lastCk:
-					if _, ok := tcp.ClisConnMap[sIPAddr]; ok {
-						if cm.CkErr("发送指令错误，不在线！", tcp.SendData(tcp.ClisConnMap[sIPAddr], sdOrders[oid])) {
-							continue
-						} else {
-							// 发送成功
-							// 把当前结果回写前端
-							exm.Lock()
-							defer exm.Unlock()
-							// FIXME:判断是否ws在线，如果在线就发送到通道内，由通道发送到前端
-							// RcMsgs[ssn] = "请求执行成功，等待反馈结果..."
+						// 最后3分钟后尝试1次
+						select {
+						case <-lastCk:
+							if _, ok := tcp.ClisConnMap[sIPAddr]; ok {
+								if cm.CkErr("发送指令错误，不在线！", tcp.SendData(tcp.ClisConnMap[sIPAddr], sdOrders[oid])) {
+									continue
+								} else {
+									// 发送成功
+									// 把当前结果回写前端
+									exm.Lock()
+									defer exm.Unlock()
+									// FIXME:判断是否ws在线，如果在线就发送到通道内，由通道发送到前端
+									if _, yes := ClisWS[ssn]; yes {
+										ClisWS[ssn].sdData <- []byte("请求执行成功，等待反馈结果...")
+										delSendQueueMap(sIPAddr)
+										return
+									}
+									delSendQueueMap(sIPAddr)
+									return
+								}
+							}
+						}
+						// 多次尝试无效、失败，警报，记录日志
+						// 把当前结果回写前端
+						exm.Lock()
+						defer exm.Unlock()
+						// FIXME:判断是否ws在线，如果在线就发送到通道内，由通道发送到前端
+						if _, yes := ClisWS[ssn]; yes {
+							ClisWS[ssn].sdData <- []byte("请求执行失败，设备未连线...")
 							delSendQueueMap(sIPAddr)
 							return
 						}
+						logs.LogMain.Info("IP地址为：【", sIPAddr, "】多次无法发送数据！,请核查")
 					}
 				}
-				// 多次尝试无效、失败，警报，记录日志
-				// 把当前结果回写前端
-				exm.Lock()
-				defer exm.Unlock()
-				// FIXME:判断是否ws在线，如果在线就发送到通道内，由通道发送到前端
-				// RcMsgs[ssn] = "请求执行失败，设备未连线..."
-				logs.LogMain.Info("IP地址为：【", sIPAddr, "】多次无法发送数据！,请核查")
 			}
 		}
 	}

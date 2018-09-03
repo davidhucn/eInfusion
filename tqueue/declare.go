@@ -1,6 +1,8 @@
 package tqueue
 
-import "sync"
+import (
+	"sync"
+)
 
 // ReqCmd :指令类型
 // type ReqCmd struct {
@@ -21,11 +23,11 @@ var sdOrders map[string][]byte
 // sdIDStream :发送指令标识，触发用
 var sdIDStream chan string
 
-// RcMsgs :执行后返回结果
-// var RcMsgs map[string]string
+// RetMsg :指令操作返回数据映射
+var RetMsg map[string][]byte
 
 func init() {
 	sdOrders = make(map[string][]byte)
 	sdIDStream = make(chan string, 1024)
-	// RcMsgs = make(map[string]string)
+	RetMsg = make(map[string][]byte)
 }

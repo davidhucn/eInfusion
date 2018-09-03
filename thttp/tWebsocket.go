@@ -15,7 +15,7 @@ var wsupgrader = ws.Upgrader{
 }
 
 // WriteBack :回写到前端
-func (c *WSConnet) WriteBack() {
+func (c *eq.WSConnet) WriteBack() {
 	for d := range c.sdData {
 		// err := c.ws.WriteMessage(websocket.TextMessage, message)
 		err := c.conn.WriteMessage(ws.TextMessage, d)
@@ -37,7 +37,6 @@ func (c *WSConnet) reader(rSn string) {
 			break
 		}
 		// 根据前端应用需求信息发送指令
-
 		// 加入发送消息队列
 		for i := 0; i < len(clisData); i++ {
 			eq.AddToSendQueue(rSn, clisData[i].ID, cm.ConvertBasStrToUint(10, clisData[i].CmdType), clisData[i].Args)
