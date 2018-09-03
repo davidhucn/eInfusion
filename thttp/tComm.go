@@ -1,6 +1,6 @@
 package thttp
 
-import "golang.org/x/net/websocket"
+import ws "github.com/gorilla/websocket"
 
 type reqData struct {
 	ID      string `json:"ID"`
@@ -9,6 +9,15 @@ type reqData struct {
 	// Action string `json:"-"`
 }
 
+// clisData :客户端请求对象，内部用
 var clisData []reqData
 
-var wsConn *websocket.Conn
+// WSConnet :全局ws连接对象
+type WSConnet struct {
+	// websocket 连接器
+	conn *ws.Conn
+	// 发送信息的缓冲 channel
+	sdData chan []byte
+}
+
+var ClisWS []*WSConnet

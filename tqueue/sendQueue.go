@@ -112,16 +112,16 @@ func StartSendQueueListener() {
 //////////////////////////////////////////////////////////////
 
 // AddToSendQueue :根据参数生成为统一MAP对象(sOrders)，等待发送
-func AddToSendQueue(rSorderID string, rTargetID string, rCmdType uint8, rArgs string) {
+func AddToSendQueue(rSorderID string, rDetID string, rCmdType uint8, rArgs string) {
 	addDet := cm.ConvertHexUnitToDecUnit(ep.TrsCmdType.AddDetect)
 	delDet := cm.ConvertHexUnitToDecUnit(ep.TrsCmdType.DelDetect)
 	if rCmdType == addDet || rCmdType == delDet {
 		// 根据DetID获取RcvID,如果rcvID不为空
-		if wk.GetRcvID(rTargetID) != "" {
-			rcvID := cm.ConvertStrToBytesByPerTwoChar(wk.GetRcvID(rTargetID))
-			detID := cm.ConvertStrToBytesByPerTwoChar(rTargetID)
+		if wk.GetRcvID(rDetID) != "" {
+			rcvID := cm.ConvertStrToBytesByPerTwoChar(wk.GetRcvID(rDetID))
+			detID := cm.ConvertStrToBytesByPerTwoChar(rDetID)
 			// 获取rcv相关的IP
-			ipAddr := wk.GetRcvIP(wk.GetRcvID(rTargetID))
+			ipAddr := wk.GetRcvIP(wk.GetRcvID(rDetID))
 			// 重组指令标识:由时间戳+IP地址组成
 			orderID := rSorderID + "@" + ipAddr
 			addSendQueueMap(orderID, ep.CmdOperateDetect(rCmdType, rcvID, 1, detID))
