@@ -11,3 +11,8 @@
 [Info] [17:32:30] IP:127.0.0.1上线
 [Error] [17:33:47] websocket接收前端数据出错!websocket: close 1006 (abnormal closure): unexpected EOF
 [Info] [12:29:53] Transfusion平台运行中 …… （2018-09-03）
+[Info] [10:23:22] Transfusion平台运行中 …… （2018-09-10）
+[Error] [10:25:13] websocket接收前端数据出错!websocket: close 1001 (going away)
+[Info] [10:25:25] Transfusion平台运行中 …… （2018-09-10）
+[Info] [10:25:40] Transfusion平台运行中 …… （2018-09-10）
+[Info] [10:31:49] Transfusion平台运行中 …… （2018-09-10）

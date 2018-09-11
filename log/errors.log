@@ -1,1 +1,2 @@
 [ERROR] [17:01:08] [CkErr @ tComm.go.64] websocket接收前端数据出错!websocket: close 1001 (going away)
+[ERROR] [10:25:13] [CkErr @ tComm.go.77] websocket接收前端数据出错!websocket: close 1001 (going away)

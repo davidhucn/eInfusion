@@ -2,7 +2,7 @@ package thttp
 
 import (
 	cm "eInfusion/comm"
-	eq "eInfusion/tqueue"
+	logs "eInfusion/tlogs"
 	"net/http"
 	"sync"
 
@@ -15,15 +15,21 @@ var wsupgrader = ws.Upgrader{
 }
 
 // WriteBack :回写到前端
-func (c *eq.WSConnet) WriteBack() {
+func (c *WSConnet) WriteBack() {
 	for d := range c.sdData {
 		// err := c.ws.WriteMessage(websocket.TextMessage, message)
 		err := c.conn.WriteMessage(ws.TextMessage, d)
 		if err != nil {
 			break
 		}
+		// cm.SepLi(30, "")
+		// for one := range WsClis {
+		// 	cm.Msg(one)
+		// }
+		// cm.SepLi(30, "")
 	}
-	c.conn.Close()
+	// c.conn.Close()
+
 }
 
 func (c *WSConnet) reader(rSn string) {
@@ -32,15 +38,19 @@ func (c *WSConnet) reader(rSn string) {
 		// _, m, err := wsconnn.ReadMessage()
 		if cm.CkErr("websocket接收前端数据出错!", err) {
 			// FIXME:制定通讯标准，此处应返回前端页面出错信息
-			// c.conn.WriteMessage(ws.TextMessage, []byte("can't Exchange the data"))
 			c.sdData <- []byte("can't Exchange the data")
+			var ms sync.Mutex
+			ms.Lock()
+			delete(WsClis, rSn)
+			ms.Unlock()
 			break
 		}
 		// 根据前端应用需求信息发送指令
 		// 加入发送消息队列
 		for i := 0; i < len(clisData); i++ {
-			eq.AddToSendQueue(rSn, clisData[i].ID, cm.ConvertBasStrToUint(10, clisData[i].CmdType), clisData[i].Args)
-			c.sdData <- []byte("doing")
+			AddToSendQueue(rSn, clisData[i].ID, cm.ConvertBasStrToUint(10, clisData[i].CmdType), clisData[i].Args)
+			// FIXME:制定通讯标准，此处应返回前端页面完成信息
+			c.sdData <- []byte("前端发送完成，等待后端服务处理")
 		}
 		// wsconnn.WriteMessage(1, []byte(cliMsg[0].Action))
 	}
@@ -50,8 +60,8 @@ func (c *WSConnet) reader(rSn string) {
 func wshandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := wsupgrader.Upgrade(w, r, nil)
 	defer conn.Close()
-	if cm.CkErr("链接websocket出错！", err) {
-		return
+	if cm.CkErr("websocket连接出错！", err) {
+		logs.LogMain.Error("http-websocket 连接出错！IP：【", conn.RemoteAddr().String(), "】")
 	}
 	// 获取随机字符串生成标识id
 	ssn := cm.GetRandString(10)
@@ -59,9 +69,8 @@ func wshandler(w http.ResponseWriter, r *http.Request) {
 	// 登记注册到全局wsConnect对象
 	var ms sync.Mutex
 	ms.Lock()
-	ClisWS[ssn] = c
+	WsClis[ssn] = c
 	ms.Unlock()
 	go c.WriteBack()
 	c.reader(ssn)
-
 }

@@ -1,6 +1,10 @@
 package thttp
 
-import ws "github.com/gorilla/websocket"
+import (
+	"sync"
+
+	ws "github.com/gorilla/websocket"
+)
 
 type reqData struct {
 	ID      string `json:"ID"`
@@ -18,9 +22,23 @@ type WSConnet struct {
 	sdData chan []byte // 发送信息的缓冲 channel
 }
 
-// ClisWS :全局ws连接对象集
-var ClisWS map[string]*WSConnet
+// WsClis :全局ws连接对象集
+var WsClis map[string]*WSConnet
+
+// 定义锁
+var (
+	cMkMutex  sync.Mutex
+	cDelMutex sync.Mutex
+)
+
+// sOrders :全局发送指令map数组,MAP索引为时间戳
+var sdOrders map[string][]byte
+
+// sdIDStream :发送指令标识,涵盖IP地址及唯一标识字符
+var sdIDStream chan string
 
 func init() {
-	ClisWS = make(map[string]*WSConnet)
+	sdOrders = make(map[string][]byte)
+	sdIDStream = make(chan string, 1024)
+	WsClis = make(map[string]*WSConnet)
 }

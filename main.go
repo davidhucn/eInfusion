@@ -3,7 +3,6 @@ package main
 import (
 	eh "eInfusion/thttp"
 	logs "eInfusion/tlogs"
-	eq "eInfusion/tqueue"
 	et "eInfusion/ttcp"
 	"runtime"
 )
@@ -17,7 +16,7 @@ func init() {
 }
 
 func main() {
-	go eq.StartSendQueueListener()
 	go et.StartTCPServer(7778)
+	go eh.StartSendQueueListener()
 	eh.StartHTTPServer(7779)
 }

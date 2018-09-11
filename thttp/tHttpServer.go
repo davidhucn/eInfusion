@@ -9,6 +9,8 @@ import (
 
 // StartHTTPServer :开始运行httpServer
 func StartHTTPServer(iPort int) {
+	// go StartSendQueueListener()
+
 	cm.SepLi(60, "")
 	cm.Msg("start http...,Port:", iPort)
 	cm.SepLi(60, "")
