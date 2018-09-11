@@ -30,7 +30,7 @@ func wsWriteBack(sn string, strCnt string) bool {
 		WsClis[sn].sdData <- []byte(strCnt)
 		return true
 	}
-	// TODO:ws不在线时,待处理
+	// ws不在线时,待处理
 	return false
 }
 
@@ -66,7 +66,7 @@ func StartSendQueueListener() {
 					select {
 					case <-cTicker.C:
 						if _, ok := tcp.ClisConnMap[sIPAddr]; ok {
-							if cm.CkErr("发送指令错误，不在线！", tcp.SendData(tcp.ClisConnMap[sIPAddr], sdOrders[oid])) {
+							if cm.CkErr("发送指令错误，系统检测为在线状态！", tcp.SendData(tcp.ClisConnMap[sIPAddr], sdOrders[oid])) {
 								continue
 							} else {
 								// 发送成功
@@ -82,7 +82,7 @@ func StartSendQueueListener() {
 				select {
 				case <-lastCk:
 					if _, ok := tcp.ClisConnMap[sIPAddr]; ok {
-						if cm.CkErr("发送指令错误，不在线！", tcp.SendData(tcp.ClisConnMap[sIPAddr], sdOrders[oid])) {
+						if cm.CkErr("发送指令错误，系统检测为在线状态！", tcp.SendData(tcp.ClisConnMap[sIPAddr], sdOrders[oid])) {
 							continue
 						} else {
 							// 发送成功
@@ -97,7 +97,7 @@ func StartSendQueueListener() {
 				// 如果ws在线则把回传信息
 				wsWriteBack(ssn, "由于设备长时间断线，操作指令发送失败...")
 				delSendQueueMap(sIPAddr)
-				logs.LogMain.Info("IP地址为：【", sIPAddr, "】多次无法发送数据！,请核查")
+				logs.LogMain.Info("IP地址为：【", sIPAddr, "】设备多次通讯失败！,请核查")
 			}
 		}
 	}

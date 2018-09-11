@@ -36,9 +36,8 @@ func (c *WSConnet) reader(rSn string) {
 	for {
 		err := c.conn.ReadJSON(&clisData)
 		// _, m, err := wsconnn.ReadMessage()
-		if cm.CkErr("websocket接收前端数据出错!", err) {
-			// FIXME:制定通讯标准，此处应返回前端页面出错信息
-			c.sdData <- []byte("ws数据交互失败!")
+		if err != nil {
+			c.sdData <- []byte("ws数据连接失败!")
 			var ms sync.Mutex
 			ms.Lock()
 			delete(WsClis, rSn)
