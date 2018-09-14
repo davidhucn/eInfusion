@@ -25,13 +25,13 @@
       $("#s").click(function()
         {
           var jstr;
-          var txt = $("#s").text();
+          var txt = $("#A1").text();
           if (txt=="Alarm Closed"){
-              $("#s").text("Alarm Opened...");
+              $("#A1").text("Alarm Opened");
               jstr = [{"ID":"B0000000","Action":"1"}];
             }
-            if (txt=="Alarm Opened..."){
-              $("#s").text("Alarm Closed");
+            if (txt=="Alarm Opened"){
+              $("#A1").text("Alarm Closed");
               jstr = [{"ID":"B0000000","Action":"0"}];
             }
             var ret =JSON.stringify(jstr);
@@ -60,7 +60,7 @@
     <h1 align="center">Transfusion Test </h1> 
     <hr style="height:1px;border:none;border-top:1px dashed #093834;" />
 
-    <center>Switch: &nbsp;&nbsp;&nbsp;<button id="s">Alarm Closed</button> &nbsp;&nbsp;&nbsp; <label id="status">Waiting...</label></center>
+    <center>Alarm 1: &nbsp;&nbsp;&nbsp;<button id="A1">Alarm Closed</button> &nbsp;&nbsp;&nbsp; <label id="status">Waiting...</label></center>
     <p></p>
     <p>&nbsp;</p>
 

@@ -18,20 +18,20 @@
       };
 
      c.onopen = function(){
-       $("#status").text(" Connect Success!")
+       $("#status").text("Connect Success!")
       };
 
     $("document").ready(function(){
-      $("#s").click(function()
+      $("#B0").click(function()
         {
           var jstr;
-          var txt = $("#s").text();
+          var txt = $("#B0").text();
           if (txt=="Alarm Closed"){
-              $("#s").text("Alarm Opened...");
+              $("#B0").text("Alarm Opened");
               jstr = [{"ID":"B0000000","CmdType":"12"}];
             }
-            if (txt=="Alarm Opened..."){
-              $("#s").text("Alarm Closed");
+            if (txt=="Alarm Opened"){
+              $("#B0").text("Alarm Closed");
               jstr = [{"ID":"B0000000","CmdType":"13"}];
             }
             var ret =JSON.stringify(jstr);
@@ -47,7 +47,7 @@
     <h1 align="center">Transfusion Test </h1> 
     <hr style="height:1px;border:none;border-top:1px dashed #093834;" />
 
-    <center>Switch: &nbsp;&nbsp;&nbsp;<button id="s">Alarm Closed</button> &nbsp;&nbsp;&nbsp; <label id="status">Waiting...</label></center>
+    <center>Alarm 0: &nbsp;&nbsp;&nbsp;<button id="B0">Alarm Closed</button> &nbsp;&nbsp;&nbsp; <label id="status">Waiting...</label></center>
     <p></p>
     <p>&nbsp;</p>
 
