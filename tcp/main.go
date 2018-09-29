@@ -26,7 +26,7 @@ func (d *Devices) SendData(rConnID string, rData []byte) error {
 	if cm.CkErr(TCPMsg.SendError, err) {
 		return cm.ConvertStrToErr(TCPMsg.SendError)
 	}
-	// TODO:抽象化LOG函数
+	// TODO:抽象化log函数
 	logs.LogMain.Info("=>"+ip, "完成数据发送")
 	return nil
 }
@@ -80,7 +80,6 @@ func (d *Devices) madeConn(c *net.TCPConn) {
 
 // 连接断开
 func (d *Devices) lostConn(c *net.TCPConn) {
-	//连接断开这个函数被调用
 	connID := cm.GetPureIPAddr(c.RemoteAddr().String())
 	d.Lock()
 	delete(d.Connections, connID)
@@ -148,12 +147,12 @@ func receiveData(c *net.TCPConn) {
 func StartTCPService(d *Devices, port int) {
 	host := ":" + strconv.Itoa(port)
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", host)
-	if cm.CkErr("TCP资源错误", err) {
+	if cm.CkErr(TCPMsg.SourceError, err) {
 		os.Exit(1)
 	}
 	listener, err := net.ListenTCP("tcp", tcpAddr)
 	defer listener.Close()
-	if cm.CkErr("TCP资源错误", err) {
+	if cm.CkErr(TCPMsg.SourceError, err) {
 		os.Exit(1)
 	}
 	cm.SepLi(60, "")
@@ -164,7 +163,6 @@ func StartTCPService(d *Devices, port int) {
 	//打开N个Goroutine等待连接，Epoll模式
 	for i := 0; i < MaxTCPConnectLimit; i++ {
 		go func() {
-			// var cs *net.TCPConn
 			for cs := range connStream {
 				d.madeConn(cs)
 				//	接收数据

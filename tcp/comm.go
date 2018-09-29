@@ -13,6 +13,7 @@ type tcpMsg struct {
 	CanNotFindConnection string
 	OutOfMaxConnAmount   string
 	SendSuccess          string
+	SourceError          string
 }
 
 func init() {
@@ -21,6 +22,7 @@ func init() {
 	TCPMsg.OutOfMaxConnAmount = "提示,超出设定连接数！"
 	TCPMsg.HeaderDataError = "错误，数据包头错误！"
 	TCPMsg.CanNotFindConnection = "错误，未找到TCP连接！"
+	TCPMsg.SourceError = "错误，TCP服务资源错误！"
 	TCPMsg.SendSuccess = "提示,发送数据成功！"
 	TCPMsg.StartServiceMsg = "提示，Transfusion平台运行中 ……"
 }
