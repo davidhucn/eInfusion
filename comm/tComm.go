@@ -79,6 +79,11 @@ func CkErr(rMsgTitle string, rErr error) bool {
 	return false
 }
 
+// ConvertStrToErr ：转换string内容为错误对象
+func ConvertStrToErr(s string) error {
+	return fmt.Errorf("%s", s)
+}
+
 // ConvertBytesOfAscToStr :转换ascii为字符串，可用于http前端数据传至后端
 func ConvertBytesOfAscToStr(rMetBt []byte) string {
 	var s string
