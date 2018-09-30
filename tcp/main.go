@@ -26,7 +26,7 @@ func (d *Devices) SendData(rConnID string, rData []byte) error {
 	if cm.CkErr(TCPMsg.SendError, err) {
 		return cm.ConvertStrToErr(TCPMsg.SendError)
 	}
-	// TODO:抽象化log函数
+	// TODO:抽象化log对象
 	logs.LogMain.Info("=>"+ip, "完成数据发送")
 	return nil
 }

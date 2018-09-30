@@ -16,8 +16,8 @@ var wsupgrader = ws.Upgrader{
 
 // WriteBack :回写到前端
 func (w *WebClients) WriteBack() {
-	for d := range w.Orders {
-		if cm.CkErr(w.Connections[d.CmdID].WriteMessage(ws.TextMessage, d.Cmd)) {
+	for c := range w.Connections {
+		if cm.CkErr(WebMsg.WSSendDataError, c[].WriteMessage(ws.TextMessage, d.Cmd)) {
 			break
 		}
 		// err := c.conn.WriteMessage(ws.TextMessage, d)
@@ -34,7 +34,7 @@ func (w *WebClients) WriteBack() {
 
 }
 
-func (w *WebClients) reader(rSn string) {
+func (w *WebClients) reader() {
 	for {
 		err := w.Connections[rSn].ReadJSON(&clisData)
 		err := c.conn.ReadJSON(&clisData)
@@ -59,27 +59,24 @@ func (w *WebClients) reader(rSn string) {
 }
 
 // ws接收目前仅限于json
-func wshandler(w http.ResponseWriter, r *http.Request) {
+func wshandler(wc *WebClients, w http.ResponseWriter, r *http.Request) {
 	conn, err := wsupgrader.Upgrade(w, r, nil)
 	defer conn.Close()
-	if cm.CkErr("websocket连接出错！", err) {
-		logs.LogMain.Error("http-websocket 连接出错！IP：【", conn.RemoteAddr().String(), "】")
+	if cm.CkErr(WebMsg.WSConnectError+"IP Addr:"+cm.GetPureIPAddr(conn.RemoteAddr().String()), err) {
+		return
 	}
 	// 获取随机字符串生成标识id
-	ssn := cm.GetRandString(10)
-	c := &WSConnet{sdData: make(chan []byte, 1024), conn: conn}
+	conID := cm.GetRandString(10)
 	// 登记注册到全局wsConnect对象
-	var ms sync.Mutex
-	ms.Lock()
-	WsClis[ssn] = c
-	ms.Unlock()
-	go c.WriteBack()
-	c.reader(ssn)
+	wc.Lock()
+	wc.Connections[conID] = conn
+	wc.Unlock()
+	go wc.WriteBack()
+	wc.reader()
 }
 
 // StartHTTPServer :开始运行httpServer
 func StartHTTPServer(iPort int) {
-
 	cm.SepLi(60, "")
 	cm.Msg("start http...,Port:", iPort)
 	cm.SepLi(60, "")
