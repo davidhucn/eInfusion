@@ -37,20 +37,21 @@ func init() {
 	WebMsg.WSReceiveDataError = "错误，websocket接收数据失败！"
 }
 
-// websocketConnectionns :web客户端对象
-type webSocketConnections struct {
+type WsObject struct {
 	WsConnection *ws.Conn
 	Orders       chan *Cmd
 }
 
 // WebClients :web连接客户端
 type WebClients struct {
-	Connections map[string]*webSocketConnections
+	Connections map[string]*WsObject
 	sync.Mutex
 }
 
-// func NewWebClients()*WebClients{
+// NewWebClients :创建新的WebClient对象
+// func NewWebClients() *WebClients {
 // 	return &WebClients{
-// 		Connections : make(map[string]*webSocketConnections)
+// 		WSConnections: make(map[string]*ws.Conn),
+// 		Orders:        make(chan *Cmd, 1024),
 // 	}
 // }

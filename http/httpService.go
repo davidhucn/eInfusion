@@ -16,25 +16,29 @@ var wsupgrader = ws.Upgrader{
 
 // WriteBack :回写到前端
 func (w *WebClients) WriteBack() {
-	for c := range w.Connections {
-		if cm.CkErr(WebMsg.WSSendDataError, c[].WriteMessage(ws.TextMessage, d.Cmd)) {
-			break
+	var c *WsObject
+	for _, c = range w.Connections {
+		for v := range c.Orders {
+			c.WsConnection.WriteMessage(ws.TextMessage, v.Cmd)
 		}
-		// err := c.conn.WriteMessage(ws.TextMessage, d)
-		// if err != nil {
-		// 	break
-		// }
-		// cm.SepLi(30, "")
-		// for one := range WsClis {
-		// 	cm.Msg(one)
-		// }
-		// cm.SepLi(30, "")
 	}
-	// c.conn.Close()
+	// if cm.CkErr(WebMsg.WSSendDataError, c[].WriteMessage(ws.TextMessage, d.Cmd)) {
+	// 	break
+	// }
+	// err := c.conn.WriteMessage(ws.TextMessage, d)
+	// if err != nil {
+	// 	break
+	// }
+	// cm.SepLi(30, "")
+	// for one := range WsClis {
+	// 	cm.Msg(one)
+	// }
+	// cm.SepLi(30, "")
 
+	// c.conn.Close()
 }
 
-func (w *WebClients) reader() {
+func (w *WebClients) reader(rSn string) {
 	for {
 		err := w.Connections[rSn].ReadJSON(&clisData)
 		err := c.conn.ReadJSON(&clisData)
@@ -66,13 +70,13 @@ func wshandler(wc *WebClients, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// 获取随机字符串生成标识id
-	conID := cm.GetRandString(10)
+	// conID := cm.GetRandString(10)
 	// 登记注册到全局wsConnect对象
 	wc.Lock()
-	wc.Connections[conID] = conn
+	wc.Connections[cm.GetRandString(10)] = conn
 	wc.Unlock()
 	go wc.WriteBack()
-	wc.reader()
+	wc.reader(cm.GetRandString(8))
 }
 
 // StartHTTPServer :开始运行httpServer
