@@ -1,8 +1,10 @@
 package http
 
 import (
+	"os"
 	"sync"
 
+	ss "github.com/gorilla/sessions"
 	ws "github.com/gorilla/websocket"
 )
 
@@ -37,21 +39,27 @@ func init() {
 	WebMsg.WSReceiveDataError = "错误，websocket接收数据失败！"
 }
 
-type WsObject struct {
-	WsConnection *ws.Conn
-	Orders       chan *Cmd
-}
-
 // WebClients :web连接客户端
 type WebClients struct {
-	Connections map[string]*WsObject
+	Connections map[string]*ws.Conn
+	Orders      chan *Cmd
 	sync.Mutex
 }
 
+var CStore = ss.NewCookieStore([]byte(os.Getenv("Session-Key")))
+
+// NewOrder :生成新的命令对象
+func NewOrder(rCnt []byte, rID string) *Cmd {
+	return &Cmd{
+		Cmd:   rCnt,
+		CmdID: rID,
+	}
+}
+
 // NewWebClients :创建新的WebClient对象
-// func NewWebClients() *WebClients {
-// 	return &WebClients{
-// 		WSConnections: make(map[string]*ws.Conn),
-// 		Orders:        make(chan *Cmd, 1024),
-// 	}
-// }
+func NewWebClients() *WebClients {
+	return &WebClients{
+		Connections: make(map[string]*ws.Conn),
+		Orders:      make(chan *Cmd, 1024),
+	}
+}
