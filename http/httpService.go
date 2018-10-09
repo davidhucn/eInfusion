@@ -2,7 +2,9 @@ package http
 
 import (
 	cm "eInfusion/comm"
+	dh "eInfusion/datahub"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	ws "github.com/gorilla/websocket"
@@ -13,39 +15,41 @@ var wsupgrader = ws.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-// WriteBack :回写到前端
+// WriteBack :回写到WEB前端
 func (w *WebClients) WriteBack() {
-	var c *WsObject
-	for _, c = range w.Connections {
-		for v := range c.Orders {
-			c.WSConnection.WriteMessage(ws.TextMessage, v.Cmd)
+	// 遍历cmd对象
+	for cd := range w.Orders {
+		// 截取cmd中ws连接名
+		targetID := strings.Split("@", cd.CmdID)[0]
+		if c, ok := w.Connections[targetID]; ok {
+			if cm.CkErr(WebMsg.WSSendDataError+" IP："+targetID, c.WriteMessage(ws.TextMessage, cd.Cmd)) {
+				break
+			}
 		}
 	}
-	// if cm.CkErr(WebMsg.WSSendDataError, c[].WriteMessage(ws.TextMessage, d.Cmd)) {
-	// 	break
-	// }
-	// err := c.conn.WriteMessage(ws.TextMessage, d)
-	// if err != nil {
-	// 	break
-	// }
 	// cm.SepLi(30, "")
 	// for one := range WsClis {
 	// 	cm.Msg(one)
 	// }
 	// cm.SepLi(30, "")
-
 	// c.conn.Close()
 }
 
 // reader :接受web数据
 func (w *WebClients) reader(rConID string) {
 	for {
-		if cm.CkErr(WebMsg.WSReceiveDataError, w.Connections[rConID].WSConnection.ReadJSON(&clisData)) {
-			od := NewOrder([]byte(WebMsg.WSReceiveDataError), cm.GetRandString(8))
-			w.Connections[rConID].Orders <- od
+		if cm.CkErr(WebMsg.WSReceiveDataError, w.Connections[rConID].ReadJSON(&clisData)) {
+			odID := rConID + "@" + cm.GetRandString(6)
+			od := NewOrder(odID, []byte(WebMsg.WSReceiveDataError))
+			w.Orders <- od
+			w.Lock()
 			delete(w.Connections, rConID)
+			w.Unlock()
 			break
 		}
+		// 如果接收数据正常，存入消息平台
+
+		dh.AddToTCPQueue()
 		// 根据前端应用需求信息发送指令
 		// 加入发送消息队列
 		// for i := 0; i < len(clisData); i++ {
@@ -67,7 +71,7 @@ func wshandler(wc *WebClients, w http.ResponseWriter, r *http.Request) {
 	// TODO:记录用户操作的内容
 	{
 		sis, _ := CStore.Get(r, "session-name")
-		sis.Values["foo"] = "bar"
+		sis.Values["foo"] = "bar" //改成数组
 		sis.Save(r, w)
 	}
 
@@ -76,14 +80,14 @@ func wshandler(wc *WebClients, w http.ResponseWriter, r *http.Request) {
 	// 登记注册到全局wsConnect对象
 	conID := cm.GetRandString(10)
 	wc.Lock()
-	wc.Connections[conID].WSConnection = con
+	wc.Connections[conID] = con
 	wc.Unlock()
 	go wc.WriteBack()
 	wc.reader(conID)
 }
 
 // StartHTTPServer :开始运行httpServer
-func StartHTTPServer(iPort int) {
+func StartHTTPServer(wc *WebClients, iPort int) {
 	cm.SepLi(60, "")
 	cm.Msg("start http...,Port:", iPort)
 	cm.SepLi(60, "")
@@ -101,10 +105,10 @@ func StartHTTPServer(iPort int) {
 		// })
 		// c.HTML(http.StatusOK, "alarm.html", nil)
 	})
-	wcs := NewWebClients()
+	// wcs := NewWebClients()
 	// websocket处理方法
 	r.GET("/ws", func(c *gin.Context) {
-		wshandler(wcs, c.Writer, c.Request)
+		wshandler(wc, c.Writer, c.Request)
 	})
 	r.Run(":" + cm.ConvertIntToStr(iPort))
 	// r.Run(":12312")

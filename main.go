@@ -1,10 +1,12 @@
 package main
 
 import (
-	eh "eInfusion/thttp"
+	eh "eInfusion/http"
+	et "eInfusion/tcp"
 	logs "eInfusion/tlogs"
-	et "eInfusion/ttcp"
 	"runtime"
+	// eh "eInfusion/thttp"
+	// et "eInfusion/ttcp"
 )
 
 func init() {
@@ -16,7 +18,12 @@ func init() {
 }
 
 func main() {
-	go et.StartTCPServer(7778)
-	go eh.StartSendQueueListener()
-	eh.StartHTTPServer(7779)
+	// go et.StartTCPServer(7778)
+	// go eh.StartSendQueueListener()
+	// eh.StartHTTPServer(7779)
+	wc := eh.NewWebClients()
+	go eh.StartHTTPServer(wc, 7778)
+	dt := et.NewDevices()
+	et.StartTCPService(dt, 7779)
+
 }

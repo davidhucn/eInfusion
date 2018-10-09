@@ -46,10 +46,11 @@ type WebClients struct {
 	sync.Mutex
 }
 
+// CStore :全局cookie记录对象
 var CStore = ss.NewCookieStore([]byte(os.Getenv("Session-Key")))
 
 // NewOrder :生成新的命令对象
-func NewOrder(rCnt []byte, rID string) *Cmd {
+func NewOrder(rID string, rCnt []byte) *Cmd {
 	return &Cmd{
 		Cmd:   rCnt,
 		CmdID: rID,
