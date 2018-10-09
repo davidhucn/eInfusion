@@ -19,45 +19,37 @@ var wsupgrader = ws.Upgrader{
 func (w *WebClients) WriteBack() {
 	// 遍历cmd对象
 	for cd := range w.Orders {
-		// 截取cmd中ws连接名
-		targetID := strings.Split("@", cd.CmdID)[0]
+		// 截取cmd中websocket连接ID
+		targetID := strings.Split("#", cd.CmdID)[0]
 		if c, ok := w.Connections[targetID]; ok {
 			if cm.CkErr(WebMsg.WSSendDataError+" IP："+targetID, c.WriteMessage(ws.TextMessage, cd.Cmd)) {
 				break
 			}
 		}
 	}
-	// cm.SepLi(30, "")
-	// for one := range WsClis {
-	// 	cm.Msg(one)
-	// }
-	// cm.SepLi(30, "")
-	// c.conn.Close()
 }
 
 // reader :接受web数据
-func (w *WebClients) reader(rConID string) {
+func (w *WebClients) reader(rWSConID string) {
 	for {
-		if cm.CkErr(WebMsg.WSReceiveDataError, w.Connections[rConID].ReadJSON(&clisData)) {
-			odID := rConID + "@" + cm.GetRandString(6)
-			od := NewOrder(odID, []byte(WebMsg.WSReceiveDataError))
+		if cm.CkErr(WebMsg.WSReceiveDataError, w.Connections[rWSConID].ReadJSON(&clisData)) {
+			odID := rWSConID + "#" + cm.GetRandString(6)
+			od := cm.NewOrder(odID, []byte(WebMsg.WSReceiveDataError))
 			w.Orders <- od
 			w.Lock()
-			delete(w.Connections, rConID)
+			delete(w.Connections, rWSConID)
 			w.Unlock()
 			break
 		}
-		// 如果接收数据正常，存入消息平台
-
-		dh.AddToTCPQueue()
 		// 根据前端应用需求信息发送指令
 		// 加入发送消息队列
-		// for i := 0; i < len(clisData); i++ {
-		// 	AddToSendQueue(rSn, clisData[i].ID, cm.ConvertBasStrToUint(10, clisData[i].CmdType), clisData[i].Args)
-		// 	// FIXME:制定通讯标准，此处应返回前端页面完成信息
-		// 	c.sdData <- []byte("前端发送完成，等待后端服务处理")
-		// }
-		// wsconnn.WriteMessage(1, []byte(cliMsg[0].Action))
+		for i := 0; i < len(clisData); i++ {
+			odID := rWSConID + "#" + cm.GetRandString(6)
+			dh.SendOrderToDeviceByTCP(odID, clisData[i].ID, cm.ConvertBasStrToUint(10, clisData[i].CmdType), clisData[i].Args)
+			// FIXME:制定通讯标准，此处应返回前端页面完成信息代码
+			od := cm.NewOrder(odID, []byte(WebMsg.WSSendDataSuccess))
+			w.Orders <- od
+		}
 	}
 }
 
@@ -74,12 +66,10 @@ func wshandler(wc *WebClients, w http.ResponseWriter, r *http.Request) {
 		sis.Values["foo"] = "bar" //改成数组
 		sis.Save(r, w)
 	}
-
 	// 获取随机字符串生成标识id
-	// conID := cm.GetRandString(10)
-	// 登记注册到全局wsConnect对象
 	conID := cm.GetRandString(10)
 	wc.Lock()
+	// 登记注册到全局wsConnect对象
 	wc.Connections[conID] = con
 	wc.Unlock()
 	go wc.WriteBack()

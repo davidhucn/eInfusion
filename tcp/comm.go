@@ -1,6 +1,7 @@
 package tcp
 
 import (
+	cm "eInfusion/comm"
 	"net"
 	"sync"
 )
@@ -33,17 +34,11 @@ const MaxTCPConnectLimit int = 3
 // TCPMsg :消息对象
 var TCPMsg tcpMsg
 
-// Cmd :指令对象
-type Cmd struct {
-	Cmd   []byte
-	CmdID string
-}
-
 // Devices :设备对象，用于衔接TCP操用
 type Devices struct {
 	// 连接集合
 	Connections map[string]*net.TCPConn
-	Orders      chan *Cmd
+	Orders      chan *cm.Cmd
 	sync.Mutex
 }
 
@@ -51,6 +46,6 @@ type Devices struct {
 func NewDevices() *Devices {
 	return &Devices{
 		Connections: make(map[string]*net.TCPConn),
-		Orders:      make(chan *Cmd, 1024),
+		Orders:      make(chan *cm.Cmd, 1024),
 	}
 }

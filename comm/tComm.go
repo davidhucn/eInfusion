@@ -13,6 +13,20 @@ import (
 	"time"
 )
 
+// Cmd :指令对象
+type Cmd struct {
+	Cmd   []byte
+	CmdID string
+}
+
+// NewOrder :生成新的命令对象
+func NewOrder(rID string, rCnt []byte) *Cmd {
+	return &Cmd{
+		Cmd:   rCnt,
+		CmdID: rID,
+	}
+}
+
 // GetRandString : 生成随机字符串
 func GetRandString(length int) string {
 	rand.Seed(time.Now().UnixNano())
