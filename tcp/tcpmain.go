@@ -6,37 +6,65 @@ package tcp
 
 import (
 	cm "eInfusion/comm"
+	dh "eInfusion/datahub"
 	ep "eInfusion/protocol"
 	logs "eInfusion/tlogs"
 	"net"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
-// SendData :发送命令和数据
-func (d *Devices) SendData(rConnID string, rData []byte) error {
-	if _, ok := d.Connections[rConnID]; !ok {
+// SendOrderIndicate :发送给设备单独的某条命令和数据
+func (ds *Devices) SendOrderIndicate(rOrder *cm.Cmd) error {
+	// 获取tcp连接id
+	conID := strings.Split(rOrder.CmdID, "@")[1]
+	if _, ok := ds.Connections[conID]; !ok {
 		return cm.ConvertStrToErr(TCPMsg.CanNotFindConnection)
 	}
-	ip := cm.GetPureIPAddr(d.Connections[rConnID].RemoteAddr().String())
-	//考虑网络延迟、断网问题，另外发送两个数据须间隔15毫秒(millionseconds)
 	time.Sleep(15 * time.Millisecond)
-	_, err := d.Connections[rConnID].Write(rData)
+	_, err := ds.Connections[conID].Write(rOrder.Cmd)
 	if cm.CkErr(TCPMsg.SendError, err) {
 		return cm.ConvertStrToErr(TCPMsg.SendError)
 	}
-	// TODO:抽象化log对象
-	logs.LogMain.Info("=>"+ip, "完成数据发送")
+	// 	// TODO:抽象化log对象
+	logs.LogMain.Info("=> IP："+ds.Connections[conID].RemoteAddr().String(), TCPMsg.SendSuccess)
 	return nil
 }
 
-//Broadcast :广播数据
-func (d *Devices) Broadcast(rData []byte) {
-	for _, c := range d.Connections {
-		connID := cm.GetPureIPAddr(c.RemoteAddr().String())
-		d.SendData(connID, rData)
+// Broadcast :对所有连接发送广播
+func (ds *Devices) Broadcast(rOrder *cm.Cmd) {
+	for _, c := range ds.Connections {
+		_, err := c.Write(rOrder.Cmd)
+		if cm.CkErr(TCPMsg.SendError, err) {
+			break
+		}
 	}
+}
+
+// LoopingSendTCPOrders : 循环检测datahub包内DeviceTCPOrders对象，发送指令到相应设备去
+func (ds *Devices) LoopingSendTCPOrders() {
+	for dh.DeviceTCPOrder != nil {
+		select {
+		case od := <-dh.DeviceTCPOrder:
+			conID := strings.Split(od.CmdID, "@")[1]
+			if _, ok := ds.Connections[conID]; !ok {
+				cm.CkErr("发送指令至设备错误！", cm.ConvertStrToErr(TCPMsg.CanNotFindConnection))
+				continue
+			}
+			time.Sleep(15 * time.Millisecond)
+			_, err := ds.Connections[conID].Write(od.Cmd)
+			if cm.CkErr(TCPMsg.SendError, err) {
+				continue
+			} else {
+				// 发送成功
+
+			}
+
+		}
+	}
+
 }
 
 //   定时处理&延时处理

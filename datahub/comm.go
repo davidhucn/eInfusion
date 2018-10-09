@@ -8,11 +8,16 @@ import (
 	logs "eInfusion/tlogs"
 )
 
-// var DeviceOrder chan
+// DeviceTCPOrder :设备命令对象
+var DeviceTCPOrder chan *cm.Cmd
+
+func init() {
+	DeviceTCPOrder = make(chan *cm.Cmd, 1024)
+}
 
 // AddToTCPQueue ：通过TCP协议发送指令至设备
 func addToTCPSendQueue(cmd *cm.Cmd) {
-
+	DeviceTCPOrder <- cmd
 }
 
 // SendOrderToDeviceByTCP :添加到TCP数据发送队列
