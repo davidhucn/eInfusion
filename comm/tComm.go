@@ -87,7 +87,9 @@ func GetVarType(rVal interface{}) string {
 // CkErr :处理错误(如果有错误，返回true,无错则返回false),同时记录日志
 func CkErr(rMsgTitle string, rErr error) bool {
 	if rErr != nil {
-		logs.LogMain.Error(rMsgTitle, rErr)
+		if rMsgTitle != "" {
+			logs.LogMain.Error(rMsgTitle, rErr)
+		}
 		return true
 	}
 	return false

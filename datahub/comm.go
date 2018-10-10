@@ -8,16 +8,25 @@ import (
 	logs "eInfusion/tlogs"
 )
 
-// DeviceTCPOrder :设备命令对象
-var DeviceTCPOrder chan *cm.Cmd
+// DeviceTCPOrderQueue :设备命令对象队列
+var DeviceTCPOrderQueue chan *cm.Cmd
+
+// WebMsgQueue :回写到web的消息发送队列
+var WebMsgQueue chan *cm.Cmd
 
 func init() {
-	DeviceTCPOrder = make(chan *cm.Cmd, 1024)
+	DeviceTCPOrderQueue = make(chan *cm.Cmd, 1024)
+	WebMsgQueue = make(chan *cm.Cmd, 1024)
 }
 
 // AddToTCPQueue ：通过TCP协议发送指令至设备
-func addToTCPSendQueue(cmd *cm.Cmd) {
-	DeviceTCPOrder <- cmd
+func addToTCPSendQueue(rCmd *cm.Cmd) {
+	DeviceTCPOrderQueue <- rCmd
+}
+
+// SendMsgBackToWeb :回写到web前端
+func SendMsgBackToWeb(rCmd *cm.Cmd) {
+	WebMsgQueue <- rCmd
 }
 
 // SendOrderToDeviceByTCP :添加到TCP数据发送队列
