@@ -15,16 +15,27 @@ var wsupgrader = ws.Upgrader{
 	WriteBufferSize: 1024,
 }
 
+// LoopWriteBackFromDataHub :循环读取datahub包内WebMsgQueue对象发送到前端web
+func (w *WebClients) LoopWriteBackFromDataHub() {
+	for dh.WebMsgQueue != nil {
+		select {
+		case od := <-dh.WebMsgQueue:
+			wsID := strings.Split("#", od.CmdID)[0]
+			if c, ok := w.Connections[wsID]; ok {
+				cm.CkErr(WebMsg.WSSendDataError, c.WriteMessage(ws.TextMessage, od.Cmd))
+			}
+		}
+	}
+}
+
 // WriteBack :回写到WEB前端
 func (w *WebClients) WriteBack() {
 	// 遍历cmd对象
 	for cd := range w.Orders {
 		// 截取cmd中websocket连接ID
-		targetID := strings.Split("#", cd.CmdID)[0]
-		if c, ok := w.Connections[targetID]; ok {
-			if cm.CkErr(WebMsg.WSSendDataError+" IP："+targetID, c.WriteMessage(ws.TextMessage, cd.Cmd)) {
-				break
-			}
+		wsConID := strings.Split("#", cd.CmdID)[0]
+		if c, ok := w.Connections[wsConID]; ok {
+			cm.CkErr(WebMsg.WSSendDataError, c.WriteMessage(ws.TextMessage, cd.Cmd))
 		}
 	}
 }
@@ -73,6 +84,7 @@ func wshandler(wc *WebClients, w http.ResponseWriter, r *http.Request) {
 	wc.Connections[conID] = con
 	wc.Unlock()
 	go wc.WriteBack()
+	go wc.LoopWriteBackFromDataHub()
 	wc.reader(conID)
 }
 

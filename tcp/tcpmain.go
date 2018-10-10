@@ -68,7 +68,9 @@ func (ds *Devices) LoopingSendTCPOrders() {
 				for i := 0; i < 3; i++ {
 					select {
 					case <-cTicker.C:
-						ds.SendOrderAndWebMsg(od, TCPMsg.SendSuccess)
+						if ds.SendOrderAndWebMsg(od, TCPMsg.SendSuccess) {
+							continue
+						}
 					}
 				}
 				select {
