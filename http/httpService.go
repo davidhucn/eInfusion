@@ -4,7 +4,6 @@ import (
 	cm "eInfusion/comm"
 	dh "eInfusion/datahub"
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	ws "github.com/gorilla/websocket"
@@ -15,25 +14,22 @@ var wsupgrader = ws.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-// LoopWriteBackFromDataHub :循环读取datahub包内WebMsgQueue对象发送到前端web
-func (w *WebClients) LoopWriteBackFromDataHub() {
+// loopingAddToQueueFromDataHub :循环读取datahub包内WebMsgQueue对象发送到前端web
+func (w *WebClients) loopingAddToQueueFromDataHub() {
 	for dh.WebMsgQueue != nil {
 		select {
 		case od := <-dh.WebMsgQueue:
-			wsID := strings.Split("#", od.CmdID)[0]
-			if c, ok := w.Connections[wsID]; ok {
-				cm.CkErr(WebMsg.WSSendDataError, c.WriteMessage(ws.TextMessage, od.Cmd))
-			}
+			w.Orders <- od
 		}
 	}
 }
 
 // WriteBack :回写到WEB前端
-func (w *WebClients) WriteBack() {
+func (w *WebClients) loopingWriteBack() {
 	// 遍历cmd对象
 	for cd := range w.Orders {
 		// 截取cmd中websocket连接ID
-		wsConID := strings.Split("#", cd.CmdID)[0]
+		wsConID := DecodeToWSConnID(cd.CmdID)
 		if c, ok := w.Connections[wsConID]; ok {
 			cm.CkErr(WebMsg.WSSendDataError, c.WriteMessage(ws.TextMessage, cd.Cmd))
 		}
@@ -41,21 +37,21 @@ func (w *WebClients) WriteBack() {
 }
 
 // reader :接受web数据
-func (w *WebClients) reader(rWSConID string) {
+func (w *WebClients) reader(rWSConnID string) {
 	for {
-		if cm.CkErr(WebMsg.WSReceiveDataError, w.Connections[rWSConID].ReadJSON(&clisData)) {
-			odID := rWSConID + "#" + cm.GetRandString(6)
+		if cm.CkErr(WebMsg.WSReceiveDataError, w.Connections[rWSConnID].ReadJSON(&clisData)) {
+			odID := NewWSOrderID(rWSConnID)
 			od := cm.NewOrder(odID, []byte(WebMsg.WSReceiveDataError))
 			w.Orders <- od
 			w.Lock()
-			delete(w.Connections, rWSConID)
+			delete(w.Connections, rWSConnID)
 			w.Unlock()
 			break
 		}
 		// 根据前端应用需求信息发送指令
 		// 加入发送消息队列
 		for i := 0; i < len(clisData); i++ {
-			odID := rWSConID + "#" + cm.GetRandString(6)
+			odID := rWSConnID + "#" + cm.GetRandString(6)
 			dh.SendOrderToDeviceByTCP(odID, clisData[i].ID, cm.ConvertBasStrToUint(10, clisData[i].CmdType), clisData[i].Args)
 			// FIXME:制定通讯标准，此处应返回前端页面完成信息代码
 			od := cm.NewOrder(odID, []byte(WebMsg.WSSendDataSuccess))
@@ -83,8 +79,8 @@ func wshandler(wc *WebClients, w http.ResponseWriter, r *http.Request) {
 	// 登记注册到全局wsConnect对象
 	wc.Connections[conID] = con
 	wc.Unlock()
-	go wc.WriteBack()
-	go wc.LoopWriteBackFromDataHub()
+	go wc.loopingWriteBack()
+	go wc.loopingAddToQueueFromDataHub()
 	wc.reader(conID)
 }
 

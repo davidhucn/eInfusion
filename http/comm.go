@@ -3,6 +3,7 @@ package http
 import (
 	cm "eInfusion/comm"
 	"os"
+	"strings"
 	"sync"
 
 	ss "github.com/gorilla/sessions"
@@ -52,4 +53,14 @@ func NewWebClients() *WebClients {
 		Connections: make(map[string]*ws.Conn),
 		Orders:      make(chan *cm.Cmd, 1024),
 	}
+}
+
+// NewWSOrderID :生成新的websocket消息编号
+func NewWSOrderID(rWSConnectionID string) string {
+	return rWSConnectionID + "#" + cm.GetRandString(6)
+}
+
+// DecodeToWSConnID :解析生成websocket连接序号
+func DecodeToWSConnID(rWSOrderID string) string {
+	return strings.Split(rWSOrderID, "#")[0]
 }

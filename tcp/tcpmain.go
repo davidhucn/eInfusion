@@ -110,6 +110,12 @@ func setReadTimeout(conn *net.TCPConn, t time.Duration) {
 	conn.SetReadDeadline(time.Now().Add(t))
 }
 
+// func (ds *Devices) setReadTimeout(t time.Duration) {
+// 	for cs := range ds.Connections {
+
+// 	}
+// }
+
 //madeConn :连接初始处理(ed)
 func (ds *Devices) madeConn(c *net.TCPConn) {
 	//初始化连接这个函数被调用
