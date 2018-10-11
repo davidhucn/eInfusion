@@ -24,8 +24,8 @@ func addToTCPSendQueue(rCmd *cm.Cmd) {
 	DeviceTCPOrderQueue <- rCmd
 }
 
-// SendMsgBackToWeb :回写到web前端
-func SendMsgBackToWeb(rCmd *cm.Cmd) {
+// SendMsgToWeb :回写到web前端
+func SendMsgToWeb(rCmd *cm.Cmd) {
 	WebMsgQueue <- rCmd
 }
 

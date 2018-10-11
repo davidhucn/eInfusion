@@ -3,6 +3,7 @@ package tcp
 import (
 	cm "eInfusion/comm"
 	"net"
+	"strings"
 	"sync"
 )
 
@@ -31,7 +32,7 @@ func init() {
 }
 
 // MaxTCPConnectLimit :TCP最大连接数
-const MaxTCPConnectLimit int = 3
+// const MaxTCPConnectLimit int = 3
 
 // TCPMsg :消息对象
 var TCPMsg tcpMsg
@@ -39,8 +40,9 @@ var TCPMsg tcpMsg
 // Devices :设备对象，用于衔接TCP操用
 type Devices struct {
 	// 连接集合
-	Connections map[string]*net.TCPConn
-	Orders      chan *cm.Cmd
+	Connections   map[string]*net.TCPConn
+	Orders        chan *cm.Cmd
+	MaxTCPConnect int
 	sync.Mutex
 }
 
@@ -50,4 +52,9 @@ func NewDevices() *Devices {
 		Connections: make(map[string]*net.TCPConn),
 		Orders:      make(chan *cm.Cmd, 1024),
 	}
+}
+
+// DecodeToTCPConnID :解析指令ID为TCP连接序号
+func DecodeToTCPConnID(rStrCnt string) string {
+	return strings.Split(rStrCnt, "@")[1]
 }

@@ -12,38 +12,8 @@ import (
 	"net"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 )
-
-// SendOrderAndWebMsg :发送指令至设备并回传指定消息
-func (ds *Devices) SendOrderAndWebMsg(rOrder *cm.Cmd, rMsg string) bool {
-	// 发送指令失败时可能为设备不在线或者设备接收故障，成功则返回前端消息
-	if !cm.CkErr(TCPMsg.SendError, ds.SendOrderIndicate(rOrder)) {
-		// 发送成功，回写到web
-		od := cm.NewOrder(rOrder.CmdID, []byte(rMsg))
-		dh.SendMsgBackToWeb(od)
-		return true
-	}
-	return false
-}
-
-// SendOrderIndicate :发送给设备单独的某条命令、数据
-func (ds *Devices) SendOrderIndicate(rOrder *cm.Cmd) error {
-	// 获取tcp连接id
-	conID := strings.Split(rOrder.CmdID, "@")[1]
-	if _, ok := ds.Connections[conID]; !ok {
-		return cm.ConvertStrToErr(TCPMsg.CanNotFindConnection)
-	}
-	time.Sleep(15 * time.Millisecond)
-	_, err := ds.Connections[conID].Write(rOrder.Cmd)
-	if cm.CkErr(TCPMsg.SendError, err) {
-		return cm.ConvertStrToErr(TCPMsg.SendError)
-	}
-	// 	// TODO:抽象化log对象
-	logs.LogMain.Info("=> IP："+ds.Connections[conID].RemoteAddr().String(), TCPMsg.SendSuccess)
-	return nil
-}
 
 // Broadcast :对所有连接发送广播
 func (ds *Devices) Broadcast(rOrder cm.Cmd) {
@@ -55,66 +25,81 @@ func (ds *Devices) Broadcast(rOrder cm.Cmd) {
 	}
 }
 
-// LoopingSendTCPOrders : 循环检测datahub包内DeviceTCPOrders对象，发送指令到相应设备去
-func (ds *Devices) LoopingSendTCPOrders() {
+// SendOrderByTCP :发送给设备单独的某条命令、数据
+func (ds *Devices) SendOrderByTCP(rOrder *cm.Cmd, rWebMsg string) error {
+	// 获取tcp连接id
+	connID := DecodeToTCPConnID(rOrder.CmdID)
+	if _, ok := ds.Connections[connID]; !ok {
+		return cm.ConvertStrToErr(TCPMsg.CanNotFindConnection)
+	}
+	time.Sleep(15 * time.Millisecond)
+	_, err := ds.Connections[connID].Write(rOrder.Cmd)
+	if cm.CkErr(TCPMsg.SendError, err) {
+		return cm.ConvertStrToErr(TCPMsg.SendError)
+	}
+	if rWebMsg != "" {
+		od := cm.NewOrder(rOrder.CmdID, []byte(rWebMsg))
+		dh.SendMsgToWeb(od)
+	}
+	// 	// TODO:抽象化log对象
+	logs.LogMain.Info("=> IP："+ds.Connections[connID].RemoteAddr().String(), TCPMsg.SendSuccess)
+	return nil
+}
+
+// LoopingSendOrders :循环发送设备对象内的指令序列
+func (ds *Devices) LoopingSendOrders() {
+	for od := range ds.Orders {
+		if cm.CkErr(TCPMsg.SendError, ds.SendOrderByTCP(od, TCPMsg.SendSuccess)) {
+			//发送不成功，则延迟发送
+			cTicker := time.NewTicker(12 * time.Second) // 定时
+			lastCk := time.After(1 * time.Minute)       // 延时
+			defer cTicker.Stop()
+			for i := 0; i < 3; i++ {
+				select {
+				case <-cTicker.C:
+					if !cm.CkErr("", ds.SendOrderByTCP(od, TCPMsg.SendSuccess)) {
+						continue
+					}
+				}
+			}
+			select {
+			case <-lastCk:
+				if !cm.CkErr("", ds.SendOrderByTCP(od, TCPMsg.SendSuccess)) {
+					continue
+				}
+			}
+			dh.SendMsgToWeb(cm.NewOrder(od.CmdID, []byte(TCPMsg.SendFailureForLongTime)))
+		}
+	}
+}
+
+// LoopingRetrieveTCPOrdersFromDataHub : 循环检测datahub包内DeviceTCPOrders对象，加入到发送队列
+func (ds *Devices) LoopingRetrieveTCPOrdersFromDataHub() {
 	for dh.DeviceTCPOrderQueue != nil {
 		select {
 		case od := <-dh.DeviceTCPOrderQueue:
-			if !ds.SendOrderAndWebMsg(od, TCPMsg.SendSuccess) {
-				cTicker := time.NewTicker(12 * time.Second) // 定时
-				lastCk := time.After(1 * time.Minute)       // 延时
-				defer cTicker.Stop()
-				// 不在线,尝试3次，判断是否在线，延时判断，如果在线即发送
-				for i := 0; i < 3; i++ {
-					select {
-					case <-cTicker.C:
-						if ds.SendOrderAndWebMsg(od, TCPMsg.SendSuccess) {
-							continue
-						}
-					}
-				}
-				select {
-				case <-lastCk:
-					ds.SendOrderAndWebMsg(od, TCPMsg.SendSuccess)
-				}
-				dh.SendMsgBackToWeb(cm.NewOrder(od.CmdID, []byte(TCPMsg.SendFailureForLongTime)))
-			}
+			ds.Orders <- od
 		}
 	}
-
 }
-
-//   定时处理&延时处理
-//func loopingCall(conn *net.TCPConn) {
-//	pingTicker := time.NewTicker(30 * time.Second) // 定时
-//	testAfter := time.After(5 * time.Second)       // 延时
-
-//	for {
-//		select {
-//		case <-pingTicker.C:
-//			//发送心跳
-//			_, err := SendData(conn, []byte("PING"))
-//			if err != nil {
-//				pingTicker.Stop()
-//				return
-//			}
-//		case <-testAfter:
-//			//	doLog("testAfter:")
-//			//TODO:日志记录
-//		}
-//	}
-//}
 
 // setReadTimeout:设置读数据超时
 func setReadTimeout(conn *net.TCPConn, t time.Duration) {
 	conn.SetReadDeadline(time.Now().Add(t))
 }
 
-// func (ds *Devices) setReadTimeout(t time.Duration) {
-// 	for cs := range ds.Connections {
-
-// 	}
-// }
+// setReadTimeout :设定TCP连接接收数据时间
+func (ds *Devices) setReadTimeout(rConnID string, t time.Duration) {
+	if rConnID == "" {
+		for _, c := range ds.Connections {
+			c.SetReadDeadline(time.Now().Add(t))
+		}
+		return
+	}
+	if c, ok := ds.Connections[rConnID]; ok {
+		c.SetReadDeadline(time.Now().Add(t))
+	}
+}
 
 //madeConn :连接初始处理(ed)
 func (ds *Devices) madeConn(c *net.TCPConn) {
@@ -194,8 +179,8 @@ func receiveData(c *net.TCPConn) {
 	}
 }
 
-// StartTCPService :TCP启动服务入口
-func StartTCPService(ds *Devices, port int) {
+// StartTCPJob :TCP启动服务入口
+func (ds *Devices) StartTCPJob(port int) {
 	host := ":" + strconv.Itoa(port)
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", host)
 	if cm.CkErr(TCPMsg.SourceError, err) {
@@ -204,7 +189,8 @@ func StartTCPService(ds *Devices, port int) {
 	listener, err := net.ListenTCP("tcp", tcpAddr)
 	defer listener.Close()
 	if cm.CkErr(TCPMsg.SourceError, err) {
-		os.Exit(1)
+		// os.Exit(1)
+		return
 	}
 	cm.SepLi(60, "")
 	logs.LogMain.Info(TCPMsg.StartServiceMsg + "（" + cm.GetCurrentDate() + "）")
@@ -212,11 +198,12 @@ func StartTCPService(ds *Devices, port int) {
 	cm.SepLi(60, "")
 	// 循环发送指令
 	{
-		go ds.LoopingSendTCPOrders()
+		go ds.LoopingSendOrders()
+		go ds.LoopingRetrieveTCPOrdersFromDataHub()
 	}
 	connStream := make(chan *net.TCPConn)
 	//打开N个Goroutine等待连接，Epoll模式
-	for i := 0; i < MaxTCPConnectLimit; i++ {
+	for i := 0; i < ds.MaxTCPConnect; i++ {
 		go func() {
 			for cs := range connStream {
 				ds.madeConn(cs)
