@@ -83,7 +83,7 @@ func (ds *Devices) RetrieveTCPOrdersFromDataHub() {
 	}
 }
 
-// setReadTimeout:设置读数据超时
+// setReadTimeout:设置读数据超时xdswa
 func setReadTimeout(conn *net.TCPConn, t time.Duration) {
 	conn.SetReadDeadline(time.Now().Add(t))
 }

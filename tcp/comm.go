@@ -47,10 +47,11 @@ type Devices struct {
 }
 
 // NewDevices :创建设备对象
-func NewDevices() *Devices {
+func NewDevices(rMaxTCPConn int) *Devices {
 	return &Devices{
-		Connections: make(map[string]*net.TCPConn),
-		Orders:      make(chan *cm.Cmd, 1024),
+		Connections:   make(map[string]*net.TCPConn),
+		Orders:        make(chan *cm.Cmd, 1024),
+		MaxTCPConnect: rMaxTCPConn,
 	}
 }
 
