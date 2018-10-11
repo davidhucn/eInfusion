@@ -73,8 +73,8 @@ func (ds *Devices) LoopingSendOrders() {
 	}
 }
 
-// LoopingRetrieveTCPOrdersFromDataHub : 循环检测datahub包内DeviceTCPOrders对象，加入到发送队列
-func (ds *Devices) LoopingRetrieveTCPOrdersFromDataHub() {
+// RetrieveTCPOrdersFromDataHub : 循环检测datahub包内DeviceTCPOrders对象，加入到发送队列
+func (ds *Devices) RetrieveTCPOrdersFromDataHub() {
 	for dh.DeviceTCPOrderQueue != nil {
 		select {
 		case od := <-dh.DeviceTCPOrderQueue:
@@ -199,7 +199,7 @@ func (ds *Devices) StartTCPJob(port int) {
 	// 循环发送指令
 	{
 		go ds.LoopingSendOrders()
-		go ds.LoopingRetrieveTCPOrdersFromDataHub()
+		go ds.RetrieveTCPOrdersFromDataHub()
 	}
 	connStream := make(chan *net.TCPConn)
 	//打开N个Goroutine等待连接，Epoll模式
