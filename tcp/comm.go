@@ -3,7 +3,6 @@ package tcp
 import (
 	cm "eInfusion/comm"
 	"net"
-	"strings"
 	"sync"
 )
 
@@ -53,9 +52,4 @@ func NewDevices(rMaxTCPConn int) *Devices {
 		Orders:        make(chan *cm.Cmd, 1024),
 		MaxTCPConnect: rMaxTCPConn,
 	}
-}
-
-// DecodeToTCPConnID :解析指令ID为TCP连接序号
-func DecodeToTCPConnID(rStrCnt string) string {
-	return strings.Split(rStrCnt, "@")[1]
 }

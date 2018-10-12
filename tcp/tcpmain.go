@@ -28,7 +28,7 @@ func (ds *Devices) Broadcast(rOrder cm.Cmd) {
 // SendOrderByTCP :发送给设备单独的某条命令、数据
 func (ds *Devices) SendOrderByTCP(rOrder *cm.Cmd, rWebMsg string) error {
 	// 获取tcp连接id
-	connID := DecodeToTCPConnID(rOrder.CmdID)
+	connID := dh.DecodeToTCPConnID(rOrder.CmdID)
 	if _, ok := ds.Connections[connID]; !ok {
 		return cm.ConvertStrToErr(TCPMsg.CanNotFindConnection)
 	}
@@ -179,11 +179,12 @@ func receiveData(c *net.TCPConn) {
 	}
 }
 
-// StartTCPJob :TCP启动服务入口
-func (ds *Devices) StartTCPJob(port int) {
+// RunTCPJob :Device对象启动TCP任务
+func (ds *Devices) RunTCPJob(port int) {
 	host := ":" + strconv.Itoa(port)
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", host)
 	if cm.CkErr(TCPMsg.SourceError, err) {
+
 		os.Exit(1)
 	}
 	listener, err := net.ListenTCP("tcp", tcpAddr)
@@ -201,6 +202,7 @@ func (ds *Devices) StartTCPJob(port int) {
 		go ds.LoopingSendOrders()
 		go ds.RetrieveTCPOrdersFromDataHub()
 	}
+	// var connStream chan *net.TCPConn
 	connStream := make(chan *net.TCPConn)
 	//打开N个Goroutine等待连接，Epoll模式
 	for i := 0; i < ds.MaxTCPConnect; i++ {

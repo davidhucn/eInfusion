@@ -6,6 +6,7 @@ import (
 	wk "eInfusion/dbwork"
 	ep "eInfusion/protocol"
 	logs "eInfusion/tlogs"
+	"strings"
 )
 
 // DeviceTCPOrderQueue :设备命令对象队列
@@ -29,6 +30,16 @@ func SendMsgToWeb(rCmd *cm.Cmd) {
 	WebMsgQueue <- rCmd
 }
 
+// NewTCPOrderID :生成TCP包约定指令序号
+func NewTCPOrderID(rOrderID string, rTCPConnectionID string) string {
+	return rOrderID + "@" + rTCPConnectionID
+}
+
+// DecodeToTCPConnID :解析指令ID为TCP连接序号
+func DecodeToTCPConnID(rStrCnt string) string {
+	return strings.Split(rStrCnt, "@")[1]
+}
+
 // SendOrderToDeviceByTCP :添加到TCP数据发送队列
 func SendOrderToDeviceByTCP(rOrderID string, rDeviceID string, rCmdType uint8, rArgs string) {
 	addDet := cm.ConvertHexUnitToDecUnit(ep.TrsCmdType.AddDetect)
@@ -41,8 +52,8 @@ func SendOrderToDeviceByTCP(rOrderID string, rDeviceID string, rCmdType uint8, r
 			// 获取rcv相关的IP
 			ipAddr := wk.GetRcvIP(wk.GetRcvID(rDeviceID))
 			// 重组指令标识:由时间戳+IP地址组成
-			orderID := rOrderID + "@" + ipAddr
-			od := cm.NewOrder(orderID, ep.CmdOperateDetect(rCmdType, rcvID, 1, detID))
+			tcpOrderID := NewTCPOrderID(rOrderID, ipAddr)
+			od := cm.NewOrder(tcpOrderID, ep.CmdOperateDetect(rCmdType, rcvID, 1, detID))
 			addToTCPSendQueue(od)
 		} else {
 			logs.LogMain.Error("错误：没有目标设备编码或者无法获取相关设备编码！")
