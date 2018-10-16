@@ -50,7 +50,7 @@ func DecodeRcvData(rData []byte, rIPAddr string) {
 	case TrsCmdType.SetReconnTimeState:
 		wk.ReceiveSetReconnTimeStat(rData[1:], rIPAddr)
 	default:
-		comm.Msg("调试信息，无效数据...")
+		comm.Msg("调试信息，无效数据..., 内容：", rData)
 		//		return
 	}
 }

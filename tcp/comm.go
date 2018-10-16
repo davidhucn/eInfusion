@@ -36,8 +36,8 @@ func init() {
 // TCPMsg :消息对象
 var TCPMsg tcpMsg
 
-// Devices :设备对象，用于衔接TCP操用
-type Devices struct {
+// TCPServer :设备对象，用于衔接TCP操用
+type TCPServer struct {
 	// 连接集合
 	Connections   map[string]*net.TCPConn
 	Orders        chan *cm.Cmd
@@ -45,11 +45,17 @@ type Devices struct {
 	sync.Mutex
 }
 
-// NewDevices :创建设备对象
-func NewDevices(rMaxTCPConn int) *Devices {
-	return &Devices{
+// NewTCPServer :创建设备对象
+func NewTCPServer(rMaxTCPConn int) *TCPServer {
+	return &TCPServer{
 		Connections:   make(map[string]*net.TCPConn),
 		Orders:        make(chan *cm.Cmd, 1024),
 		MaxTCPConnect: rMaxTCPConn,
 	}
+}
+
+// TCPClient :TCP客户端
+type TCPClient struct {
+	Conn   net.TCPConn
+	Orders chan<- *cm.Cmd
 }
