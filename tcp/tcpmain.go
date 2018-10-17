@@ -62,7 +62,7 @@ func (ts *TServer) LoopingTCPOrders() {
 			if cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
 				//发送不成功，则延迟发送
 				cTicker := time.NewTicker(12 * time.Second) // 定时
-				lastCk := time.After(1 * time.Minute)       // 延时
+				lastCk := time.After(3 * time.Minute)       // 延时
 				defer cTicker.Stop()
 				for i := 0; i < 3; i++ {
 					select {
