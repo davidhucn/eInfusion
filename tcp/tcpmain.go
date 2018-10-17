@@ -200,7 +200,6 @@ func RunTCPService(ts *TServer, port int) {
 	// 循环处理TCP对象指令
 	ts.LoopingTCPOrders()
 
-	// var connStream chan *net.TCPConn
 	connStream := make(chan *net.TCPConn)
 	//打开N个Goroutine等待连接，Epoll模式
 	for i := 0; i < ts.MaxTCPConnect; i++ {
