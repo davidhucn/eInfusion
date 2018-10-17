@@ -80,7 +80,7 @@ func (w *WebClients) receiveWebRequest(rWSConnID string) {
 func wshandler(wc *WebClients, w http.ResponseWriter, r *http.Request) {
 	con, err := wsupgrader.Upgrade(w, r, nil)
 	defer con.Close()
-	if cm.CkErr(WebMsg.WSConnectError+" IP Addr:"+cm.GetPureIPAddr(con.RemoteAddr().String()), err) {
+	if cm.CkErr(WebMsg.WSConnectError+" IP Addr:"+con.RemoteAddr().String(), err) {
 		return
 	}
 	// TODO:记录用户操作的内容

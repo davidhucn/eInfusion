@@ -36,7 +36,7 @@ func initClisConnMap() {
 
 // SendData :发送命令和数据
 func SendData(conn *net.TCPConn, data []byte) (err error) {
-	ip := comm.GetPureIPAddr(conn.RemoteAddr().String())
+	ip := comm.GetPureIPAddr(conn)
 	//考虑网络延迟、断网问题，另外发送两个数据须间隔15毫秒(millionseconds)
 	time.Sleep(15 * time.Millisecond)
 	_, err = conn.Write(data)
@@ -78,8 +78,8 @@ func Broadcast(data []byte) {
 //连接初始处理(ed)
 func madeConn(conn *net.TCPConn) {
 	//初始化连接这个函数被调用
-	mkClisConn(comm.GetPureIPAddr(conn.RemoteAddr().String()), conn)
-	logs.LogMain.Info("IP:", comm.GetPureIPAddr(conn.RemoteAddr().String()), "上线")
+	mkClisConn(comm.GetPureIPAddr(conn), conn)
+	logs.LogMain.Info("IP:", comm.GetPureIPAddr(conn), "上线")
 	comm.SepLi(20, "-")
 	// ****定时处理(心跳等)
 	//	go loopingCall(conn)
@@ -89,7 +89,7 @@ func madeConn(conn *net.TCPConn) {
 func lostConn(conn *net.TCPConn) {
 	//连接断开这个函数被调用
 
-	ip := comm.GetPureIPAddr(conn.RemoteAddr().String())
+	ip := comm.GetPureIPAddr(conn)
 	delClisConn(ip) // 删除关闭的连接对应的clisMap项
 	logs.LogMain.Info("IP:", ip, "下线")
 	comm.SepLi(30, "*")
@@ -124,7 +124,7 @@ func receiveData(c *net.TCPConn) {
 		var intPckContentLength int
 		// 判断包头是否正确，如果正确，获取长度
 		if !ep.DecodeHeader(recDataHeader, &intPckContentLength) {
-			logs.LogMain.Info(comm.GetPureIPAddr(c.RemoteAddr().String()), "的数据包头异常,强制下线!")
+			logs.LogMain.Info(comm.GetPureIPAddr(c), "的数据包头异常,强制下线!")
 			//	如果包头不正确，断开连接
 			break
 			//	continue 退出本次
@@ -136,7 +136,7 @@ func receiveData(c *net.TCPConn) {
 			//	实际长度和包头内规定长度不一致
 			if n == intPckContentLength {
 				// 处理报文数据内容
-				ep.DecodeRcvData(r, comm.GetPureIPAddr(c.RemoteAddr().String()))
+				ep.DecodeRcvData(r, comm.GetPureIPAddr(c))
 			} else {
 				/*如果长度不一致，退出*/
 				//	continue

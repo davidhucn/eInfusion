@@ -41,7 +41,7 @@ func (ts *TServer) SendOrderAndMsg(rOrder *cm.Cmd, rWebMsg string) error {
 	}
 	// 发送成功记录日志
 	// TODO:抽象化log对象
-	logs.LogMain.Info(TCPMsg.SendSuccess, "发送至=> IP："+cm.GetPureIPAddr(ts.Connections[connID].RemoteAddr().String()))
+	logs.LogMain.Info(TCPMsg.SendSuccess, "发送至=> IP："+cm.GetPureIPAddr(ts.Connections[connID]))
 	return nil
 }
 
@@ -59,7 +59,7 @@ func (ts *TServer) LoopingTCPOrders() {
 	// 循环发送指令至TCP终端
 	go func() {
 		for od := range ts.Orders {
-			if cm.CkErr(TCPMsg.SendError, ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
+			if cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
 				//发送不成功，则延迟发送
 				cTicker := time.NewTicker(12 * time.Second) // 定时
 				lastCk := time.After(1 * time.Minute)       // 延时
@@ -83,16 +83,6 @@ func (ts *TServer) LoopingTCPOrders() {
 		}
 	}()
 }
-
-// RetrieveTCPOrdersFromDataHub : 循环检测datahub包内DeviceTCPOrders对象，加入到发送队列
-// func (ts *TServer) RetrieveTCPOrdersFromDataHub() {
-// 	for dh.DeviceTCPOrderQueue != nil {
-// 		select {
-// 		case od := <-dh.DeviceTCPOrderQueue:
-// 			ts.Orders <- od
-// 		}
-// 	}
-// }
 
 // setReadTimeout:设置读数据超时xtswa
 func setReadTimeout(conn *net.TCPConn, t time.Duration) {
@@ -190,8 +180,8 @@ func receiveData(c *net.TCPConn) {
 	}
 }
 
-// RunTCPJob :Device对象启动TCP任务
-func RunTCPJob(ts *TServer, port int) {
+// RunTCPService :启动TCP服务
+func RunTCPService(ts *TServer, port int) {
 	host := ":" + strconv.Itoa(port)
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", host)
 	if cm.CkErr(TCPMsg.SourceError, err) {
@@ -207,12 +197,9 @@ func RunTCPJob(ts *TServer, port int) {
 	logs.LogMain.Info(TCPMsg.StartServiceMsg + "（" + cm.GetCurrentDate() + "）")
 	cm.Msg("Transfusion System Server Port", host)
 	cm.SepLi(60, "")
-	// 循环发送指令
-	{
-		// go ts.LoopingSendOrders()
-		// go ts.RetrieveTCPOrdersFromDataHub()
-		ts.LoopingTCPOrders()
-	}
+	// 循环处理TCP对象指令
+	ts.LoopingTCPOrders()
+
 	// var connStream chan *net.TCPConn
 	connStream := make(chan *net.TCPConn)
 	//打开N个Goroutine等待连接，Epoll模式
