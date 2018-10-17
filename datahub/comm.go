@@ -51,7 +51,7 @@ func SendOrderToDeviceByTCP(rOrderID string, rDeviceID string, rCmdType uint8, r
 			detID := cm.ConvertStrToBytesByPerTwoChar(rDeviceID)
 			// 获取rcv相关的IP
 			ipAddr := wk.GetRcvIP(wk.GetRcvID(rDeviceID))
-			// 重组指令标识:由时间戳+IP地址组成
+			// TCP指令标识:由时间戳+IP地址组成
 			tcpOrderID := NewTCPOrderID(rOrderID, ipAddr)
 			od := cm.NewOrder(tcpOrderID, ep.CmdOperateDetect(rCmdType, rcvID, 1, detID))
 			addToTCPSendQueue(od)

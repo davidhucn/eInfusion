@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"math/rand"
+	"net"
 	"os"
 	"reflect"
 	"strconv"
@@ -45,7 +46,8 @@ func GetRandString(length int) string {
 }
 
 // GetPureIPAddr : 获取IP中纯的地址，去除字符串中的端口数据
-func GetPureIPAddr(ip string) string {
+func GetPureIPAddr(rConn *net.TCPConn) string {
+	ip := rConn.RemoteAddr().String()
 	return strings.Split(ip, ":")[0]
 }
 

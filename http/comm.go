@@ -2,11 +2,9 @@ package http
 
 import (
 	cm "eInfusion/comm"
-	"os"
 	"strings"
 	"sync"
 
-	ss "github.com/gorilla/sessions"
 	ws "github.com/gorilla/websocket"
 )
 
@@ -45,7 +43,7 @@ type WebClients struct {
 }
 
 // CStore :全局cookie记录对象
-var CStore = ss.NewCookieStore([]byte(os.Getenv("Session-Key")))
+// var CStore = ss.NewCookieStore([]byte(os.Getenv("Session-Key")))
 
 // NewWebClients :创建新的WebClient对象
 func NewWebClients() *WebClients {
@@ -57,7 +55,7 @@ func NewWebClients() *WebClients {
 
 // NewWSOrderID :生成新的websocket消息编号
 func NewWSOrderID(rWSConnectionID string) string {
-	return rWSConnectionID + "#" + cm.GetRandString(6)
+	return rWSConnectionID + "#" + cm.GetRandString(8)
 }
 
 // DecodeToWSConnID :解析生成websocket连接序号
