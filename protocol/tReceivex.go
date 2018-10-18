@@ -35,10 +35,12 @@ func DecodeRcvData(rData []byte, rIPAddr string) {
 	//	初始化t_device_dict
 	//	InitDetInfoToDB(8)
 
+	// 接受指令成功，则返回结果至调用终端
 	switch rData[0] {
-	//取得接收器状态（得接收器数目）
 	case TrsCmdType.RcvState:
-		wk.ReceiveRcvStat(rData[1:], rIPAddr)
+		if wk.ReceiveRcvStat(rData[1:], rIPAddr) {
+
+		}
 	case TrsCmdType.DetectState:
 		wk.ReceiveDetectStat(rData[1:], rIPAddr)
 	case TrsCmdType.DelDetectState:

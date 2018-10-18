@@ -53,12 +53,6 @@ func InitDetInfoToDB(amount int) bool {
 	return true
 }
 
-// finishMsg :完成功能后消息处理，包括：失败/成功
-//TODO: 返回前端ws消息，日志记录消息---引入Queue模块
-func finishMsg(rMsg string) {
-	logs.LogMain.Info("")
-}
-
 //ReceiveRcvStat :获取接收器状态
 func ReceiveRcvStat(packData []byte, ipAddr string) bool {
 	var strSQL string

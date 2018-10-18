@@ -9,20 +9,20 @@ import (
 	"strings"
 )
 
-// DeviceTCPOrderQueue :设备命令对象队列
-var DeviceTCPOrderQueue chan *cm.Cmd
+// TCPOrderQueue :TCP指令队列
+var TCPOrderQueue chan *cm.Cmd
 
 // WebMsgQueue :回写到web的消息发送队列
 var WebMsgQueue chan *cm.Cmd
 
 func init() {
-	DeviceTCPOrderQueue = make(chan *cm.Cmd, 1024)
+	TCPOrderQueue = make(chan *cm.Cmd, 1024)
 	WebMsgQueue = make(chan *cm.Cmd, 1024)
 }
 
 // AddToTCPQueue ：通过TCP协议发送指令至设备
 func addToTCPSendQueue(rCmd *cm.Cmd) {
-	DeviceTCPOrderQueue <- rCmd
+	TCPOrderQueue <- rCmd
 }
 
 // SendMsgToWeb :回写到web前端

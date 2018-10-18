@@ -6,6 +6,7 @@ type transfusionTCPDefination struct {
 	PackLengthCursor uint8
 }
 
+// TransfusionCmdType 输液报警指令码
 type TransfusionCmdType struct {
 	RcvState           uint8
 	DetectState        uint8

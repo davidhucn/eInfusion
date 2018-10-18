@@ -25,16 +25,16 @@ func delSendQueueMap(rOrderID string) {
 }
 
 // WriteBackWsByID : 通过ip地址找到对应的ws连接，并回写到前端（供外部调用）
-func WriteBackWsByID(rIPaddr string, rStrCnt string) bool {
-	//TODO:
-	// if _, yes := WsClis[rIP]; yes {
-	// 	WsClis[sn].sdData <- []byte(strCnt)
-	// 	return true
-	// }
-	// ws不在线时,待处理
-	// return false
-	return true
-}
+// func WriteBackWsByID(rIPaddr string, rStrCnt string) bool {
+// 	//
+// 	// if _, yes := WsClis[rIP]; yes {
+// 	// 	WsClis[sn].sdData <- []byte(strCnt)
+// 	// 	return true
+// 	// }
+// 	// ws不在线时,待处理
+// 	// return false
+// 	return true
+// }
 
 // 回写到前端ws应用消息,模块内部使用
 func wsWriteBack(sn string, strCnt string) bool {

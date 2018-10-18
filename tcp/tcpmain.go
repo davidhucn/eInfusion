@@ -49,9 +49,9 @@ func (ts *TServer) SendOrderAndMsg(rOrder *cm.Cmd, rWebMsg string) error {
 func (ts *TServer) LoopingTCPOrders() {
 	// 循环获取datahub指令
 	go func() {
-		for dh.DeviceTCPOrderQueue != nil {
+		for dh.TCPOrderQueue != nil {
 			select {
-			case od := <-dh.DeviceTCPOrderQueue:
+			case od := <-dh.TCPOrderQueue:
 				ts.Orders <- od
 			}
 		}

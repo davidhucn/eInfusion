@@ -93,7 +93,7 @@ package refer
 //	if _, ok := G_tConns[connID]; ok {
 //		writeToConn(G_tConns[connID].Conn, packetData)
 //	} else { /*如果连接断开，则数据保留2小时*/
-//		//TODO:保留两小时
+//		//保留两小时
 //	}
 //}
 
