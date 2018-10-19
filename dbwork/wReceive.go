@@ -316,8 +316,6 @@ func ReceiveAddDetect(packData []byte, ipAddr string) bool {
 			return false
 		}
 		logs.LogMain.Info("成功添加检测器[", dDet[i].ID, "]！")
-		// 如果添加检测器成功，即开启
-		//
 	}
 	return true
 }

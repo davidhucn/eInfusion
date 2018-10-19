@@ -38,18 +38,13 @@ func DecodeRcvData(rData []byte, rIPAddr string) {
 	// 接受指令成功，则返回结果至调用终端
 	switch rData[0] {
 	case TrsCmdType.RcvState:
-		if wk.ReceiveRcvStat(rData[1:], rIPAddr) {
-
-		}
+		wk.ReceiveRcvStat(rData[1:], rIPAddr)
 	case TrsCmdType.DetectState:
 		wk.ReceiveDetectStat(rData[1:], rIPAddr)
 	case TrsCmdType.DelDetectState:
 		wk.ReceiveDeleteDetect(rData[1:], rIPAddr)
 	case TrsCmdType.AddDetectState:
-		if wk.ReceiveAddDetect(rData[1:], rIPAddr) {
-			// 如果添加检测器成功，即开启
-
-		}
+		wk.ReceiveAddDetect(rData[1:], rIPAddr)
 	case TrsCmdType.SetRcvNetCfgState:
 		wk.ReceiveSetRcvNetCfgStat(rData[1:], rIPAddr)
 	case TrsCmdType.SetReconnTimeState:

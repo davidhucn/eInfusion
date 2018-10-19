@@ -25,11 +25,13 @@ func init() {
 }
 
 // AddToTCPQueue ：通过TCP协议发送指令至设备
-func addToTCPSendQueue(rCmd *cm.Cmd) {
+func addToTCPSendQueue(rCmd *cm.Cmd, rDeviceID string) {
 	// 保存cmdID,便于回写到web前端时可以对应
 	tcpID := strings.Split(rCmd.CmdID, "@")[1]
 	wsID := strings.Split(rCmd.CmdID, "@")[0]
-	OrdersIDUnion.Store(tcpID, wsID)
+	// 指令池内存放wsID + 设备号
+	val := wsID + "~" + rDeviceID
+	OrdersIDUnion.Store(tcpID, val)
 	TCPOrderQueue <- rCmd
 }
 
@@ -61,10 +63,10 @@ func SendOrderToDeviceByTCP(rOrderID string, rDeviceID string, rCmdType uint8, r
 				detID := cm.ConvertStrToBytesByPerTwoChar(rDeviceID)
 				// 获取rcv相关的IP
 				ipAddr := wk.GetRcvIP(wk.GetRcvID(rDeviceID))
-				// TCP指令标识:由时间戳+IP地址组成
+				// TCP指令标识:wsID + 随机字符 + IP地址组成
 				tcpOrderID := NewTCPOrderID(rOrderID, ipAddr)
 				od := cm.NewOrder(tcpOrderID, ep.CmdOperateDetect(rCmdType, rcvID, 1, detID))
-				addToTCPSendQueue(od)
+				addToTCPSendQueue(od, rDeviceID)
 			} else {
 				logs.LogMain.Error("错误：没有目标设备编码或者无法获取相关设备编码！")
 			}

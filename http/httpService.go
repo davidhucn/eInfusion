@@ -14,20 +14,7 @@ var wsupgrader = ws.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-// loopingAddToQueueFromDataHub :循环读取datahub包内WebMsgQueue对象发送到前端web
-// func (w *WebClients) loopingAddToQueueFromDataHub() {
-// 	// 循环获取datahub内的ws消息数据
-// 	go func() {
-// 		for dh.WebMsgQueue != nil {
-// 			select {
-// 			case od := <-dh.WebMsgQueue:
-// 				w.Orders <- od
-// 			}
-// 		}
-// 	}()
-// }
-
-// WriteBack :回写到WEB前端
+// loopingWebMsg :回写到WEB前端
 func (w *WebClients) loopingWebMsg() {
 	// 循环获取datahub包内的ws消息数据
 	go func() {
@@ -59,9 +46,7 @@ func (w *WebClients) receiveWebRequest(rWSConnID string) {
 			odID := NewWSOrderID(rWSConnID)
 			od := cm.NewOrder(odID, []byte(WebMsg.WSReceiveDataError))
 			w.Orders <- od
-			w.Lock()
-			delete(w.Connections, rWSConnID)
-			w.Unlock()
+			w.UnregisterWSConn(rWSConnID)
 			break
 		}
 		// 根据前端应用需求信息发送指令
@@ -76,6 +61,20 @@ func (w *WebClients) receiveWebRequest(rWSConnID string) {
 	}
 }
 
+// RegisterWSConn :注册ws连接至连接池内
+func (w *WebClients) RegisterWSConn(rWSConnID string, rConn *ws.Conn) {
+	w.Lock()
+	w.Connections[rWSConnID] = rConn
+	w.Unlock()
+}
+
+// UnregisterWSConn :注销ws连接池内websocket
+func (w *WebClients) UnregisterWSConn(rWSConnID string) {
+	w.Lock()
+	delete(w.Connections, rWSConnID)
+	w.Unlock()
+}
+
 // ws接收目前仅限于json
 func wshandler(wc *WebClients, w http.ResponseWriter, r *http.Request) {
 	con, err := wsupgrader.Upgrade(w, r, nil)
@@ -83,20 +82,20 @@ func wshandler(wc *WebClients, w http.ResponseWriter, r *http.Request) {
 	if cm.CkErr(WebMsg.WSConnectError+" IP Addr:"+con.RemoteAddr().String(), err) {
 		return
 	}
-	// TODO:记录用户操作的内容
+	// TODO:记录用户操作的
+	wsConnID := cm.GetRandString(10)
+
 	{
-		// sis, _ := CStore.Get(r, "session-name")
-		// sis.Values["foo"] = "bar" //改成数组
-		// sis.Save(r, w)
+		sis, _ := CStore.Get(r, "session-name")
+		sis.Values["qid"] = wsConnID //改成数组
+		sis.Save(r, w)
 	}
 	// 获取随机字符串生成标识id
-	conID := cm.GetRandString(10)
-	wc.Lock()
 	// 登记注册到全局wsConnect对象
-	wc.Connections[conID] = con
-	wc.Unlock()
+	wc.RegisterWSConn(wsConnID, con)
+
 	wc.loopingWebMsg()
-	wc.receiveWebRequest(conID)
+	wc.receiveWebRequest(wsConnID)
 }
 
 // StartHTTPServer :开始运行httpServer
