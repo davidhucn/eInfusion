@@ -55,7 +55,7 @@ func NewWebClients() *WebClients {
 
 // NewWSOrderID :生成新的websocket消息编号
 func NewWSOrderID(rWSConnectionID string) string {
-	return rWSConnectionID + "#" + cm.GetRandString(8)
+	return rWSConnectionID + "#" + GetRandString(8)
 }
 
 // DecodeToWSConnID :解析生成websocket连接序号

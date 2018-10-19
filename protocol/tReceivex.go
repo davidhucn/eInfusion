@@ -46,7 +46,10 @@ func DecodeRcvData(rData []byte, rIPAddr string) {
 	case TrsCmdType.DelDetectState:
 		wk.ReceiveDeleteDetect(rData[1:], rIPAddr)
 	case TrsCmdType.AddDetectState:
-		wk.ReceiveAddDetect(rData[1:], rIPAddr)
+		if wk.ReceiveAddDetect(rData[1:], rIPAddr) {
+			// 如果添加检测器成功，即开启
+
+		}
 	case TrsCmdType.SetRcvNetCfgState:
 		wk.ReceiveSetRcvNetCfgStat(rData[1:], rIPAddr)
 	case TrsCmdType.SetReconnTimeState:

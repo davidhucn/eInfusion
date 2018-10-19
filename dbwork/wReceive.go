@@ -34,6 +34,21 @@ func GetRcvIP(rRcvID string) string {
 	return (*mRcvIP)["ip_addr"]
 }
 
+// IsReceiver  :获取设备类型
+func IsReceiver(rDeviceID string) bool {
+	strSQL := "SELECT receiver_id FROM t_rcv WHERE receiver_id=?"
+	var mRcvIP *map[string]string
+	var err error
+	mRcvIP, err = db.QueryOneRow(strSQL, rDeviceID)
+	if cm.CkErr(db.MsgDB.QueryDataErr, err) {
+		return false
+	}
+	if (*mRcvIP)["receiver_id"] == "" {
+		return false
+	}
+	return true
+}
+
 //InitDetInfoToDB :初始化生成8个检测器信息到数据库-> t_device_dict
 func InitDetInfoToDB(amount int) bool {
 	var strSQL string
@@ -301,6 +316,8 @@ func ReceiveAddDetect(packData []byte, ipAddr string) bool {
 			return false
 		}
 		logs.LogMain.Info("成功添加检测器[", dDet[i].ID, "]！")
+		// 如果添加检测器成功，即开启
+		//
 	}
 	return true
 }
