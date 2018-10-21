@@ -2,11 +2,9 @@ package http
 
 import (
 	cm "eInfusion/comm"
-	"os"
 	"strings"
 	"sync"
 
-	ss "github.com/gorilla/sessions"
 	ws "github.com/gorilla/websocket"
 )
 
@@ -21,9 +19,9 @@ type webMsg struct {
 var WebMsg webMsg
 
 type reqData struct {
-	ID      string `json:"ID"`
-	CmdType string `json:"CmdType"` //指令类型(代码)
-	Args    string `json:"Args"`    //相关参数 (例如：ip、port)
+	TargetID string `json:"TargetID"`
+	CmdType  string `json:"CmdType"` //指令类型(代码)
+	Args     string `json:"Args"`    //相关参数 (例如：ip、port)
 	// Action string `json:"-"`
 }
 
@@ -45,7 +43,7 @@ type WebClients struct {
 }
 
 // CStore :全局cookie记录对象
-var CStore = ss.NewCookieStore([]byte(os.Getenv("Session-Key")))
+// var CStore = ss.NewCookieStore([]byte(os.Getenv("Session-Key")))
 
 // NewWebClients :创建新的WebClient对象
 func NewWebClients() *WebClients {

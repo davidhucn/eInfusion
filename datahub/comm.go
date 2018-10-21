@@ -16,8 +16,20 @@ var TCPOrderQueue chan *cm.Cmd
 // WebMsgQueue :回写到web的消息发送队列
 var WebMsgQueue chan *cm.Cmd
 
-// OrdersIDUnion :指令ID记录池,记录TCP指令ID，通过ID匹配，便于回写到前端web
-var OrdersIDUnion sync.Map //map[tcpConnectionID]wsID
+// RequestOrder : 客户端请求对象
+type RequestOrder struct {
+	TargetID  string
+	CmdType   uint8
+	Args      string
+	RequestID string
+}
+
+// ReqOrder :客户端请求指令对象，便于WS回写定位
+// var ReqOrder requestOrder
+
+// ReqOrdersUnion :指令ID记录池,记录TCP指令ID，通过ID匹配，便于回写到前端web
+// var ReqOrdersUnion map[string][]*requestOrder
+var ReqOrdersUnion sync.Map //map[tcpConnectionID][]*requestOrder
 
 func init() {
 	TCPOrderQueue = make(chan *cm.Cmd, 1024)
@@ -25,13 +37,13 @@ func init() {
 }
 
 // AddToTCPQueue ：通过TCP协议发送指令至设备
-func addToTCPSendQueue(rCmd *cm.Cmd, rDeviceID string) {
+func addToTCPSendQueue(rCmd *cm.Cmd, rTargetID string) {
 	// 保存cmdID,便于回写到web前端时可以对应
 	tcpID := strings.Split(rCmd.CmdID, "@")[1]
 	wsID := strings.Split(rCmd.CmdID, "@")[0]
 	// 指令池内存放wsID + 设备号
-	val := wsID + "~" + rDeviceID
-	OrdersIDUnion.Store(tcpID, val)
+	val := wsID + "~" + rTargetID
+	ReqOrdersUnion.Store(tcpID, val)
 	TCPOrderQueue <- rCmd
 }
 
@@ -41,8 +53,8 @@ func SendMsgToWeb(rCmd *cm.Cmd) {
 }
 
 // NewTCPOrderID :生成TCP包约定指令序号
-func NewTCPOrderID(rOrderID string, rTCPConnectionID string) string {
-	return rOrderID + "@" + rTCPConnectionID
+func NewTCPOrderID(rWSOrderID string, rTCPConnectionID string) string {
+	return rWSOrderID + "@" + rTCPConnectionID
 }
 
 // DecodeToTCPConnID :解析指令ID为TCP连接序号
@@ -51,32 +63,30 @@ func DecodeToTCPConnID(rStrCnt string) string {
 }
 
 // SendOrderToDeviceByTCP :添加到TCP指令发送队列
-func SendOrderToDeviceByTCP(rOrderID string, rDeviceID string, rCmdType uint8, rArgs string) {
-	// 如果不是接收器
-	if !wk.IsReceiver(rDeviceID) {
+func SendOrderToDeviceByTCP(rWSOrderID string, rTargetID string, rCmdType uint8, rArgs string) bool {
+	// 如果不是接收器, TODO:稍候改成直接判断是否为检测器
+	if !wk.IsReceiver(rTargetID) {
+		rcvID := cm.ConvertStrToBytesByPerTwoChar(wk.GetRcvID(rTargetID))
+		ipAddr := wk.GetRcvIP(wk.GetRcvID(rTargetID))
+		if rcvID == "" || ipAddr == "" {
+			// 根据DetID获取RcvID和IP地址失败时，返回错误
+			return false
+		}
 		addDet := cm.ConvertHexUnitToDecUnit(ep.TrsCmdType.AddDetect)
 		delDet := cm.ConvertHexUnitToDecUnit(ep.TrsCmdType.DelDetect)
 		if rCmdType == addDet || rCmdType == delDet {
-			// 根据DetID获取RcvID,如果rcvID不为空
-			if wk.GetRcvID(rDeviceID) != "" {
-				rcvID := cm.ConvertStrToBytesByPerTwoChar(wk.GetRcvID(rDeviceID))
-				detID := cm.ConvertStrToBytesByPerTwoChar(rDeviceID)
-				// 获取rcv相关的IP
-				ipAddr := wk.GetRcvIP(wk.GetRcvID(rDeviceID))
-				// TCP指令标识:wsID + 随机字符 + IP地址组成
-				tcpOrderID := NewTCPOrderID(rOrderID, ipAddr)
-				od := cm.NewOrder(tcpOrderID, ep.CmdOperateDetect(rCmdType, rcvID, 1, detID))
-				addToTCPSendQueue(od, rDeviceID)
-			} else {
-				logs.LogMain.Error("错误：没有目标设备编码或者无法获取相关设备编码！")
-			}
+			// TODO:存入指令集合ReqOrdersUnion
+			reqOrder := &RequestOrder{TargetID: rTargetID, CmdType: rCmdType, Args: rArgs, RequestID: rWSOrderID}
+			reqOrderID := NewTCPOrderID(cm.GetRandString(8), ipAddr)
+			ReqOrdersUnion.Store(reqOrderID, reqOrder)
+			// TCP指令标识:wsOrderID + 随机字符 + IP地址组成
+			tcpOrderID := NewTCPOrderID(rWSOrderID, ipAddr)
+			detID := cm.ConvertStrToBytesByPerTwoChar(rTargetID)
+			od := cm.NewOrder(tcpOrderID, ep.CmdOperateDetect(rCmdType, rcvID, 1, detID))
+			addToTCPSendQueue(od, rTargetID)
+		} else {
+			logs.LogMain.Error("错误：没有目标设备编码或者无法获取相关设备编码！")
 		}
-	} else {
-		// TODO:如果是接收器
 	}
-
+	return true
 }
-
-// func AddToWSDataQueue(rID, rOrder []byte) {
-
-// }

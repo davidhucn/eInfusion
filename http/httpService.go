@@ -42,6 +42,7 @@ func (w *WebClients) loopingWebMsg() {
 // reader :接受web数据
 func (w *WebClients) receiveWebRequest(rWSConnID string) {
 	for {
+		// 如果连接错误，则返回错误信息并退出
 		if cm.CkErr(WebMsg.WSReceiveDataError, w.Connections[rWSConnID].ReadJSON(&clisData)) {
 			odID := NewWSOrderID(rWSConnID)
 			od := cm.NewOrder(odID, []byte(WebMsg.WSReceiveDataError))
@@ -53,7 +54,7 @@ func (w *WebClients) receiveWebRequest(rWSConnID string) {
 		// 加入发送消息队列
 		for i := 0; i < len(clisData); i++ {
 			odID := NewWSOrderID(rWSConnID)
-			dh.SendOrderToDeviceByTCP(odID, clisData[i].ID, cm.ConvertBasStrToUint(10, clisData[i].CmdType), clisData[i].Args)
+			dh.SendOrderToDeviceByTCP(odID, clisData[i].TargetID, cm.ConvertBasStrToUint(10, clisData[i].CmdType), clisData[i].Args)
 			// FIXME:制定通讯标准，此处应返回前端页面完成信息代码
 			od := cm.NewOrder(odID, []byte(WebMsg.WSSendDataSuccess))
 			w.Orders <- od
@@ -82,18 +83,16 @@ func wshandler(wc *WebClients, w http.ResponseWriter, r *http.Request) {
 	if cm.CkErr(WebMsg.WSConnectError+" IP Addr:"+con.RemoteAddr().String(), err) {
 		return
 	}
-	// TODO:记录用户操作的
-	wsConnID := cm.GetRandString(10)
-
 	{
-		sis, _ := CStore.Get(r, "session-name")
-		sis.Values["qid"] = wsConnID //改成数组
-		sis.Save(r, w)
+		// 用户操作记录
+		// sis, _ := CStore.Get(r, "session-name")
+		// sis.Values["qid"] = wsConnID //改成数组
+		// sis.Save(r, w)
 	}
 	// 获取随机字符串生成标识id
+	wsConnID := cm.GetRandString(10)
 	// 登记注册到全局wsConnect对象
 	wc.RegisterWSConn(wsConnID, con)
-
 	wc.loopingWebMsg()
 	wc.receiveWebRequest(wsConnID)
 }
