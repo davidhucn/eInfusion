@@ -39,6 +39,11 @@ func (w *WebClients) loopingWebMsg() {
 	}()
 }
 
+// SendOrder :发送消息至web前台
+func (w *WebClients) SendOrder(rOD *cm.Cmd) {
+	w.Orders <- rOD
+}
+
 // reader :接受web数据
 func (w *WebClients) receiveWebRequest(rWSConnID string) {
 	for {
@@ -46,7 +51,7 @@ func (w *WebClients) receiveWebRequest(rWSConnID string) {
 		if cm.CkErr(WebMsg.WSReceiveDataError, w.Connections[rWSConnID].ReadJSON(&clisData)) {
 			odID := NewWSOrderID(rWSConnID)
 			od := cm.NewOrder(odID, []byte(WebMsg.WSReceiveDataError))
-			w.Orders <- od
+			w.SendOrder(od)
 			w.UnregisterWSConn(rWSConnID)
 			break
 		}
@@ -54,10 +59,17 @@ func (w *WebClients) receiveWebRequest(rWSConnID string) {
 		// 加入发送消息队列
 		for i := 0; i < len(clisData); i++ {
 			odID := NewWSOrderID(rWSConnID)
-			dh.SendOrderToDeviceByTCP(odID, clisData[i].TargetID, cm.ConvertBasStrToUint(10, clisData[i].CmdType), clisData[i].Args)
-			// FIXME:制定通讯标准，此处应返回前端页面完成信息代码
-			od := cm.NewOrder(odID, []byte(WebMsg.WSSendDataSuccess))
-			w.Orders <- od
+			ro := dh.NewReqestOrder(clisData[i].TargetID, cm.ConvertBasStrToUint(10, clisData[i].CmdType), clisData[i].Args, odID)
+			if dh.SendOrderToDeviceByTCP(ro) {
+				// 返回发送成功消息给前台,FIXME:制定通讯标准，此处应返回前端页面完成信息代码
+				od := cm.NewOrder(odID, []byte(WebMsg.WSSendDataSuccess))
+				w.SendOrder(od)
+			} else {
+				// 如果不成功，也返回失败消息
+				od := cm.NewOrder(odID, []byte(WebMsg.WSSendDataError))
+				w.SendOrder(od)
+			}
+
 		}
 	}
 }
