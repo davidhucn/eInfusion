@@ -9,7 +9,7 @@ import (
 
 // GetRcvID :根据DetID获取RcvID
 // 表 ：t_rcv_vs_det
-func GetRcvID(rDetID string) (string) {
+func GetRcvID(rDetID string) string {
 	var strSQL string
 	var mRcvID *map[string]string
 	var err error
@@ -22,7 +22,7 @@ func GetRcvID(rDetID string) (string) {
 }
 
 // GetRcvIP :根据RcvID获取其IP地址
-func GetRcvIP(rRcvID string) (string) {
+func GetRcvIP(rRcvID string) string {
 	var strSQL string
 	var mRcvIP *map[string]string
 	var err error
@@ -51,18 +51,17 @@ func IsReceiver(rTargetID string) bool {
 
 // IsDetector  :获取设备类型
 func IsDetector(rTargetID string) bool {
-	// TODO: 需要完成
-	// strSQL := "SELECT receiver_id FROM t_rcv WHERE receiver_id=?"
-	// var mRcvIP *map[string]string
-	// var err error
-	// mRcvIP, err = db.QueryOneRow(strSQL, rTargetID)
-	// if cm.CkErr(db.MsgDB.QueryDataErr, err) {
-	// 	return false
-	// }
-	// if (*mRcvIP)["receiver_id"] == "" {
-	// 	return false
-	// }
-	// return true
+	strSQL := "SELECT detID FROM t_rcv_vs_det WHERE detID=?"
+	var mRcvIP *map[string]string
+	var err error
+	mRcvIP, err = db.QueryOneRow(strSQL, rTargetID)
+	if cm.CkErr(db.MsgDB.QueryDataErr, err) {
+		return false
+	}
+	if (*mRcvIP)["detID"] == "" {
+		return false
+	}
+	return true
 }
 
 //InitDetInfoToDB :初始化生成8个检测器信息到数据库-> t_device_dict
