@@ -29,21 +29,34 @@ func DecodeToTCPConnID(rStrCnt string) string {
 
 // RegisterReqOrdersUnion :登记到请求指令池
 func RegisterReqOrdersUnion(rRO *RequestOrder) {
+	// 指令池里如果有相同操作，终止操作
+	for _, v := range ReqOrdersUnion.RequestOrders {
+		if v == rRO {
+			return
+		}
+	}
 	reqOrderID := rRO.TargetID + "~" + cm.GetRandString(8)
-	ReqOrdersUnion.Store(reqOrderID, rRO)
+	ReqOrdersUnion.Lock()
+	ReqOrdersUnion.RequestOrders[reqOrderID] = rRO
+	ReqOrdersUnion.Unlock()
+}
+
+// UnregisterReqOrdersUnion :登记到请求指令池
+func UnregisterReqOrdersUnion(rReqOrderID string) {
+	// TODO:接收到数据后即注销这一操作指令池记录,如果设备长时间无法通讯也注销
+	ReqOrdersUnion.Lock()
+	delete(ReqOrdersUnion.RequestOrders, rReqOrderID)
+	ReqOrdersUnion.Unlock()
 }
 
 // SendOrderToDeviceByTCP :添加到TCP指令发送队列
 func SendOrderToDeviceByTCP(rRO *RequestOrder) error {
-	// 指令池里如果有相同操作，返回错误提示
-	ReqOrdersUnion.Range(func(k interface{}, value interface{}) bool {
-		// if strings.Split(k, "~")[0] == rRO.TargetID {
-		// 	return true
-		// }
-		return false
-	})
-
-	// if !ReqOrdersUnion.Range(func(k,))
+	// 指令池里如果有相同操作，终止操作，返回错误提示
+	for _, v := range ReqOrdersUnion.RequestOrders {
+		if v == rRO {
+			return cm.ConvertStrToErr(DataHubMsg.CmdRepeatNotice)
+		}
+	}
 	// 判断是否为检测器
 	if wk.IsDetector(rRO.TargetID) {
 		rcvID := wk.GetRcvID(rRO.TargetID)
@@ -57,9 +70,7 @@ func SendOrderToDeviceByTCP(rRO *RequestOrder) error {
 		addDet := cm.ConvertHexUnitToDecUnit(ep.TrsCmdType.AddDetect)
 		delDet := cm.ConvertHexUnitToDecUnit(ep.TrsCmdType.DelDetect)
 		if rRO.CmdType == addDet || rRO.CmdType == delDet {
-			// if RegisterReqOrdersUnion(reqOrder, ipAddr) {
-			// 	// 如果登记成功
-			// }
+			RegisterReqOrdersUnion(rRO)
 			// TCP指令标识:wsOrderID + 随机字符 + IP地址组成
 			tcpOrderID := NewTCPOrderID(rRO.RequestID, ipAddr)
 			od := cm.NewOrder(tcpOrderID, ep.CmdOperateDetect(rRO.CmdType, rcvIDbytes, 1, detIDbytes))

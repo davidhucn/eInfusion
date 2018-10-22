@@ -33,18 +33,26 @@ func NewReqestOrder(rTargetID string, rCmdType uint8, rArgs string, rRequestID s
 type dataHubMsg struct {
 	GetServerDataErr string
 	CmdInvaildErr    string
+	CmdRepeatNotice  string
 }
 
 // DataHubMsg :Datahub消息提示对象
 var DataHubMsg dataHubMsg
 
+type reqOrdersUnion struct {
+	RequestOrders map[string]*RequestOrder //map[targetID + randstring]*RequestOrder
+	sync.Mutex
+}
+
 // ReqOrdersUnion :客户端请求指令记录池,记录TCP指令ID，通过ID匹配，便于回写到前端web
-var ReqOrdersUnion sync.Map //map[targetID+"~"+randstring][]*RequestOrder
+var ReqOrdersUnion reqOrdersUnion
 
 func init() {
 	TCPOrderQueue = make(chan *cm.Cmd, 1024)
 	WebMsgQueue = make(chan *cm.Cmd, 1024)
+	ReqOrdersUnion.RequestOrders = make(map[string]*RequestOrder)
 
 	DataHubMsg.GetServerDataErr = "错误，获取服务器数据出错！"
 	DataHubMsg.CmdInvaildErr = "错误，非法或不可识别指令！"
+	DataHubMsg.CmdRepeatNotice = "提示，申请指令重复"
 }
