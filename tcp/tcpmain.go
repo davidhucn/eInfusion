@@ -80,7 +80,8 @@ func (ts *TServer) LoopingTCPOrders() {
 				}
 				dh.SendMsgToWeb(cm.NewOrder(od.CmdID, []byte(TCPMsg.SendFailureForLongTime)))
 				// 如果发送不成功，不需要回写到前端，则去除指令ID记录池对应的ID
-				dh.OrdersIDUnion.Delete(dh.DecodeToTCPConnID(od.CmdID))
+				// FIXME:这里有问题,需重新注销函数
+				dh.UnregisterReqOrdersUnion(od.CmdID)
 			}
 		}
 	}()
