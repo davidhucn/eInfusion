@@ -2,7 +2,7 @@ package datahub
 
 import (
 	cm "eInfusion/comm"
-	wk "eInfusion/dbwork"
+	// ec "eInfusion/dbcomm"
 	ep "eInfusion/protocol"
 )
 
@@ -17,27 +17,43 @@ func SendMsgToWeb(rCmd *cm.Cmd) {
 }
 
 // RegisterReqOrdersUnion :登记到请求指令池
-func RegisterReqOrdersUnion(rRO *RequestOrder) {
+func RegisterReqOrdersUnion(rRO *RequestOrder) bool {
 	// 指令池里如果有相同操作，终止操作
 	for _, v := range ReqOrdersUnion.RequestOrders {
 		if v == rRO {
-			return
+			return false
 		}
 	}
-	reqOrderID := rRO.TargetID + "~" + cm.GetRandString(8)
+	reqOrderID := NewReqOrdersUnionID(rRO.TargetID)
 	ReqOrdersUnion.Lock()
 	ReqOrdersUnion.RequestOrders[reqOrderID] = rRO
 	ReqOrdersUnion.Unlock()
+	return true
 }
 
 // UnregisterReqOrdersUnion :登记到请求指令池
-func UnregisterReqOrdersUnion(rReqOrderID string) {
-	// FIXME:这里有问题,需重新注销函数
+func UnregisterReqOrdersUnion(rTargetID string, rCmdType uint8) bool {
+	for k, v := range ReqOrdersUnion.RequestOrders {
+		// 如果被操作设备和操作指令类型相同，则认为已经操作成功，返回结果
+		if v.TargetID == rTargetID && rCmdType == v.CmdType {
+			// 针对一个设备的操作指令限定只有一个调用者
+			ReqOrdersUnion.Lock()
+			delete(ReqOrdersUnion.RequestOrders, k)
+			ReqOrdersUnion.Unlock()
+			return true
+		}
+	}
+	return false
+}
 
-	// TODO:接收到数据后即注销这一操作指令池记录,如果设备长时间无法通讯也注销
-	ReqOrdersUnion.Lock()
-	delete(ReqOrdersUnion.RequestOrders, rReqOrderID)
-	ReqOrdersUnion.Unlock()
+// GetReqOrderIDFromUnion :根据设备ID和操作类型获取Ws连接ID
+func GetReqOrderIDFromUnion(rTargetID string, rCmdType uint8) string {
+	for _, v := range ReqOrdersUnion.RequestOrders {
+		if v.TargetID == rTargetID && rCmdType == v.CmdType {
+			return v.RequestID
+		}
+	}
+	return ""
 }
 
 // SendOrderToDeviceByTCP :添加到TCP指令发送队列
@@ -49,9 +65,9 @@ func SendOrderToDeviceByTCP(rRO *RequestOrder) error {
 		}
 	}
 	// 判断是否为检测器
-	if wk.IsDetector(rRO.TargetID) {
-		rcvID := wk.GetRcvID(rRO.TargetID)
-		ipAddr := wk.GetRcvIP(wk.GetRcvID(rRO.TargetID))
+	if ec.IsDetector(rRO.TargetID) {
+		rcvID := ec.GetRcvID(rRO.TargetID)
+		ipAddr := ec.GetRcvIP(ec.GetRcvID(rRO.TargetID))
 		if rcvID == "" || ipAddr == "" {
 			// 根据DetID获取RcvID和IP地址失败时，返回错误
 			return cm.ConvertStrToErr(DataHubMsg.GetServerDataErr)

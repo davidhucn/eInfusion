@@ -18,7 +18,7 @@ type RequestOrder struct {
 	TargetID  string
 	CmdType   uint8
 	Args      string
-	RequestID string //可用于wsID
+	RequestID string //可用于wsID、MQTTID
 }
 
 // NewReqestOrder ：新建请求指令对象
@@ -76,4 +76,14 @@ func NewTCPOrderID(rStrCnt string, rTCPConnectionID string) string {
 // DecodeToTCPConnID :解析指令ID为TCP连接序号
 func DecodeToTCPConnID(rStrCnt string) string {
 	return strings.Split(rStrCnt, "@")[1]
+}
+
+// NewReqOrdersUnionID : 生成新的RequestOrdersUnion ID
+func NewReqOrdersUnionID(rTargetID string) string {
+	return rTargetID + "~" + cm.GetRandString(8)
+}
+
+// DecodeToReqOrderID : 解析为RequestOrder的ID
+func DecodeToReqOrderID(rStrCnt string) string {
+	return strings.Split(rStrCnt, "~")[0]
 }

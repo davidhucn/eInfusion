@@ -38,17 +38,17 @@ func DecodeRcvData(rData []byte, rIPAddr string) {
 	// 接受指令成功，则返回结果至调用终端
 	switch rData[0] {
 	case TrsCmdType.RcvState:
-		wk.ReceiveRcvStat(rData[1:], rIPAddr)
+		wk.ReceiveRcvStat(rData[1:], rIPAddr, TrsCmdType.GetRcv)
 	case TrsCmdType.DetectState:
-		wk.ReceiveDetectStat(rData[1:], rIPAddr)
+		wk.ReceiveDetectStat(rData[1:], rIPAddr, TrsCmdType.GetDetect)
 	case TrsCmdType.DelDetectState:
-		wk.ReceiveDeleteDetect(rData[1:], rIPAddr)
+		wk.ReceiveDeleteDetect(rData[1:], rIPAddr, TrsCmdType.DelDetect)
 	case TrsCmdType.AddDetectState:
-		wk.ReceiveAddDetect(rData[1:], rIPAddr)
+		wk.ReceiveAddDetect(rData[1:], rIPAddr, TrsCmdType.AddDetect)
 	case TrsCmdType.SetRcvNetCfgState:
-		wk.ReceiveSetRcvNetCfgStat(rData[1:], rIPAddr)
+		wk.ReceiveSetRcvNetCfgStat(rData[1:], rIPAddr, TrsCmdType.SetRcvNetCfg)
 	case TrsCmdType.SetReconnTimeState:
-		wk.ReceiveSetReconnTimeStat(rData[1:], rIPAddr)
+		wk.ReceiveSetReconnTimeStat(rData[1:], rIPAddr, TrsCmdType.SetReconnTime)
 	default:
 		comm.Msg("调试信息，无效数据..., 内容：", rData)
 		//		return
