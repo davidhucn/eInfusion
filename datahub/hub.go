@@ -2,8 +2,8 @@ package datahub
 
 import (
 	cm "eInfusion/comm"
-	// ec "eInfusion/dbcomm"
-	ep "eInfusion/protocol"
+	ec "eInfusion/dbcomm"
+	tsc "eInfusion/trsfscomm"
 )
 
 // AddToTCPQueue ：通过TCP协议发送指令至设备
@@ -74,14 +74,14 @@ func SendOrderToDeviceByTCP(rRO *RequestOrder) error {
 		}
 		rcvIDbytes := cm.ConvertStrToBytesByPerTwoChar(rcvID)
 		detIDbytes := cm.ConvertStrToBytesByPerTwoChar(rRO.TargetID)
-		addDet := cm.ConvertHexUnitToDecUnit(ep.TrsCmdType.AddDetect)
-		delDet := cm.ConvertHexUnitToDecUnit(ep.TrsCmdType.DelDetect)
+		addDet := cm.ConvertHexUnitToDecUnit(tsc.TrsCmdType.AddDetect)
+		delDet := cm.ConvertHexUnitToDecUnit(tsc.TrsCmdType.DelDetect)
 		if rRO.CmdType == addDet || rRO.CmdType == delDet {
 			// TCP指令标识:wsOrderID + 随机字符 + IP地址组成
 			tcpOrderID := NewTCPOrderID(NewWSOrderID(rRO.RequestID), ipAddr)
 			// FIXME:这里有问题,需重新考虑UnionID
 			RegisterReqOrdersUnion(rRO)
-			od := cm.NewOrder(tcpOrderID, ep.CmdOperateDetect(rRO.CmdType, rcvIDbytes, 1, detIDbytes))
+			od := cm.NewOrder(tcpOrderID, tsc.CmdOperateDetect(rRO.CmdType, rcvIDbytes, 1, detIDbytes))
 			addToTCPSendQueue(od)
 		} else {
 			return cm.ConvertStrToErr(DataHubMsg.CmdInvaildErr)

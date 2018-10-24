@@ -1,4 +1,5 @@
-package protocol
+// trsfscomm :输液警报相关业务协议
+package trsfscomm
 
 type transfusionTCPDefination struct {
 	Header           uint8
@@ -52,4 +53,16 @@ func init() {
 	//	设备接收器重连接时间
 	TrsCmdType.SetReconnTime = 0x15
 
+}
+
+//Detector :检测器对象
+// Stat:工作状态,0-关机，1-开机
+// Alarm: 是否报警，输液条没有液体
+type Detector struct {
+	QRCode   string
+	ID       string
+	RcvID    string
+	Capacity uint8 //0,1,2,3
+	PowerOn  uint8 //工作状态：0-关机，1-开机
+	Alarm    uint8 //是否报警，0-正常，1－报警，无药水
 }

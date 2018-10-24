@@ -7,8 +7,8 @@ package tcp
 import (
 	cm "eInfusion/comm"
 	dh "eInfusion/datahub"
-	ep "eInfusion/protocol"
 	logs "eInfusion/tlogs"
+	tsc "eInfusion/trsfscomm"
 	"net"
 	"os"
 	"strconv"
@@ -81,7 +81,7 @@ func (ts *TServer) LoopingTCPOrders() {
 				dh.SendMsgToWeb(cm.NewOrder(od.CmdID, []byte(TCPMsg.SendFailureForLongTime)))
 				// 如果发送不成功，不需要回写到前端，则去除指令ID记录池对应的ID
 				// FIXME:这里有问题,需重新注销函数
-				dh.UnregisterReqOrdersUnion(od.CmdID)
+				// dh.UnregisterReqOrdersUnion()
 			}
 		}
 	}()
@@ -132,23 +132,23 @@ func (ts *TServer) lostConn(c *net.TCPConn) {
 func receiveData(c *net.TCPConn) {
 
 	{ // TODO:测试包
-		// SendData(c, ep.CmdGetRcvStatus(cm.ConvertPerTwoOxCharOfStrToBytes("A0000000")))
+		// SendData(c, tsc.CmdGetRcvStatus(cm.ConvertPerTwoOxCharOfStrToBytes("A0000000")))
 		// time.Sleep(10 * time.Millisecond)
 		// dtID := cm.ConvertStrToBytesByPerTwoChar("B0000000")
 		// rvID := cm.ConvertStrToBytesByPerTwoChar("A0000000")
 
 		// // bIP := cm.ConvertStrIPToBytes("192.168.121.12")
 		// // bPort := cm.ConvertDecToBytes(7778)
-		// orders := ep.CmdOperateDetect(ep.G_TsCmd.DelDetect, rvID, 1, dtID)
-		// // orders := ep.CmtsetRcvReconTime(rvID, cm.ConvertDecToBytes(900))
-		// // orders := ep.CmtsetRcvCfg(rvID, bIP, bPort)
+		// orders := tsc.CmdOperateDetect(tsc.G_TsCmd.DelDetect, rvID, 1, dtID)
+		// // orders := tsc.CmtsetRcvReconTime(rvID, cm.ConvertDecToBytes(900))
+		// // orders := tsc.CmtsetRcvCfg(rvID, bIP, bPort)
 		// SendData(c, orders)
 	}
 	defer c.Close()
 	for {
 		setReadTimeout(c, 5*time.Minute)
 		//	指定接收数据包头的帧长
-		recDataHeader := make([]byte, ep.TrsDefin.HeaderLength)
+		recDataHeader := make([]byte, tsc.TrsDefin.HeaderLength)
 		_, err := c.Read(recDataHeader)
 		if err != nil {
 			break
@@ -156,7 +156,7 @@ func receiveData(c *net.TCPConn) {
 		// 数据包数据内容长度记录变量
 		var intPckContentLength int
 		// 判断包头是否正确，如果正确，获取长度
-		if !ep.DecodeHeader(recDataHeader, &intPckContentLength) {
+		if !DecodeHeader(recDataHeader, &intPckContentLength) {
 			logs.LogMain.Info(cm.GetPureIPAddr(c), TCPMsg.HeaderDataError)
 			//	如果包头不正确，断开连接
 			break
@@ -169,7 +169,7 @@ func receiveData(c *net.TCPConn) {
 			//	实际长度和包头内规定长度不一致
 			if n == intPckContentLength {
 				// 处理报文数据内容
-				ep.DecodeRcvData(r, cm.GetPureIPAddr(c))
+				DecodeRcvData(r, cm.GetPureIPAddr(c))
 			} else {
 				/*如果长度不一致，退出*/
 				//	continue

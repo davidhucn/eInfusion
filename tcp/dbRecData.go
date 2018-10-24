@@ -1,22 +1,22 @@
-//Package dbwork :此包涉及具体业务的数据库操作
-package dbwork
+package tcp
 
 import (
 	cm "eInfusion/comm"
-	"eInfusion/datahub"
+	dh "eInfusion/datahub"
 	db "eInfusion/tdb"
 	logs "eInfusion/tlogs"
+	tsc "eInfusion/trsfscomm"
 )
 
 //InitDetInfoToDB :初始化生成8个检测器信息到数据库-> t_device_dict
 func InitDetInfoToDB(amount int) bool {
 	var strSQL string
-	var dd []Detector
+	var dd []tsc.Detector
 	for i := 0; i < amount; i++ {
-		var di Detector
+		var di tsc.Detector
 		di.ID = "B000000" + cm.ConvertIntToStr(i)
 		// di.Stat = ConvertIntToStr(2)
-		di.QRCode = CreateQRID(di.ID)
+		di.QRCode = cm.CreateQRID(di.ID)
 		dd = append(dd, di)
 	}
 	for i := 0; i < amount; i++ {
@@ -66,7 +66,7 @@ func ReceiveRcvStat(packData []byte, ipAddr string, rCmdType uint8) bool {
 
 //ReceiveDetectStat ：获取检测器状态信息
 func ReceiveDetectStat(packData []byte, ipAddr string, rCmdType uint8) bool {
-	var dDet []Detector
+	var dDet []tsc.Detector
 	var strSQL string
 	var err error
 	var mDetID *map[string]string
@@ -83,11 +83,11 @@ func ReceiveDetectStat(packData []byte, ipAddr string, rCmdType uint8) bool {
 			//检测器ID起始位置
 			end := begin + 4
 			// 在循环内定义检测器对象
-			var di Detector
+			var di tsc.Detector
 			di.RcvID = strRcvID
 			di.ID = cm.ConvertOxBytesToStr(packData[begin:end])
 			// 获取检测器状态
-			BinDetectorStat(packData[end], &di)
+			tsc.BinDetectorStat(packData[end], &di)
 			begin = end
 			//	判断该检测器是否为device_dict表内已注册设备，如果不是,退出
 			// TODO:  目前只核查设备登记表（device_dict）,没有核对配对表（rcv_vs_det），后期考虑更改为配对表
@@ -141,7 +141,7 @@ func ReceiveDetectStat(packData []byte, ipAddr string, rCmdType uint8) bool {
 func ReceiveDeleteDetect(packData []byte, ipAddr string, rCmdType uint8) bool {
 	var intDetAmount int
 	var err error
-	var dDet []Detector
+	var dDet []tsc.Detector
 	var strSQL string
 	var mDetID *map[string]string
 	//检测器数量所在位置
@@ -153,7 +153,7 @@ func ReceiveDeleteDetect(packData []byte, ipAddr string, rCmdType uint8) bool {
 	begin := 5
 	for i := 0; i < intDetAmount; i++ {
 		end := begin + 4
-		var di Detector
+		var di tsc.Detector
 		di.RcvID = strRcvID
 		di.ID = cm.ConvertOxBytesToStr(packData[begin:end])
 		begin = end
@@ -222,7 +222,7 @@ func ReceiveDeleteDetect(packData []byte, ipAddr string, rCmdType uint8) bool {
 func ReceiveAddDetect(packData []byte, ipAddr string, rCmdType uint8) bool {
 	var intDetAmount int
 	var err error
-	var dDet []Detector
+	var dDet []tsc.Detector
 	var strSQL string
 	var mDetID *map[string]string
 	//检测器数量所在位置
@@ -234,11 +234,11 @@ func ReceiveAddDetect(packData []byte, ipAddr string, rCmdType uint8) bool {
 	begin := 5
 	for i := 0; i < intDetAmount; i++ {
 		end := begin + 4
-		var di Detector
+		var di tsc.Detector
 		di.RcvID = strRcvID
 		di.ID = cm.ConvertOxBytesToStr(packData[begin:end])
 		// FIXME:检测器QR需要重做接口链接,等蒋少敏的后一步
-		di.QRCode = CreateQRID(di.ID)
+		di.QRCode = cm.CreateQRID(di.ID)
 		begin = end
 		dDet = append(dDet, di)
 	}
@@ -276,11 +276,12 @@ func ReceiveAddDetect(packData []byte, ipAddr string, rCmdType uint8) bool {
 		}
 		logs.LogMain.Info("成功添加检测器[", dDet[i].ID, "]！")
 		// 注销RequestOrderUnions内数据
-		datahub.UnregisterReqOrdersUnion(dDet[i].ID, rCmdType)
+		dh.UnregisterReqOrdersUnion(dDet[i].ID, rCmdType)
 		// 获取web通讯ID
-
+		wsOrderID := dh.GetReqOrderIDFromUnion(dDet[i].ID, rCmdType)
+		od := cm.NewOrder(wsOrderID, []byte("开启检测器成功："+dDet[i].ID))
 		// 回写到前端
-
+		dh.SendMsgToWeb(od)
 	}
 	return true
 }

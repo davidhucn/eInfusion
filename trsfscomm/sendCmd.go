@@ -1,4 +1,4 @@
-package protocol
+package trsfscomm
 
 // CmdGetRcvStatus :获取指定接收器的状态
 func CmdGetRcvStatus(rRcvID []byte) []byte {
@@ -70,7 +70,6 @@ func CmdSetRcvCfg(rRcvID []byte, rIP []byte, rPort []byte) []byte {
 		// sendOrders[portNum+11] = ConvertBasStrToUint(10, ConvertBasNumberToStr(10, rPort[portNum]))
 		sendOrders[portNum+11] = rPort[portNum]
 	}
-
 	return sendOrders
 }
 

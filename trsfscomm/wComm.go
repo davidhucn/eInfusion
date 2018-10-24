@@ -1,24 +1,11 @@
-package dbwork
+package trsfscomm
 
 import (
 	cm "eInfusion/comm"
 	logs "eInfusion/tlogs"
-	"time"
 
 	"github.com/imroc/biu"
 )
-
-//Detector :检测器对象
-// Stat:工作状态,0-关机，1-开机
-// Alarm: 是否报警，输液条没有液体
-type Detector struct {
-	QRCode   string
-	ID       string
-	RcvID    string
-	Capacity uint8 //0,1,2,3
-	PowerOn  uint8 //工作状态：0-关机，1-开机
-	Alarm    uint8 //是否报警，0-正常，1－报警，无药水
-}
 
 //BinDetectorStat :根据数据生成检测器状态信息
 // 注：目前夹断功能没有开放
@@ -38,24 +25,12 @@ func BinDetectorStat(rdata byte, dt *Detector) {
 	}
 }
 
-//CreateQRID ：生成索引编号
-//TODO:等待下一步细化
-func CreateQRID(rID string) string {
-	strBranchCode := "1x0"
-	strCategoryCode := "CP"
-	//批号
-	strPHCode := "xx1"
-	strTime := cm.ConvertIntToStr(time.Now().Hour()) + cm.ConvertIntToStr(time.Now().Minute()) + cm.ConvertIntToStr(time.Now().Second())
-
-	return strBranchCode + strCategoryCode + strPHCode + strTime + rID
-}
-
 //StartCreateQRCode ：生成二维码
 func StartCreateQRCode() {
 	//auto create the qrcode
 	for i := 0; i < 10; i++ {
 		strName := "B000000" + cm.ConvertIntToStr(i)
-		strContent := CreateQRID(strName)
+		strContent := cm.CreateQRID(strName)
 		cm.CreateQRCodePngFile(strContent, 128, strName+".png")
 	}
 }
