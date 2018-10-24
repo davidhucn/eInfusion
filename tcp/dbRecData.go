@@ -244,7 +244,7 @@ func ReceiveAddDetect(packData []byte, ipAddr string, rCmdType uint8) bool {
 	}
 	//插入 t_device_dict,t_rcv_vs_det,t_rcv
 	for i := 0; i < len(dDet); i++ {
-		strSQL = "Insert Into t_device_dict(detector_id,qcode) Values(?,?)"
+		strSQL = "Insert Into t_device_dict(did,qcode) Values(?,?)"
 		_, err = db.ExecSQL(strSQL, dDet[i].ID, dDet[i].QRCode)
 		if cm.CkErr(db.MsgDB.InsertDataErr, err) {
 			return false

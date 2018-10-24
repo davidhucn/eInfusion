@@ -1,0 +1,4 @@
+[ERROR] [17:58:35] [CkErr @ tComm.go.93] 错误,插入数据库操作失败！Error 1054: Unknown column 'detector_id' in 'field list'
+[ERROR] [18:03:21] [CkErr @ tComm.go.93] 错误,插入数据库操作失败！Error 1062: Duplicate entry 'B0000000' for key 'PRIMARY'
+[ERROR] [18:03:39] [CkErr @ tComm.go.93] 错误,更数据信息失败！Error 1064: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'last_time=? ip_addr=? where receiver_id=?
+				Values(?,?,?,?)' at line 1

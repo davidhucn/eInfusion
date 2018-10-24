@@ -3,3 +3,16 @@
 [Info] [10:28:50] 提示，Transfusion平台运行中 ……（2018-10-19）
 [Info] [10:30:48] 提示，Transfusion平台运行中 ……（2018-10-19）
 [Info] [17:30:18] 提示，Transfusion平台运行中 ……（2018-10-19）
+[Info] [17:44:43] 提示，Transfusion平台运行中 ……（2018-10-24）
+[Info] [17:47:44] 提示，Transfusion平台运行中 ……（2018-10-24）
+[Info] [17:47:54] IP:192.168.162.232上线
+[Info] [17:48:03] 提示,发送指令和数据成功！发送至=> IP：192.168.162.232
+[Info] [17:52:54] IP:192.168.162.232下线
+[Info] [17:58:26] IP:192.168.162.232上线
+[Error] [17:58:35] 错误,插入数据库操作失败！Error 1054: Unknown column 'detector_id' in 'field list'
+[Info] [18:03:05] 提示，Transfusion平台运行中 ……（2018-10-24）
+[Info] [18:03:13] IP:192.168.162.232上线
+[Info] [18:03:18] 提示,发送指令和数据成功！发送至=> IP：192.168.162.232
+[Error] [18:03:21] 错误,插入数据库操作失败！Error 1062: Duplicate entry 'B0000000' for key 'PRIMARY'
+[Error] [18:03:39] 错误,更数据信息失败！Error 1064: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'last_time=? ip_addr=? where receiver_id=?
+				Values(?,?,?,?)' at line 1
