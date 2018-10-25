@@ -8,10 +8,11 @@ import (
 )
 
 type webMsg struct {
-	WSReceiveDataError string
-	WSConnectError     string
-	WSSendDataError    string
-	WSSendDataSuccess  string
+	WSReceiveDataError        string
+	WSConnectError            string
+	WSSendDataError           string
+	WSSendDataFailureTryLater string
+	WSSendDataSuccess         string
 }
 
 // WebMsg :Web信息对象
@@ -28,10 +29,11 @@ type reqData struct {
 var clisData []reqData
 
 func init() {
-	WebMsg.WSConnectError = "错误，websocket连接错误！"
-	WebMsg.WSSendDataError = "错误，websocket发送数据错误！"
-	WebMsg.WSReceiveDataError = "错误，websocket接收数据失败！"
-	WebMsg.WSSendDataSuccess = "提示，完成数据发送！"
+	WebMsg.WSConnectError = "错误：websocket连接错误！"
+	WebMsg.WSSendDataError = "错误：websocket发送数据错误！"
+	WebMsg.WSReceiveDataError = "错误：websocket接收数据失败！"
+	WebMsg.WSSendDataFailureTryLater = "提示：由于设备未连线等原因，发送指令至设备失败，系统稍候后将自动尝试！"
+	WebMsg.WSSendDataSuccess = "提示：完成数据发送！"
 }
 
 // WebClients :web连接客户端

@@ -68,14 +68,16 @@ func (ts *TServer) LoopingTCPOrders() {
 					select {
 					case <-cTicker.C:
 						if !cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
-							continue
+							// continue
+							break
 						}
 					}
 				}
 				select {
 				case <-lastCk:
 					if !cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
-						continue
+						// continue
+						break
 					}
 				}
 				dh.SendMsgToWeb(cm.NewOrder(od.CmdID, []byte(TCPMsg.SendFailureForLongTime)))

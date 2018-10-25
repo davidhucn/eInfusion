@@ -247,11 +247,13 @@ func ReceiveAddDetect(packData []byte, ipAddr string, rCmdType uint8) bool {
 		strSQL = "Insert Into t_device_dict(did,qcode) Values(?,?)"
 		_, err = db.ExecSQL(strSQL, dDet[i].ID, dDet[i].QRCode)
 		if cm.CkErr(db.MsgDB.InsertDataErr, err) {
+			logs.LogMain.Error(strSQL, dDet[i].ID, ",", dDet[i].QRCode)
 			return false
 		}
 		strSQL = "Insert Into t_rcv_vs_det(detID,rcvID,time) Values(?,?,?)"
 		_, err = db.ExecSQL(strSQL, dDet[i].ID, dDet[i].RcvID, cm.GetCurrentDate())
 		if cm.CkErr(db.MsgDB.InsertDataErr, err) {
+			logs.LogMain.Error(strSQL)
 			return false
 		}
 		//获取现有的检测器数量
@@ -268,7 +270,7 @@ func ReceiveAddDetect(packData []byte, ipAddr string, rCmdType uint8) bool {
 		}
 		//更新接收器对应的检测器数量
 		intDetAmount = intDetAmount + 1
-		strSQL = `update t_rcv set detector_amount=? last_time=? ip_addr=? where receiver_id=?
+		strSQL = `update t_rcv set detector_amount=?,last_time=?,ip_addr=? where receiver_id=?
 				Values(?,?,?,?)`
 		_, err = db.ExecSQL(strSQL, intDetAmount, cm.GetCurrentDate(), ipAddr, dDet[i].RcvID)
 		if cm.CkErr(db.MsgDB.UpdateDataErr, err) {

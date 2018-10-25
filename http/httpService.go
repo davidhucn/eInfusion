@@ -64,8 +64,8 @@ func (w *WebClients) receiveWebRequest(rWSConnID string) {
 				od := cm.NewOrder(dh.NewWSOrderID(rWSConnID), []byte(WebMsg.WSSendDataSuccess))
 				w.SendOrder(od)
 			} else {
-				// 如果不成功，也返回失败消息
-				od := cm.NewOrder(dh.NewWSOrderID(rWSConnID), []byte(WebMsg.WSSendDataError))
+				// 如果不成功，也返回失败消息，TCP传输模块将自动重试！
+				od := cm.NewOrder(dh.NewWSOrderID(rWSConnID), []byte(WebMsg.WSSendDataFailureTryLater))
 				w.SendOrder(od)
 			}
 		}
