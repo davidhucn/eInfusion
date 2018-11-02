@@ -56,7 +56,7 @@ func (ts *TServer) LoopingTCPOrders() {
 			}
 		}
 	}()
-	// 循环发送指令至TCP终端
+	// TODO:发送指令和数据至TCP终端，如果发送不成功，则记录到待发送数组内(超过20分钟则清除待发指令)
 	go func() {
 		for od := range ts.Orders {
 			if cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
@@ -116,6 +116,8 @@ func (ts *TServer) madeConn(c *net.TCPConn) {
 	ts.Unlock()
 	logs.LogMain.Info("IP:", connID, "上线")
 	cm.SepLi(20, "-")
+	// TODO: 连线时检测是否有未发送指令及数据
+
 	// ****定时处理(心跳等)
 	//	go loopingCall(conn)
 }
