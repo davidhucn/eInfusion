@@ -47,7 +47,7 @@ func (ts *TServer) SendOrderAndMsg(rOrder *cm.Cmd, rWebMsg string) error {
 
 // LoopingTCPOrders :循环发送设备对象内的指令序列
 func (ts *TServer) LoopingTCPOrders() {
-	// 循环清除超过20分钟的指令
+	// 循环清除超过20分钟的待发指令
 	go func() {
 		for _, v := range ts.WaitOrders {
 			// TODO: 如果待发指令生存时间超过 20分钟，册消除

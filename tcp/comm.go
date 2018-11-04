@@ -1,7 +1,6 @@
 package tcp
 
 import (
-	cm "eInfusion/comm"
 	"net"
 	"sync"
 )
@@ -36,28 +35,33 @@ func init() {
 // TCPMsg :消息对象
 var TCPMsg tcpMsg
 
-type WaitOrder struct {
-	Time    string
-	WtOrder *cm.Cmd
+// SData ：TCP发送数据对象（指令 + 数据）
+type SData struct {
+	Time     string
+	SendData []byte
+}
+
+// TClient : TCP客户端对象
+type TClient struct {
+	TConn     *net.TCPConn
+	SendDatas chan []SData
 }
 
 // TServer :TCP服务对象
 type TServer struct {
 	// 连接集合
-	Connections   map[string]*net.TCPConn
-	Orders        chan *cm.Cmd
-	MaxTCPConnect int
-	WaitOrders    []WaitOrder
+	Connections     map[string]*TClient
+	ExpireTimeHours int
+	MaxTCPConnect   int
 	sync.Mutex
 }
 
 // NewTCPServer :创建设备对象
-func NewTCPServer(rMaxTCPConnectAmount int) *TServer {
+func NewTCPServer(rMaxTCPConnectAmount int, rExpireTimeHours int) *TServer {
 	return &TServer{
-		Connections:   make(map[string]*net.TCPConn),
-		Orders:        make(chan *cm.Cmd, 1024),
-		MaxTCPConnect: rMaxTCPConnectAmount,
-		WaitOrders:    make([]WaitOrder, 0),
+		Connections:     make(map[string]*TClient),
+		ExpireTimeHours: rExpireTimeHours,
+		MaxTCPConnect:   rMaxTCPConnectAmount,
 	}
 }
 
