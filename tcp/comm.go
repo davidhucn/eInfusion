@@ -36,12 +36,18 @@ func init() {
 // TCPMsg :消息对象
 var TCPMsg tcpMsg
 
+type WaitOrder struct {
+	Time    string
+	WtOrder *cm.Cmd
+}
+
 // TServer :TCP服务对象
 type TServer struct {
 	// 连接集合
 	Connections   map[string]*net.TCPConn
 	Orders        chan *cm.Cmd
 	MaxTCPConnect int
+	WaitOrders    []WaitOrder
 	sync.Mutex
 }
 
@@ -51,6 +57,7 @@ func NewTCPServer(rMaxTCPConnectAmount int) *TServer {
 		Connections:   make(map[string]*net.TCPConn),
 		Orders:        make(chan *cm.Cmd, 1024),
 		MaxTCPConnect: rMaxTCPConnectAmount,
+		WaitOrders:    make([]WaitOrder, 0),
 	}
 }
 

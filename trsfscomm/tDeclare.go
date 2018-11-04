@@ -1,4 +1,4 @@
-// trsfscomm :输液警报相关业务协议
+// Package trsfscomm :输液警报相关业务协议
 package trsfscomm
 
 type transfusionTCPDefination struct {

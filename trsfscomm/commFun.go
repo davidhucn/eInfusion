@@ -7,7 +7,7 @@ import (
 	"github.com/imroc/biu"
 )
 
-//BinDetectorStat :根据数据生成检测器状态信息
+//BinDetectorStat :根据通讯协议，对byte数据生成检测器状态信息（bit）
 // 注：目前夹断功能没有开放
 func BinDetectorStat(rdata byte, dt *Detector) {
 	smd := biu.ByteToBinaryString(rdata)

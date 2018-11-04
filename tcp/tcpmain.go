@@ -47,6 +47,12 @@ func (ts *TServer) SendOrderAndMsg(rOrder *cm.Cmd, rWebMsg string) error {
 
 // LoopingTCPOrders :循环发送设备对象内的指令序列
 func (ts *TServer) LoopingTCPOrders() {
+	// 循环清除超过20分钟的指令
+	go func() {
+		for _, v := range ts.WaitOrders {
+			// TODO: 如果待发指令生存时间超过 20分钟，册消除
+		}
+	}()
 	// 循环获取datahub指令
 	go func() {
 		for dh.TCPOrderQueue != nil {
@@ -56,30 +62,34 @@ func (ts *TServer) LoopingTCPOrders() {
 			}
 		}
 	}()
-	// TODO:发送指令和数据至TCP终端，如果发送不成功，则记录到待发送数组内(超过20分钟则清除待发指令)
 	go func() {
 		for od := range ts.Orders {
 			if cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
 				//发送不成功，则延迟发送
-				cTicker := time.NewTicker(12 * time.Second) // 定时
-				lastCk := time.After(3 * time.Minute)       // 延时
-				defer cTicker.Stop()
-				for i := 0; i < 3; i++ {
-					select {
-					case <-cTicker.C:
-						if !cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
-							// continue
-							break
-						}
-					}
-				}
-				select {
-				case <-lastCk:
-					if !cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
-						// continue
-						break
-					}
-				}
+				// cTicker := time.NewTicker(12 * time.Second) // 定时
+				// lastCk := time.After(3 * time.Minute)       // 延时
+				// defer cTicker.Stop()
+				// for i := 0; i < 3; i++ {
+				// 	select {
+				// 	case <-cTicker.C:
+				// 		if !cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
+				// 			// continue
+				// 			break
+				// 		}
+				// 	}
+				// }
+				// select {
+				// case <-lastCk:
+				// 	if !cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
+				// 		// continue
+				// 		break
+				// 	}
+				// }
+				// 如果发送不成功，则记录到待发送slice内,记录时间
+				var wod WaitOrder
+				wod.Time = cm.GetCurrentTime()
+				wod.WtOrder = od
+				ts.WaitOrders = append(ts.WaitOrders, wod)
 				dh.SendMsgToWeb(cm.NewOrder(od.CmdID, []byte(TCPMsg.SendFailureForLongTime)))
 				// 如果发送不成功，不需要回写到前端，则去除指令ID记录池对应的ID
 				// FIXME:这里有问题,需重新注销函数
