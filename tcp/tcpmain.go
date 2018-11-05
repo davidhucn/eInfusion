@@ -108,30 +108,32 @@ func setReadTimeout(conn *net.TCPConn, t time.Duration) {
 func (ts *TServer) setReadTimeout(rConnID string, t time.Duration) {
 	if rConnID == "" {
 		for _, c := range ts.Connections {
-			c.SetReadDeadline(time.Now().Add(t))
+			// c.SetReadDeadline(time.Now().Add(t))
 		}
 		return
 	}
 	if c, ok := ts.Connections[rConnID]; ok {
-		c.SetReadDeadline(time.Now().Add(t))
+		// c.SetReadDeadline(time.Now().Add(t))
 	}
 }
 
 //madeConn :连接初始处理(ed)
 func (ts *TServer) madeConn(c *net.TCPConn) {
 	connID := cm.GetPureIPAddr(c)
-	cli := newTClient()
-	cli.Conn = c
+	cli := newTClient(c)
 	ts.Lock()
 	ts.Connections[connID] = cli
 	ts.Unlock()
 	logs.LogMain.Info("IP:", connID, "上线")
 	cm.SepLi(20, "-")
+	dm, _ := time.ParseDuration(cm.ConvertIntToStr(ts.ExpireTimeByMinutes) + "m")
 	// TODO: 连线时检测是否有未发送指令及数据
 	for _, v := range ts.WaitOrders {
-		// 判断是否超过TimeOut时间
-		// if time.ParseDuration(v.CreateTime
-		if v.SendData
+		// 创建时间在有效时间期限内
+		if cm.ConvertTimeToStr(v.CreateTime.Add(dm)) > cm.ConvertTimeToStr(time.Now()) {
+			ts.SendOrderAndMsg()
+		}
+
 	}
 	// ****定时处理(心跳等)
 	//	go loopingCall(conn)

@@ -3,6 +3,7 @@ package tcp
 import (
 	"net"
 	"sync"
+	"time"
 )
 
 type tcpMsg struct {
@@ -37,11 +38,11 @@ var TCPMsg tcpMsg
 
 // WaitOrder ：TCP发送数据对象（指令 + 数据）
 type WaitOrder struct {
-	CreateTime string
+	CreateTime time.Time
 	SendData   []byte
 }
 
-func newWaitOrder(rTime string, rData []byte) *WaitOrder {
+func newWaitOrder(rTime time.Time, rData []byte) *WaitOrder {
 	return &WaitOrder{
 		CreateTime: rTime,
 		SendData:   rData,
@@ -55,9 +56,9 @@ type TClient struct {
 }
 
 // newTClient :创建新的 TClient
-func newTClient(c *net.TCPConn) *TClient {
+func newTClient(rConn *net.TCPConn) *TClient {
 	return &TClient{
-		Conn:     c,
+		Conn:     rConn,
 		SendData: make(chan []byte, 1024),
 	}
 }

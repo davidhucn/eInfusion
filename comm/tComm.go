@@ -51,6 +51,11 @@ func GetPureIPAddr(rConn *net.TCPConn) string {
 	return strings.Split(ip, ":")[0]
 }
 
+// ConvertTimeToStr : 转换Time为String（指定格式：小时：分钟：秒）
+func ConvertTimeToStr(rTime time.Time) string {
+	return rTime.Format("2006-01-02 15:04:05")
+}
+
 // GetCurrentTime : 获取当前时间
 func GetCurrentTime() string {
 	strTime := time.Now().Format("2006-01-02 15:04:05") //后面的参数是固定的 否则将无法正常输出
