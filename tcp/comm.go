@@ -35,38 +35,49 @@ func init() {
 // TCPMsg :消息对象
 var TCPMsg tcpMsg
 
-// SData ：TCP发送数据对象（指令 + 数据）
-type SData struct {
-	Time     string
-	SendData []byte
+// WaitOrder ：TCP发送数据对象（指令 + 数据）
+type WaitOrder struct {
+	CreateTime string
+	SendData   []byte
+}
+
+func newWaitOrder(rTime string, rData []byte) *WaitOrder {
+	return &WaitOrder{
+		CreateTime: rTime,
+		SendData:   rData,
+	}
 }
 
 // TClient : TCP客户端对象
 type TClient struct {
-	TConn     *net.TCPConn
-	SendDatas chan []SData
+	Conn     *net.TCPConn
+	SendData chan []byte
+}
+
+// newTClient :创建新的 TClient
+func newTClient(c *net.TCPConn) *TClient {
+	return &TClient{
+		Conn:     c,
+		SendData: make(chan []byte, 1024),
+	}
 }
 
 // TServer :TCP服务对象
 type TServer struct {
 	// 连接集合
-	Connections     map[string]*TClient
-	ExpireTimeHours int
-	MaxTCPConnect   int
+	Connections         map[string]*TClient
+	WaitOrders          []WaitOrder
+	ExpireTimeByMinutes int
+	MaxTCPConnect       int
 	sync.Mutex
 }
 
 // NewTCPServer :创建设备对象
-func NewTCPServer(rMaxTCPConnectAmount int, rExpireTimeHours int) *TServer {
+func NewTCPServer(rMaxTCPConnectAmount int, rExpireTimeByMinutes int) *TServer {
 	return &TServer{
-		Connections:     make(map[string]*TClient),
-		ExpireTimeHours: rExpireTimeHours,
-		MaxTCPConnect:   rMaxTCPConnectAmount,
+		Connections:         make(map[string]*TClient),
+		WaitOrders:          make([]WaitOrder, 0),
+		ExpireTimeByMinutes: rExpireTimeByMinutes,
+		MaxTCPConnect:       rMaxTCPConnectAmount,
 	}
 }
-
-// TCPClient :TCP客户端对象
-// type TCPClient struct {
-// 	Conn   net.TCPConn
-// 	Orders chan<- cm.Cmd
-// }

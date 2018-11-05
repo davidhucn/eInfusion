@@ -119,15 +119,20 @@ func (ts *TServer) setReadTimeout(rConnID string, t time.Duration) {
 
 //madeConn :连接初始处理(ed)
 func (ts *TServer) madeConn(c *net.TCPConn) {
-	//初始化连接这个函数被调用
 	connID := cm.GetPureIPAddr(c)
+	cli := newTClient()
+	cli.Conn = c
 	ts.Lock()
-	ts.Connections[connID] = c
+	ts.Connections[connID] = cli
 	ts.Unlock()
 	logs.LogMain.Info("IP:", connID, "上线")
 	cm.SepLi(20, "-")
 	// TODO: 连线时检测是否有未发送指令及数据
-
+	for _, v := range ts.WaitOrders {
+		// 判断是否超过TimeOut时间
+		// if time.ParseDuration(v.CreateTime
+		if v.SendData
+	}
 	// ****定时处理(心跳等)
 	//	go loopingCall(conn)
 }

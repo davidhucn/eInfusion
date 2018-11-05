@@ -26,7 +26,7 @@ func main() {
 
 	wc := eh.NewWebClients()
 	go eh.StartHTTPServer(wc, 7779)
-	tcpSer := et.NewTCPServer(300, 1)
+	tcpSer := et.NewTCPServer(300, 45)
 	et.RunTCPService(tcpSer, 7778)
 
 }
