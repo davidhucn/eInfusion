@@ -53,6 +53,7 @@ func (ts *TServer) LoopingTCPOrders() {
 		for _, v := range ts.WaitOrders {
 			// TODO: 如果待发指令生存时间超过指令周期，去除该指令
 			if cm.ConvertTimeToStr(v.CreateTime.Add(dm)) <= cm.ConvertTimeToStr(time.Now()) {
+				append(ts.WaitOrders,
 				// delete(ts.WaitOrders, v)
 			}
 		}
