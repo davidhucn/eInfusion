@@ -18,8 +18,8 @@ import (
 // Broadcast :对所有连接发送广播
 func (ts *TServer) Broadcast(rOrder *cm.Cmd) {
 	for _, c := range ts.Connections {
-		odID := dh.NewTCPOrderID(rOrder.CmdID, cm.GetPureIPAddr(c))
-		ts.Orders <- cm.NewOrder(odID, rOrder.Cmd)
+		// odID := dh.NewTCPOrderID(rOrder.CmdID, cm.GetPureIPAddr(c))
+		// ts.Orders <- cm.NewOrder(odID, rOrder.Cmd)
 	}
 }
 
@@ -31,7 +31,7 @@ func (ts *TServer) SendOrderAndMsg(rOrder *cm.Cmd, rWebMsg string) error {
 		return cm.ConvertStrToErr(TCPMsg.CanNotFindConnection)
 	}
 	time.Sleep(15 * time.Millisecond)
-	_, err := ts.Connections[connID].Write(rOrder.Cmd)
+	_, err := ts.Connections[connID].Connection.Write(rOrder.Cmd)
 	if cm.CkErr(TCPMsg.SendError, err) {
 		return cm.ConvertStrToErr(TCPMsg.SendError)
 	}
@@ -41,16 +41,20 @@ func (ts *TServer) SendOrderAndMsg(rOrder *cm.Cmd, rWebMsg string) error {
 	}
 	// 发送成功记录日志
 	// TODO:抽象化log对象
-	logs.LogMain.Info(TCPMsg.SendSuccess, "发送至=> IP："+cm.GetPureIPAddr(ts.Connections[connID]))
+	logs.LogMain.Info(TCPMsg.SendSuccess, "发送至=> IP："+cm.GetPureIPAddr(ts.Connections[connID].Connection))
 	return nil
 }
 
 // LoopingTCPOrders :循环发送设备对象内的指令序列
 func (ts *TServer) LoopingTCPOrders() {
 	// 循环清除超过20分钟的待发指令
+	dm, _ := time.ParseDuration(cm.ConvertIntToStr(ts.ExpireTimeByMinutes) + "m")
 	go func() {
 		for _, v := range ts.WaitOrders {
-			// TODO: 如果待发指令生存时间超过 20分钟，册消除
+			// TODO: 如果待发指令生存时间超过指令周期，去除该指令
+			if cm.ConvertTimeToStr(v.CreateTime.Add(dm)) <= cm.ConvertTimeToStr(time.Now()) {
+				// delete(ts.WaitOrders, v)
+			}
 		}
 	}()
 	// 循环获取datahub指令
@@ -58,45 +62,53 @@ func (ts *TServer) LoopingTCPOrders() {
 		for dh.TCPOrderQueue != nil {
 			select {
 			case od := <-dh.TCPOrderQueue:
-				ts.Orders <- od
+				if cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
+					// 如果发送失败，记录到待发列表
+					var wod WaitOrder
+					wod.CreateTime = time.Now()
+					wod.SendData = od
+					ts.WaitOrders = append(ts.WaitOrders, wod)
+					dh.SendMsgToWeb(cm.NewOrder(od.CmdID, []byte(TCPMsg.SendFailureForLongTime)))
+				}
 			}
 		}
 	}()
-	go func() {
-		for od := range ts.Orders {
-			if cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
-				//发送不成功，则延迟发送
-				// cTicker := time.NewTicker(12 * time.Second) // 定时
-				// lastCk := time.After(3 * time.Minute)       // 延时
-				// defer cTicker.Stop()
-				// for i := 0; i < 3; i++ {
-				// 	select {
-				// 	case <-cTicker.C:
-				// 		if !cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
-				// 			// continue
-				// 			break
-				// 		}
-				// 	}
-				// }
-				// select {
-				// case <-lastCk:
-				// 	if !cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
-				// 		// continue
-				// 		break
-				// 	}
-				// }
-				// 如果发送不成功，则记录到待发送slice内,记录时间
-				var wod WaitOrder
-				wod.Time = cm.GetCurrentTime()
-				wod.WtOrder = od
-				ts.WaitOrders = append(ts.WaitOrders, wod)
-				dh.SendMsgToWeb(cm.NewOrder(od.CmdID, []byte(TCPMsg.SendFailureForLongTime)))
-				// 如果发送不成功，不需要回写到前端，则去除指令ID记录池对应的ID
-				// FIXME:这里有问题,需重新注销函数
-				// dh.UnregisterReqOrdersUnion()
-			}
-		}
-	}()
+
+	// go func() {
+	// 	for od := range ts.Orders {
+	// 		if cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
+	// 			//发送不成功，则延迟发送
+	// 			// cTicker := time.NewTicker(12 * time.Second) // 定时
+	// 			// lastCk := time.After(3 * time.Minute)       // 延时
+	// 			// defer cTicker.Stop()
+	// 			// for i := 0; i < 3; i++ {
+	// 			// 	select {
+	// 			// 	case <-cTicker.C:
+	// 			// 		if !cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
+	// 			// 			// continue
+	// 			// 			break
+	// 			// 		}
+	// 			// 	}
+	// 			// }
+	// 			// select {
+	// 			// case <-lastCk:
+	// 			// 	if !cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
+	// 			// 		// continue
+	// 			// 		break
+	// 			// 	}
+	// 			// }
+	// 			// 如果发送不成功，则记录到待发送slice内,记录时间
+	// 			var wod WaitOrder
+	// 			wod.CreateTime = time.Now()
+	// 			// wod.SendData = od
+	// 			ts.WaitOrders = append(ts.WaitOrders, wod)
+	// 			dh.SendMsgToWeb(cm.NewOrder(od.CmdID, []byte(TCPMsg.SendFailureForLongTime)))
+	// 			// 如果发送不成功，不需要回写到前端，则去除指令ID记录池对应的ID
+	// 			// FIXME:这里有问题,需重新注销函数
+	// 			// dh.UnregisterReqOrdersUnion()
+	// 		}
+	// 	}
+	// }()
 }
 
 // setReadTimeout:设置读数据超时xtswa
@@ -113,7 +125,7 @@ func (ts *TServer) setReadTimeout(rConnID string, t time.Duration) {
 		return
 	}
 	if c, ok := ts.Connections[rConnID]; ok {
-		// c.SetReadDeadline(time.Now().Add(t))
+		// c..SetReadDeadline(time.Now().Add(t))
 	}
 }
 
@@ -131,7 +143,12 @@ func (ts *TServer) madeConn(c *net.TCPConn) {
 	for _, v := range ts.WaitOrders {
 		// 创建时间在有效时间期限内
 		if cm.ConvertTimeToStr(v.CreateTime.Add(dm)) > cm.ConvertTimeToStr(time.Now()) {
-			ts.SendOrderAndMsg()
+			if dh.DecodeToTCPConnID(v.SendData.CmdID) == connID {
+				if cm.CkErr(TCPMsg.SendError, ts.SendOrderAndMsg(v.SendData, TCPMsg.SendSuccess)) {
+					// 如果发送成功则，删掉待发队列
+					// delete()
+				}
+			}
 		}
 
 	}

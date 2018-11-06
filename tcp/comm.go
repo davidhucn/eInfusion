@@ -1,6 +1,7 @@
 package tcp
 
 import (
+	cm "eInfusion/comm"
 	"net"
 	"sync"
 	"time"
@@ -39,27 +40,27 @@ var TCPMsg tcpMsg
 // WaitOrder ：TCP发送数据对象（指令 + 数据）
 type WaitOrder struct {
 	CreateTime time.Time
-	SendData   []byte
+	SendData   *cm.Cmd
 }
 
-func newWaitOrder(rTime time.Time, rData []byte) *WaitOrder {
+func newWaitOrder(rTime time.Time, rOrder *cm.Cmd) *WaitOrder {
 	return &WaitOrder{
 		CreateTime: rTime,
-		SendData:   rData,
+		SendData:   rOrder,
 	}
 }
 
 // TClient : TCP客户端对象
 type TClient struct {
-	Conn     *net.TCPConn
-	SendData chan []byte
+	Connection *net.TCPConn
+	SendData   chan []byte
 }
 
 // newTClient :创建新的 TClient
 func newTClient(rConn *net.TCPConn) *TClient {
 	return &TClient{
-		Conn:     rConn,
-		SendData: make(chan []byte, 1024),
+		Connection: rConn,
+		SendData:   make(chan []byte, 1024),
 	}
 }
 
