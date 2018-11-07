@@ -18,8 +18,8 @@ import (
 // Broadcast :对所有连接发送广播
 func (ts *TServer) Broadcast(rOrder *cm.Cmd) {
 	for _, c := range ts.Connections {
-		// odID := dh.NewTCPOrderID(rOrder.CmdID, cm.GetPureIPAddr(c))
-		// ts.Orders <- cm.NewOrder(odID, rOrder.Cmd)
+		// c.Connection.Write(rOrder.Cmd)
+
 	}
 }
 
@@ -47,86 +47,90 @@ func (ts *TServer) SendOrderAndMsg(rOrder *cm.Cmd, rWebMsg string) error {
 
 // LoopingTCPOrders :循环发送设备对象内的指令序列
 func (ts *TServer) LoopingTCPOrders() {
-	// 循环清除超过20分钟的待发指令
+	// 循环清除超过指定时间周期的待发指令
 	dm, _ := time.ParseDuration(cm.ConvertIntToStr(ts.ExpireTimeByMinutes) + "m")
 	go func() {
-		for _, v := range ts.WaitOrders {
-			// TODO: 如果待发指令生存时间超过指令周期，去除该指令
+		for i, v := range ts.WaitOrders {
+			// 如果待发指令生存时间超过指令周期
 			if cm.ConvertTimeToStr(v.CreateTime.Add(dm)) <= cm.ConvertTimeToStr(time.Now()) {
-				append(ts.WaitOrders,
-				// delete(ts.WaitOrders, v)
+				// 删除指定的待发指令
+				ts.WaitOrders = append(ts.WaitOrders[:i], ts.WaitOrders[i+1])
+				// 长时间发送不成功，回写到前端
+				dh.SendMsgToWeb(cm.NewOrder(v.SendData.CmdID, []byte(TCPMsg.SendFailureForLongTime)))
 			}
 		}
 	}()
-	// 循环获取datahub指令
+	// 循环获取datahub内存放的指令,并存放到
 	go func() {
 		for dh.TCPOrderQueue != nil {
 			select {
 			case od := <-dh.TCPOrderQueue:
+				// 添加到指定TCP连接内的发送队列
+				if c, ok := ts.Connections[dh.DecodeToTCPConnID(od.CmdID)]; ok {
+					c.SendData <- od
+				}
+			}
+		}
+	}()
+	// 循环发送数据到相应的TCP连接中
+	go func() {
+		for _, tc := range ts.Connections {
+			// for od := range ts. {
+			for od := range tc.SendData {
 				if cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
 					// 如果发送失败，记录到待发列表
 					var wod WaitOrder
 					wod.CreateTime = time.Now()
 					wod.SendData = od
 					ts.WaitOrders = append(ts.WaitOrders, wod)
-					dh.SendMsgToWeb(cm.NewOrder(od.CmdID, []byte(TCPMsg.SendFailureForLongTime)))
+					// 如果发送不成功，不需要回写到前端，则去除指令ID记录池对应的ID
 				}
 			}
+			// if cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
+			//发送不成功，则延迟发送
+			// cTicker := time.NewTicker(12 * time.Second) // 定时
+			// lastCk := time.After(3 * time.Minute)       // 延时
+			// defer cTicker.Stop()
+			// for i := 0; i < 3; i++ {
+			// 	select {
+			// 	case <-cTicker.C:
+			// 		if !cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
+			// 			// continue
+			// 			break
+			// 		}
+			// 	}
+			// }
+			// select {
+			// case <-lastCk:
+			// 	if !cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
+			// 		// continue
+			// 		break
+			// 	}
+			// }
+			// dh.SendMsgToWeb(cm.NewOrder(od.CmdID, []byte(TCPMsg.SendFailureForLongTime)))
+
+			// FIXME:这里有问题,需重新注销函数
+			// dh.UnregisterReqOrdersUnion()
+			// }
 		}
 	}()
-
-	// go func() {
-	// 	for od := range ts.Orders {
-	// 		if cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
-	// 			//发送不成功，则延迟发送
-	// 			// cTicker := time.NewTicker(12 * time.Second) // 定时
-	// 			// lastCk := time.After(3 * time.Minute)       // 延时
-	// 			// defer cTicker.Stop()
-	// 			// for i := 0; i < 3; i++ {
-	// 			// 	select {
-	// 			// 	case <-cTicker.C:
-	// 			// 		if !cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
-	// 			// 			// continue
-	// 			// 			break
-	// 			// 		}
-	// 			// 	}
-	// 			// }
-	// 			// select {
-	// 			// case <-lastCk:
-	// 			// 	if !cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
-	// 			// 		// continue
-	// 			// 		break
-	// 			// 	}
-	// 			// }
-	// 			// 如果发送不成功，则记录到待发送slice内,记录时间
-	// 			var wod WaitOrder
-	// 			wod.CreateTime = time.Now()
-	// 			// wod.SendData = od
-	// 			ts.WaitOrders = append(ts.WaitOrders, wod)
-	// 			dh.SendMsgToWeb(cm.NewOrder(od.CmdID, []byte(TCPMsg.SendFailureForLongTime)))
-	// 			// 如果发送不成功，不需要回写到前端，则去除指令ID记录池对应的ID
-	// 			// FIXME:这里有问题,需重新注销函数
-	// 			// dh.UnregisterReqOrdersUnion()
-	// 		}
-	// 	}
-	// }()
 }
 
 // setReadTimeout:设置读数据超时xtswa
-func setReadTimeout(conn *net.TCPConn, t time.Duration) {
-	conn.SetReadDeadline(time.Now().Add(t))
-}
+// func setReadTimeout(conn *net.TCPConn, t time.Duration) {
+// 	conn.SetReadDeadline(time.Now().Add(t))
+// }
 
-// setReadTimeout :设定TCP连接接收数据时间
+// setReadTimeout :设定TCP连接接收数据时间(指定连接或不指定)
 func (ts *TServer) setReadTimeout(rConnID string, t time.Duration) {
 	if rConnID == "" {
 		for _, c := range ts.Connections {
-			// c.SetReadDeadline(time.Now().Add(t))
+			c.Connection.SetReadDeadline(time.Now().Add(t))
 		}
 		return
-	}
+	
 	if c, ok := ts.Connections[rConnID]; ok {
-		// c..SetReadDeadline(time.Now().Add(t))
+		c.Connection.SetReadDeadline(time.Now().Add(t))
 	}
 }
 

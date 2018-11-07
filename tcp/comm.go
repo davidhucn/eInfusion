@@ -53,14 +53,14 @@ func newWaitOrder(rTime time.Time, rOrder *cm.Cmd) *WaitOrder {
 // TClient : TCP客户端对象
 type TClient struct {
 	Connection *net.TCPConn
-	SendData   chan []byte
+	SendData   chan *cm.Cmd
 }
 
 // newTClient :创建新的 TClient
 func newTClient(rConn *net.TCPConn) *TClient {
 	return &TClient{
 		Connection: rConn,
-		SendData:   make(chan []byte, 1024),
+		SendData:   make(chan *cm.Cmd, 1024),
 	}
 }
 
