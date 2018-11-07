@@ -75,7 +75,6 @@ func (ts *TServer) LoopingTCPOrders() {
 	// 循环发送数据到相应的TCP连接中
 	go func() {
 		for _, tc := range ts.Connections {
-			// for od := range ts. {
 			for od := range tc.SendData {
 				if cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
 					// 如果发送失败，记录到待发列表
@@ -123,7 +122,7 @@ func (ts *TServer) setReadTimeout(rConnID string, t time.Duration) {
 			c.Connection.SetReadDeadline(time.Now().Add(t))
 		}
 		return
-	
+	}
 	if c, ok := ts.Connections[rConnID]; ok {
 		c.Connection.SetReadDeadline(time.Now().Add(t))
 	}
@@ -134,6 +133,7 @@ func (ts *TServer) madeConn(c *net.TCPConn) {
 	connID := cm.GetPureIPAddr(c)
 	cli := newTClient(c)
 	ts.Lock()
+	// 加入到连接列表中
 	ts.Connections[connID] = cli
 	ts.Unlock()
 	logs.LogMain.Info("IP:", connID, "上线")
@@ -150,7 +150,6 @@ func (ts *TServer) madeConn(c *net.TCPConn) {
 				}
 			}
 		}
-	
 	}
 	// ****定时处理(心跳等)
 	//	go loopingCall(conn)
@@ -184,7 +183,7 @@ func receiveData(c *net.TCPConn) {
 	}
 	defer c.Close()
 	for {
-		setReadTimeout(c, 5*time.Minute)
+		c.SetReadDeadline(time.Now().Add(5 * time.Minute))
 		//	指定接收数据包头的帧长
 		recDataHeader := make([]byte, tsc.TrsDefin.HeaderLength)
 		_, err := c.Read(recDataHeader)
