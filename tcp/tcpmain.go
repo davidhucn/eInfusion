@@ -116,11 +116,6 @@ func (ts *TServer) LoopingTCPOrders() {
 	}()
 }
 
-// setReadTimeout:设置读数据超时xtswa
-// func setReadTimeout(conn *net.TCPConn, t time.Duration) {
-// 	conn.SetReadDeadline(time.Now().Add(t))
-// }
-
 // setReadTimeout :设定TCP连接接收数据时间(指定连接或不指定)
 func (ts *TServer) setReadTimeout(rConnID string, t time.Duration) {
 	if rConnID == "" {
@@ -155,7 +150,7 @@ func (ts *TServer) madeConn(c *net.TCPConn) {
 				}
 			}
 		}
-
+	
 	}
 	// ****定时处理(心跳等)
 	//	go loopingCall(conn)
