@@ -18,8 +18,7 @@ import (
 // Broadcast :对所有连接发送广播
 func (ts *TServer) Broadcast(rOrder *cm.Cmd) {
 	for _, c := range ts.Connections {
-		// c.Connection.Write(rOrder.Cmd)
-
+		c.SendData <- rOrder
 	}
 }
 
@@ -40,7 +39,7 @@ func (ts *TServer) SendOrderAndMsg(rOrder *cm.Cmd, rWebMsg string) error {
 		dh.SendMsgToWeb(od)
 	}
 	// 发送成功记录日志
-	// TODO:抽象化log对象
+	// FIXME:抽象化log对象
 	logs.LogMain.Info(TCPMsg.SendSuccess, "发送至=> IP："+cm.GetPureIPAddr(ts.Connections[connID].Connection))
 	return nil
 }
@@ -51,7 +50,7 @@ func (ts *TServer) LoopingTCPOrders() {
 	dm, _ := time.ParseDuration(cm.ConvertIntToStr(ts.ExpireTimeByMinutes) + "m")
 	go func() {
 		for i, v := range ts.WaitOrders {
-			// 如果待发指令生存时间超过指令周期
+			// 如果待发指令生存时间超过指令周期 CreateTime + ExpireTimeMinute >= nowTime
 			if cm.ConvertTimeToStr(v.CreateTime.Add(dm)) <= cm.ConvertTimeToStr(time.Now()) {
 				// 删除指定的待发指令
 				ts.WaitOrders = append(ts.WaitOrders[:i], ts.WaitOrders[i+1])
@@ -60,7 +59,7 @@ func (ts *TServer) LoopingTCPOrders() {
 			}
 		}
 	}()
-	// 循环获取datahub内存放的指令,并存放到
+	// 循环获取datahub内存放的指令,并存放到(兼容其它模块发来的数据和指令)
 	go func() {
 		for dh.TCPOrderQueue != nil {
 			select {
@@ -72,7 +71,8 @@ func (ts *TServer) LoopingTCPOrders() {
 			}
 		}
 	}()
-	// 循环发送数据到相应的TCP连接中
+
+	// 发送指令动作--循环发送数据到相应的TCP连接中
 	go func() {
 		for _, tc := range ts.Connections {
 			for od := range tc.SendData {
@@ -82,7 +82,6 @@ func (ts *TServer) LoopingTCPOrders() {
 					wod.CreateTime = time.Now()
 					wod.SendData = od
 					ts.WaitOrders = append(ts.WaitOrders, wod)
-					// 如果发送不成功，不需要回写到前端，则去除指令ID记录池对应的ID
 				}
 			}
 			// if cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
@@ -139,16 +138,19 @@ func (ts *TServer) madeConn(c *net.TCPConn) {
 	logs.LogMain.Info("IP:", connID, "上线")
 	cm.SepLi(20, "-")
 	dm, _ := time.ParseDuration(cm.ConvertIntToStr(ts.ExpireTimeByMinutes) + "m")
-	// TODO: 连线时检测是否有未发送指令及数据
-	for _, v := range ts.WaitOrders {
-		// 创建时间在有效时间期限内
-		if cm.ConvertTimeToStr(v.CreateTime.Add(dm)) > cm.ConvertTimeToStr(time.Now()) {
+	// v.CreateTime.Add(5*time.Minute)
+
+	for i, v := range ts.WaitOrders {
+		// 创建时间在有效时间期限内 CreateTimme + ExpireTimeMinute < nowTime
+		if cm.ConvertTimeToStr(v.CreateTime.Add(dm)) < cm.ConvertTimeToStr(time.Now()) {
 			if dh.DecodeToTCPConnID(v.SendData.CmdID) == connID {
-				if cm.CkErr(TCPMsg.SendError, ts.SendOrderAndMsg(v.SendData, TCPMsg.SendSuccess)) {
-					// 如果发送成功则，删掉待发队列
-					// delete()
-				}
+				cm.CkErr("", ts.SendOrderAndMsg(v.SendData, TCPMsg.SendSuccess))
 			}
+		} else {
+			// 超过有效时间，册除待发列表中信息，这一环节也不太可能发生，因为已经有了一个进程在不断检测
+			ts.WaitOrders = append(ts.WaitOrders[:i], ts.WaitOrders[i+1])
+			// 回写到前端消息
+			dh.SendMsgToWeb(cm.NewOrder(v.SendData.CmdID, []byte(TCPMsg.SendFailureForLongTime)))
 		}
 	}
 	// ****定时处理(心跳等)

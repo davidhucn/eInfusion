@@ -66,3 +66,7 @@
 [Error] [10:29:53] 错误,插入数据库操作失败！Error 1062: Duplicate entry 'B0000110' for key 'PRIMARY'
 [Error] [10:29:53] Insert Into t_device_dict(did,qcode) Values(?,?)B0000110,1x0CPxx1102941B0000110
 [Info] [10:34:53] IP:192.168.162.232下线
+[Info] [11:30:19] 提示，Transfusion平台运行中 ……（2018-11-08）
+[Info] [11:32:35] IP:192.168.137.1上线
+[Info] [11:37:35] IP:192.168.137.1下线
+[Info] [11:40:34] IP:192.168.137.1上线
