@@ -77,7 +77,7 @@ func SendOrderToDeviceByTCP(rRO *RequestOrder) error {
 		addDet := cm.ConvertHexUnitToDecUnit(tsc.TrsCmdType.AddDetect)
 		delDet := cm.ConvertHexUnitToDecUnit(tsc.TrsCmdType.DelDetect)
 		if rRO.CmdType == addDet || rRO.CmdType == delDet {
-			// TCP指令标识:wsOrderID + 随机字符 + IP地址组成
+			// TCP指令ID:wsOrderID + 随机字符 + IP地址组成
 			tcpOrderID := NewTCPOrderID(NewWSOrderID(rRO.RequestID), ipAddr)
 			// FIXME:这里有问题,需重新考虑UnionID
 			RegisterReqOrdersUnion(rRO)

@@ -59,19 +59,19 @@ func (ts *TServer) LoopingTCPOrders() {
 			}
 		}
 	}()
-	// 循环获取datahub内存放的指令,并存放到(兼容其它模块发来的数据和指令)
+	// 循环获取datahub内存放的指令,并存放到相应连接的消息内容中(兼容其它模块发来的数据和指令)
 	go func() {
 		for dh.TCPOrderQueue != nil {
 			select {
 			case od := <-dh.TCPOrderQueue:
+				connID := dh.DecodeToTCPConnID(od.CmdID)
 				// 添加到指定TCP连接内的发送队列
-				if c, ok := ts.Connections[dh.DecodeToTCPConnID(od.CmdID)]; ok {
+				if c, ok := ts.Connections[connID]; ok {
 					c.SendData <- od
 				}
 			}
 		}
 	}()
-
 	// 发送指令动作--循环发送数据到相应的TCP连接中
 	go func() {
 		for _, tc := range ts.Connections {
@@ -84,32 +84,6 @@ func (ts *TServer) LoopingTCPOrders() {
 					ts.WaitOrders = append(ts.WaitOrders, wod)
 				}
 			}
-			// if cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
-			//发送不成功，则延迟发送
-			// cTicker := time.NewTicker(12 * time.Second) // 定时
-			// lastCk := time.After(3 * time.Minute)       // 延时
-			// defer cTicker.Stop()
-			// for i := 0; i < 3; i++ {
-			// 	select {
-			// 	case <-cTicker.C:
-			// 		if !cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
-			// 			// continue
-			// 			break
-			// 		}
-			// 	}
-			// }
-			// select {
-			// case <-lastCk:
-			// 	if !cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
-			// 		// continue
-			// 		break
-			// 	}
-			// }
-			// dh.SendMsgToWeb(cm.NewOrder(od.CmdID, []byte(TCPMsg.SendFailureForLongTime)))
-
-			// FIXME:这里有问题,需重新注销函数
-			// dh.UnregisterReqOrdersUnion()
-			// }
 		}
 	}()
 }
@@ -147,7 +121,7 @@ func (ts *TServer) madeConn(c *net.TCPConn) {
 				cm.CkErr("", ts.SendOrderAndMsg(v.SendData, TCPMsg.SendSuccess))
 			}
 		} else {
-			// 超过有效时间，册除待发列表中信息，这一环节也不太可能发生，因为已经有了一个进程在不断检测
+			// 超过有效时间，册除待发列表中信息(这一环节也不太可能发生，因为已经有了一个进程在不断检测)
 			ts.WaitOrders = append(ts.WaitOrders[:i], ts.WaitOrders[i+1])
 			// 回写到前端消息
 			dh.SendMsgToWeb(cm.NewOrder(v.SendData.CmdID, []byte(TCPMsg.SendFailureForLongTime)))
@@ -262,3 +236,31 @@ func RunTCPService(ts *TServer, port int) {
 		connStream <- lc
 	}
 }
+
+// 以下为channel应用参考实例
+// if cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
+//发送不成功，则延迟发送
+// cTicker := time.NewTicker(12 * time.Second) // 定时
+// lastCk := time.After(3 * time.Minute)       // 延时
+// defer cTicker.Stop()
+// for i := 0; i < 3; i++ {
+// 	select {
+// 	case <-cTicker.C:
+// 		if !cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
+// 			// continue
+// 			break
+// 		}
+// 	}
+// }
+// select {
+// case <-lastCk:
+// 	if !cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
+// 		// continue
+// 		break
+// 	}
+// }
+// dh.SendMsgToWeb(cm.NewOrder(od.CmdID, []byte(TCPMsg.SendFailureForLongTime)))
+
+// FIXME:这里有问题,需重新注销函数
+// dh.UnregisterReqOrdersUnion()
+// }

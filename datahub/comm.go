@@ -45,7 +45,8 @@ type reqOrdersUnion struct {
 	sync.Mutex
 }
 
-// ReqOrdersUnion :客户端请求指令记录池,记录TCP指令ID，通过ID匹配，便于回写到前端web
+// ReqOrdersUnion :客户端请求指令记录池,记录TCP指令ID，
+// 通过ID匹配，便于回写到前端web，避免记录web重复操作
 var ReqOrdersUnion reqOrdersUnion
 
 func init() {
