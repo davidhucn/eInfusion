@@ -60,9 +60,12 @@ func GetReqOrderIDFromUnion(rTargetID string, rCmdType uint8) string {
 func SendOrderToDeviceByTCP(rRO *RequestOrder) error {
 	// 指令池里如果有相同操作，终止操作，返回错误提示
 	for _, v := range ReqOrdersUnion.RequestOrders {
-		if v == rRO {
+		if v.TargetID == rRO.TargetID && v.CmdType == rRO.CmdType && v.Args == rRO.Args {
 			return cm.ConvertStrToErr(DataHubMsg.CmdRepeatNotice)
 		}
+		// if v == rRO {
+		// 	return cm.ConvertStrToErr(DataHubMsg.CmdRepeatNotice)
+		// }
 	}
 	// 判断是否为检测器
 	if ec.IsDetector(rRO.TargetID) {

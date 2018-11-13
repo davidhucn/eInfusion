@@ -44,21 +44,44 @@ func (ts *TServer) SendOrderAndMsg(rOrder *cm.Cmd, rWebMsg string) error {
 	return nil
 }
 
-// LoopingTCPOrders :循环发送设备对象内的指令序列
-func (ts *TServer) LoopingTCPOrders() {
-	// 循环清除超过指定时间周期的待发指令
-	dm, _ := time.ParseDuration(cm.ConvertIntToStr(ts.ExpireTimeByMinutes) + "m")
+// LoopingSendOrderOrAddToWaitingQueue : 发送指令，失败则存入待发送列表
+func (ts *TServer) LoopingSendOrderOrAddToWaitingQueue() {
+	// 发送指令动作--循环发送数据到相应的TCP连接中
 	go func() {
-		for i, v := range ts.WaitOrders {
-			// 如果待发指令生存时间超过指令周期 CreateTime + ExpireTimeMinute >= nowTime
-			if cm.ConvertTimeToStr(v.CreateTime.Add(dm)) <= cm.ConvertTimeToStr(time.Now()) {
-				// 删除指定的待发指令
-				ts.WaitOrders = append(ts.WaitOrders[:i], ts.WaitOrders[i+1])
-				// 长时间发送不成功，回写到前端
-				dh.SendMsgToWeb(cm.NewOrder(v.SendData.CmdID, []byte(TCPMsg.SendFailureForLongTime)))
+		cm.Msg("starting looping sending!")
+		for _, tc := range ts.Connections {
+			cm.Msg("connections:", tc.Connection.RemoteAddr)
+			for od := range tc.SendData {
+				cm.Msg("have order sending:", od.CmdID, od.Cmd)
+				if cm.CkErr("test:send failure", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
+					// 如果发送失败，记录到待发列表
+					var wod WaitOrder
+					wod.CreateTime = time.Now()
+					wod.SendData = od
+					ts.WaitOrders = append(ts.WaitOrders, wod)
+					cm.Msg("waiting list:", len(ts.WaitOrders))
+				}
 			}
 		}
 	}()
+}
+
+// LoopingOrdersFromDataHub :循环发送设备对象内的指令序列
+func (ts *TServer) LoopingOrdersFromDataHub() {
+	// 循环清除超过指定时间周期的待发指令
+	// dm, _ := time.ParseDuration(cm.ConvertIntToStr(ts.ExpireTimeByMinutes) + "m")
+	// go func() {
+	// 	for i, v := range ts.WaitOrders {
+	// 		// 如果待发指令生存时间超过指令周期 CreateTime + ExpireTimeMinute >= nowTime
+	// 		if cm.ConvertTimeToStr(v.CreateTime.Add(dm)) <= cm.ConvertTimeToStr(time.Now()) {
+	// 			// 删除指定的待发指令
+	// 			ts.WaitOrders = append(ts.WaitOrders[:i], ts.WaitOrders[i+1])
+	// 			// 长时间发送不成功，回写到前端
+	// 			dh.SendMsgToWeb(cm.NewOrder(v.SendData.CmdID, []byte(TCPMsg.SendFailureForLongTime)))
+	// 		}
+	// 	}
+	// }()
+
 	// 循环获取datahub内存放的指令,并存放到相应连接的消息内容中(兼容其它模块发来的数据和指令)
 	go func() {
 		for dh.TCPOrderQueue != nil {
@@ -68,20 +91,7 @@ func (ts *TServer) LoopingTCPOrders() {
 				// 添加到指定TCP连接内的发送队列
 				if c, ok := ts.Connections[connID]; ok {
 					c.SendData <- od
-				}
-			}
-		}
-	}()
-	// 发送指令动作--循环发送数据到相应的TCP连接中
-	go func() {
-		for _, tc := range ts.Connections {
-			for od := range tc.SendData {
-				if cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
-					// 如果发送失败，记录到待发列表
-					var wod WaitOrder
-					wod.CreateTime = time.Now()
-					wod.SendData = od
-					ts.WaitOrders = append(ts.WaitOrders, wod)
+					cm.Msg("SendData Add one finish!")
 				}
 			}
 		}
@@ -214,7 +224,8 @@ func RunTCPService(ts *TServer, port int) {
 	cm.Msg("Transfusion System Server Port", host)
 	cm.SepLi(60, "")
 	// 循环处理TCP对象指令
-	ts.LoopingTCPOrders()
+	ts.LoopingSendOrderOrAddToWaitingQueue()
+	ts.LoopingOrdersFromDataHub()
 
 	connStream := make(chan *net.TCPConn)
 	//打开N个Goroutine等待连接，Epoll模式
