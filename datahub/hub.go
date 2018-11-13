@@ -6,9 +6,14 @@ import (
 	tsc "eInfusion/trsfscomm"
 )
 
-// AddToTCPQueue ：通过TCP协议发送指令至设备
-func addToTCPSendQueue(rCmd *cm.Cmd) {
+// AddToTCPOrderQueue ：通过TCP协议发送指令至设备
+func AddToTCPOrderQueue(rCmd *cm.Cmd) {
 	TCPOrderQueue <- rCmd
+}
+
+// GetTCPQueueOrder :获取TCP数据
+func GetTCPQueueOrder() chan *cm.Cmd {
+	return TCPOrderQueue
 }
 
 // SendMsgToWeb :回写到web前端
@@ -85,7 +90,7 @@ func SendOrderToDeviceByTCP(rRO *RequestOrder) error {
 			// FIXME:这里有问题,需重新考虑UnionID
 			RegisterReqOrdersUnion(rRO)
 			od := cm.NewOrder(tcpOrderID, tsc.CmdOperateDetect(rRO.CmdType, rcvIDbytes, 1, detIDbytes))
-			addToTCPSendQueue(od)
+			AddToTCPOrderQueue(od)
 		} else {
 			return cm.ConvertStrToErr(DataHubMsg.CmdInvaildErr)
 		}

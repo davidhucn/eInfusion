@@ -50,24 +50,10 @@ func newWaitOrder(rTime time.Time, rOrder *cm.Cmd) *WaitOrder {
 	}
 }
 
-// TClient : TCP客户端对象
-type TClient struct {
-	Connection *net.TCPConn
-	SendData   chan *cm.Cmd
-}
-
-// newTClient :创建新的 TClient
-func newTClient(rConn *net.TCPConn) *TClient {
-	return &TClient{
-		Connection: rConn,
-		SendData:   make(chan *cm.Cmd, 1024),
-	}
-}
-
 // TServer :TCP服务对象
 type TServer struct {
 	// 连接集合
-	Connections         map[string]*TClient
+	Connections         map[string]*net.TCPConn
 	WaitOrders          []WaitOrder
 	ExpireTimeByMinutes int
 	MaxTCPConnect       int
@@ -77,7 +63,7 @@ type TServer struct {
 // NewTCPServer :创建设备对象
 func NewTCPServer(rMaxTCPConnectAmount int, rExpireTimeByMinutes int) *TServer {
 	return &TServer{
-		Connections:         make(map[string]*TClient),
+		Connections:         make(map[string]*net.TCPConn),
 		WaitOrders:          make([]WaitOrder, 0),
 		ExpireTimeByMinutes: rExpireTimeByMinutes,
 		MaxTCPConnect:       rMaxTCPConnectAmount,

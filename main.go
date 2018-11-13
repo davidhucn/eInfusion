@@ -12,7 +12,6 @@ func init() {
 	logs.LogDisable()
 	logs.LogConfigLoad()
 	runtime.GOMAXPROCS(runtime.NumCPU())
-
 }
 
 func main() {

@@ -18,7 +18,8 @@ import (
 // Broadcast :对所有连接发送广播
 func (ts *TServer) Broadcast(rOrder *cm.Cmd) {
 	for _, c := range ts.Connections {
-		c.SendData <- rOrder
+		rOrder.CmdID = dh.NewTCPOrderID(rOrder.CmdID, cm.GetPureIPAddr(c))
+		dh.AddToTCPOrderQueue(rOrder)
 	}
 }
 
@@ -30,7 +31,7 @@ func (ts *TServer) SendOrderAndMsg(rOrder *cm.Cmd, rWebMsg string) error {
 		return cm.ConvertStrToErr(TCPMsg.CanNotFindConnection)
 	}
 	time.Sleep(15 * time.Millisecond)
-	_, err := ts.Connections[connID].Connection.Write(rOrder.Cmd)
+	_, err := ts.Connections[connID].Write(rOrder.Cmd)
 	if cm.CkErr(TCPMsg.SendError, err) {
 		return cm.ConvertStrToErr(TCPMsg.SendError)
 	}
@@ -40,58 +41,39 @@ func (ts *TServer) SendOrderAndMsg(rOrder *cm.Cmd, rWebMsg string) error {
 	}
 	// 发送成功记录日志
 	// FIXME:抽象化log对象
-	logs.LogMain.Info(TCPMsg.SendSuccess, "发送至=> IP："+cm.GetPureIPAddr(ts.Connections[connID].Connection))
+	logs.LogMain.Info(TCPMsg.SendSuccess, "发送至=> IP："+cm.GetPureIPAddr(ts.Connections[connID]))
 	return nil
 }
 
-// LoopingSendOrderOrAddToWaitingQueue : 发送指令，失败则存入待发送列表
-func (ts *TServer) LoopingSendOrderOrAddToWaitingQueue() {
-	// 发送指令动作--循环发送数据到相应的TCP连接中
+// LoopingTCPOrder :循环发送设备对象内的指令序列
+func (ts *TServer) LoopingTCPOrder() {
+	// 循环清除超过指定时间周期的待发指令
+	dm, _ := time.ParseDuration(cm.ConvertIntToStr(ts.ExpireTimeByMinutes) + "m")
 	go func() {
-		cm.Msg("starting looping sending!")
-		for _, tc := range ts.Connections {
-			cm.Msg("connections:", tc.Connection.RemoteAddr)
-			for od := range tc.SendData {
-				cm.Msg("have order sending:", od.CmdID, od.Cmd)
-				if cm.CkErr("test:send failure", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
-					// 如果发送失败，记录到待发列表
-					var wod WaitOrder
-					wod.CreateTime = time.Now()
-					wod.SendData = od
-					ts.WaitOrders = append(ts.WaitOrders, wod)
-					cm.Msg("waiting list:", len(ts.WaitOrders))
-				}
+		for i, v := range ts.WaitOrders {
+			// 如果待发指令生存时间超过指令周期 CreateTime + ExpireTimeMinute >= nowTime
+			if cm.ConvertTimeToStr(v.CreateTime.Add(dm)) <= cm.ConvertTimeToStr(time.Now()) {
+				// 删除指定的待发指令
+				ts.WaitOrders = append(ts.WaitOrders[:i], ts.WaitOrders[i+1])
+				// 长时间发送不成功，回写到前端
+				dh.SendMsgToWeb(cm.NewOrder(v.SendData.CmdID, []byte(TCPMsg.SendFailureForLongTime)))
 			}
 		}
 	}()
-}
-
-// LoopingOrdersFromDataHub :循环发送设备对象内的指令序列
-func (ts *TServer) LoopingOrdersFromDataHub() {
-	// 循环清除超过指定时间周期的待发指令
-	// dm, _ := time.ParseDuration(cm.ConvertIntToStr(ts.ExpireTimeByMinutes) + "m")
-	// go func() {
-	// 	for i, v := range ts.WaitOrders {
-	// 		// 如果待发指令生存时间超过指令周期 CreateTime + ExpireTimeMinute >= nowTime
-	// 		if cm.ConvertTimeToStr(v.CreateTime.Add(dm)) <= cm.ConvertTimeToStr(time.Now()) {
-	// 			// 删除指定的待发指令
-	// 			ts.WaitOrders = append(ts.WaitOrders[:i], ts.WaitOrders[i+1])
-	// 			// 长时间发送不成功，回写到前端
-	// 			dh.SendMsgToWeb(cm.NewOrder(v.SendData.CmdID, []byte(TCPMsg.SendFailureForLongTime)))
-	// 		}
-	// 	}
-	// }()
 
 	// 循环获取datahub内存放的指令,并存放到相应连接的消息内容中(兼容其它模块发来的数据和指令)
 	go func() {
 		for dh.TCPOrderQueue != nil {
 			select {
-			case od := <-dh.TCPOrderQueue:
-				connID := dh.DecodeToTCPConnID(od.CmdID)
-				// 添加到指定TCP连接内的发送队列
-				if c, ok := ts.Connections[connID]; ok {
-					c.SendData <- od
-					cm.Msg("SendData Add one finish!")
+			// case od := <-dh.TCPOrderQueue:
+			case od := <-dh.GetTCPQueueOrder():
+				cm.Msg("get channel from tcpqueue")
+				if cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
+					// 如果发送失败，放入待发送列表
+					var wod WaitOrder
+					wod.CreateTime = time.Now()
+					wod.SendData = od
+					ts.WaitOrders = append(ts.WaitOrders, wod)
 				}
 			}
 		}
@@ -102,22 +84,21 @@ func (ts *TServer) LoopingOrdersFromDataHub() {
 func (ts *TServer) setReadTimeout(rConnID string, t time.Duration) {
 	if rConnID == "" {
 		for _, c := range ts.Connections {
-			c.Connection.SetReadDeadline(time.Now().Add(t))
+			c.SetReadDeadline(time.Now().Add(t))
 		}
 		return
 	}
 	if c, ok := ts.Connections[rConnID]; ok {
-		c.Connection.SetReadDeadline(time.Now().Add(t))
+		c.SetReadDeadline(time.Now().Add(t))
 	}
 }
 
 //madeConn :连接初始处理(ed)
 func (ts *TServer) madeConn(c *net.TCPConn) {
 	connID := cm.GetPureIPAddr(c)
-	cli := newTClient(c)
 	ts.Lock()
 	// 加入到连接列表中
-	ts.Connections[connID] = cli
+	ts.Connections[connID] = c
 	ts.Unlock()
 	logs.LogMain.Info("IP:", connID, "上线")
 	cm.SepLi(20, "-")
@@ -128,7 +109,9 @@ func (ts *TServer) madeConn(c *net.TCPConn) {
 		// 创建时间在有效时间期限内 CreateTimme + ExpireTimeMinute < nowTime
 		if cm.ConvertTimeToStr(v.CreateTime.Add(dm)) < cm.ConvertTimeToStr(time.Now()) {
 			if dh.DecodeToTCPConnID(v.SendData.CmdID) == connID {
-				cm.CkErr("", ts.SendOrderAndMsg(v.SendData, TCPMsg.SendSuccess))
+				if cm.CkErr("", ts.SendOrderAndMsg(v.SendData, TCPMsg.SendSuccess)) {
+					// TODO:发送不成功，考虑延时再次发送
+				}
 			}
 		} else {
 			// 超过有效时间，册除待发列表中信息(这一环节也不太可能发生，因为已经有了一个进程在不断检测)
@@ -224,8 +207,7 @@ func RunTCPService(ts *TServer, port int) {
 	cm.Msg("Transfusion System Server Port", host)
 	cm.SepLi(60, "")
 	// 循环处理TCP对象指令
-	ts.LoopingSendOrderOrAddToWaitingQueue()
-	ts.LoopingOrdersFromDataHub()
+	ts.LoopingTCPOrder()
 
 	connStream := make(chan *net.TCPConn)
 	//打开N个Goroutine等待连接，Epoll模式

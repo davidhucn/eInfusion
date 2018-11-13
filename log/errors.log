@@ -1,5 +1,2 @@
-[ERROR] [15:40:48] [CkErr @ tComm.go.98] 错误：websocket接收数据失败！websocket: close 1001 (going away)
-[ERROR] [15:41:23] [CkErr @ tComm.go.98] 错误：websocket接收数据失败！websocket: close 1001 (going away)
-[ERROR] [15:41:49] [CkErr @ tComm.go.98] 错误：websocket接收数据失败！websocket: close 1001 (going away)
-[ERROR] [08:40:40] [CkErr @ tComm.go.98] 错误：websocket接收数据失败！websocket: close 1001 (going away)
-[ERROR] [08:43:43] [CkErr @ tComm.go.98] 错误：websocket接收数据失败！websocket: close 1001 (going away)
+[ERROR] [19:24:56] [CkErr @ tComm.go.97] 错误：websocket接收数据失败！websocket: close 1006 (abnormal closure): unexpected EOF
+[ERROR] [19:30:21] [CkErr @ tComm.go.97] 错误：websocket接收数据失败！websocket: close 1006 (abnormal closure): unexpected EOF

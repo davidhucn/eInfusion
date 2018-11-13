@@ -1,127 +1,41 @@
-[Info] [10:25:13] 提示，Transfusion平台运行中 ……（2018-10-19）
-[Info] [10:27:59] 提示，Transfusion平台运行中 ……（2018-10-19）
-[Info] [10:28:50] 提示，Transfusion平台运行中 ……（2018-10-19）
-[Info] [10:30:48] 提示，Transfusion平台运行中 ……（2018-10-19）
-[Info] [17:30:18] 提示，Transfusion平台运行中 ……（2018-10-19）
-[Info] [17:44:43] 提示，Transfusion平台运行中 ……（2018-10-24）
-[Info] [17:47:44] 提示，Transfusion平台运行中 ……（2018-10-24）
-[Info] [17:47:54] IP:192.168.162.232上线
-[Info] [17:48:03] 提示,发送指令和数据成功！发送至=> IP：192.168.162.232
-[Info] [17:52:54] IP:192.168.162.232下线
-[Info] [17:58:26] IP:192.168.162.232上线
-[Error] [17:58:35] 错误,插入数据库操作失败！Error 1054: Unknown column 'detector_id' in 'field list'
-[Info] [18:03:05] 提示，Transfusion平台运行中 ……（2018-10-24）
-[Info] [18:03:13] IP:192.168.162.232上线
-[Info] [18:03:18] 提示,发送指令和数据成功！发送至=> IP：192.168.162.232
-[Error] [18:03:21] 错误,插入数据库操作失败！Error 1062: Duplicate entry 'B0000000' for key 'PRIMARY'
-[Error] [18:03:39] 错误,更数据信息失败！Error 1064: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'last_time=? ip_addr=? where receiver_id=?
-				Values(?,?,?,?)' at line 1
-[Info] [08:29:30] 提示，Transfusion平台运行中 ……（2018-10-25）
-[Info] [08:30:20] IP:192.168.162.232上线
-[Info] [08:31:38] 提示，Transfusion平台运行中 ……（2018-10-25）
-[Info] [08:31:44] IP:192.168.162.232上线
-[Info] [08:32:00] 提示,发送指令和数据成功！发送至=> IP：192.168.162.232
-[Info] [08:36:44] IP:192.168.162.232下线
-[Info] [08:46:06] 提示，Transfusion平台运行中 ……（2018-10-25）
-[Info] [08:46:10] IP:192.168.162.232上线
-[Info] [08:46:20] 提示,发送指令和数据成功！发送至=> IP：192.168.162.232
-[Info] [08:46:22] IP:192.168.162.232下线
-[Info] [08:59:21] IP:192.168.162.232上线
-[Error] [08:59:23] 错误,插入数据库操作失败！Error 1062: Duplicate entry 'B0000010' for key 'PRIMARY'
-[Error] [08:59:42] 错误,更数据信息失败！Error 1064: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'last_time=? ip_addr=? where receiver_id=?
-				Values(?,?,?,?)' at line 1
-[Info] [09:04:42] IP:192.168.162.232下线
-[Info] [09:20:57] 提示，Transfusion平台运行中 ……（2018-10-25）
-[Info] [09:21:02] IP:192.168.162.232上线
-[Info] [09:21:12] 提示,发送指令和数据成功！发送至=> IP：192.168.162.232
-[Error] [09:21:16] 错误,插入数据库操作失败！Error 1062: Duplicate entry 'B0000110' for key 'PRIMARY'
-[Info] [09:26:16] IP:192.168.162.232下线
-[Info] [09:51:56] 提示，Transfusion平台运行中 ……（2018-10-25）
-[Info] [09:52:19] IP:192.168.162.232上线
-[Info] [09:52:22] 提示,发送指令和数据成功！发送至=> IP：192.168.162.232
-[Error] [09:52:32] 错误,插入数据库操作失败！Error 1062: Duplicate entry 'B0000110' for key 'PRIMARY'
-[Error] [09:52:32] Insert Into t_device_dict(did,qcode) Values(?,?)
-[Error] [09:54:42] 错误,插入数据库操作失败！Error 1062: Duplicate entry 'B0000110' for key 'PRIMARY'
-[Error] [09:54:42] Insert Into t_device_dict(did,qcode) Values(?,?)
-[Error] [09:55:16] 错误,插入数据库操作失败！Error 1062: Duplicate entry 'B0000110' for key 'PRIMARY'
-[Error] [09:55:16] Insert Into t_device_dict(did,qcode) Values(?,?)
-[Info] [10:00:16] IP:192.168.162.232下线
-[Info] [10:08:26] 提示，Transfusion平台运行中 ……（2018-10-25）
-[Info] [10:08:34] IP:192.168.162.232上线
-[Info] [10:08:43] 提示,发送指令和数据成功！发送至=> IP：192.168.162.232
-[Info] [10:08:55] 提示,发送指令和数据成功！发送至=> IP：192.168.162.232
-[Info] [10:09:07] 提示,发送指令和数据成功！发送至=> IP：192.168.162.232
-[Info] [10:12:34] 提示，Transfusion平台运行中 ……（2018-10-25）
-[Info] [10:13:00] IP:192.168.162.232上线
-[Info] [10:13:07] 提示,发送指令和数据成功！发送至=> IP：192.168.162.232
-[Info] [10:13:19] 提示,发送指令和数据成功！发送至=> IP：192.168.162.232
-[Info] [10:13:31] 提示,发送指令和数据成功！发送至=> IP：192.168.162.232
-[Info] [10:15:55] 提示,发送指令和数据成功！发送至=> IP：192.168.162.232
-[Info] [10:18:00] IP:192.168.162.232下线
-[Info] [10:26:55] IP:192.168.162.232上线
-[Error] [10:27:09] 错误,插入数据库操作失败！Error 1062: Duplicate entry 'B0000110' for key 'PRIMARY'
-[Error] [10:27:09] Insert Into t_device_dict(did,qcode) Values(?,?)B00001101x0CPxx1102657B0000110
-[Info] [10:29:29] 提示，Transfusion平台运行中 ……（2018-10-25）
-[Info] [10:29:39] IP:192.168.162.232上线
-[Error] [10:29:53] 错误,插入数据库操作失败！Error 1062: Duplicate entry 'B0000110' for key 'PRIMARY'
-[Error] [10:29:53] Insert Into t_device_dict(did,qcode) Values(?,?)B0000110,1x0CPxx1102941B0000110
-[Info] [10:34:53] IP:192.168.162.232下线
-[Info] [11:30:19] 提示，Transfusion平台运行中 ……（2018-11-08）
-[Info] [11:32:35] IP:192.168.137.1上线
-[Info] [11:37:35] IP:192.168.137.1下线
-[Info] [11:40:34] IP:192.168.137.1上线
-[Info] [19:56:08] 提示，Transfusion平台运行中 ……（2018-11-08）
-[Info] [19:58:51] IP:192.168.137.1上线
-[Info] [15:36:54] 提示，Transfusion平台运行中 ……（2018-11-12）
-[Info] [15:37:50] IP:192.168.137.1上线
-[Info] [15:37:59] IP:192.168.137.1下线
-[Info] [15:38:08] IP:192.168.137.1上线
-[Info] [15:38:10] IP:192.168.137.1下线
-[Error] [15:40:48] 错误：websocket接收数据失败！websocket: close 1001 (going away)
-[Error] [15:41:23] 错误：websocket接收数据失败！websocket: close 1001 (going away)
-[Error] [15:41:49] 错误：websocket接收数据失败！websocket: close 1001 (going away)
-[Info] [15:42:03] 提示，Transfusion平台运行中 ……（2018-11-12）
-[Info] [15:42:30] 提示，Transfusion平台运行中 ……（2018-11-12）
-[Info] [15:52:03] 提示，Transfusion平台运行中 ……（2018-11-12）
-[Info] [16:49:48] IP:192.168.137.1上线
-[Info] [16:50:09] IP:192.168.137.1下线
-[Info] [16:50:11] IP:192.168.137.1上线
-[Info] [16:50:38] IP:192.168.137.1下线
-[Info] [16:50:49] IP:192.168.137.1上线
-[Info] [16:51:03] 提示，Transfusion平台运行中 ……（2018-11-12）
-[Info] [08:40:34] 提示，Transfusion平台运行中 ……（2018-11-13）
-[Error] [08:40:40] 错误：websocket接收数据失败！websocket: close 1001 (going away)
-[Info] [08:43:18] 提示，Transfusion平台运行中 ……（2018-11-13）
-[Error] [08:43:43] 错误：websocket接收数据失败！websocket: close 1001 (going away)
-[Info] [08:44:19] IP:192.168.162.232上线
-[Info] [08:46:09] 提示，Transfusion平台运行中 ……（2018-11-13）
-[Info] [08:56:00] 提示，Transfusion平台运行中 ……（2018-11-13）
-[Info] [08:58:33] IP:192.168.162.232上线
-[Info] [09:23:37] 提示，Transfusion平台运行中 ……（2018-11-13）
-[Info] [09:24:01] IP:192.168.162.232上线
-[Info] [09:26:07] 提示，Transfusion平台运行中 ……（2018-11-13）
-[Info] [09:27:48] IP:192.168.162.232上线
-[Info] [09:28:49] IP:192.168.162.232下线
-[Info] [09:28:51] IP:192.168.162.232上线
-[Info] [09:33:57] 提示，Transfusion平台运行中 ……（2018-11-13）
-[Info] [09:34:27] IP:192.168.162.232上线
-[Info] [09:34:44] IP:192.168.162.232下线
-[Info] [09:34:46] IP:192.168.162.232上线
-[Info] [09:35:29] 提示，Transfusion平台运行中 ……（2018-11-13）
-[Info] [09:35:35] IP:192.168.162.232上线
-[Info] [16:41:22] 提示，Transfusion平台运行中 ……（2018-11-13）
-[Info] [16:42:58] 提示，Transfusion平台运行中 ……（2018-11-13）
-[Info] [16:43:02] IP:192.168.162.232上线
-[Info] [16:48:24] IP:192.168.162.232下线
-[Info] [17:06:09] 提示，Transfusion平台运行中 ……（2018-11-13）
-[Info] [17:08:24] IP:192.168.137.1上线
-[Info] [17:09:52] IP:192.168.137.1下线
-[Info] [17:23:16] 提示，Transfusion平台运行中 ……（2018-11-13）
-[Info] [17:23:22] IP:192.168.137.1上线
-[Info] [17:24:14] IP:192.168.137.1下线
-[Info] [17:26:20] 提示，Transfusion平台运行中 ……（2018-11-13）
-[Info] [17:26:26] IP:192.168.137.1上线
-[Info] [17:27:58] 提示，Transfusion平台运行中 ……（2018-11-13）
-[Info] [17:30:34] IP:192.168.137.1上线
-[Info] [17:30:43] IP:192.168.137.1上线
-[Info] [17:30:43] IP:192.168.137.1下线
+[Info] [19:22:09] 提示，Transfusion平台运行中 ……（2018-11-13）
+[Info] [19:23:20] 提示，Transfusion平台运行中 ……（2018-11-13）
+[Info] [19:24:02] IP:127.0.0.1上线
+[Info] [19:24:51] IP:127.0.0.1下线
+[Error] [19:24:56] 错误：websocket接收数据失败！websocket: close 1006 (abnormal closure): unexpected EOF
+[Info] [19:28:55] 提示，Transfusion平台运行中 ……（2018-11-13）
+[Info] [19:29:17] IP:127.0.0.1上线
+[Error] [19:30:21] 错误：websocket接收数据失败！websocket: close 1006 (abnormal closure): unexpected EOF
+[Info] [19:36:54] 提示，Transfusion平台运行中 ……（2018-11-13）
+[Info] [19:37:14] IP:127.0.0.1上线
+[Info] [19:37:28] IP:127.0.0.1下线
+[Info] [19:37:41] IP:127.0.0.1上线
+[Info] [19:40:54] 提示，Transfusion平台运行中 ……（2018-11-13）
+[Info] [19:41:03] IP:127.0.0.1上线
+[Info] [19:41:31] 提示，Transfusion平台运行中 ……（2018-11-13）
+[Info] [19:41:36] IP:127.0.0.1上线
+[Info] [19:42:47] 提示，Transfusion平台运行中 ……（2018-11-13）
+[Info] [19:43:06] IP:127.0.0.1上线
+[Info] [19:52:34] 提示，Transfusion平台运行中 ……（2018-11-13）
+[Info] [19:52:55] IP:127.0.0.1上线
+[Info] [19:53:13] IP:127.0.0.1下线
+[Info] [19:56:10] 提示，Transfusion平台运行中 ……（2018-11-13）
+[Info] [19:56:14] IP:127.0.0.1上线
+[Info] [19:56:37] IP:127.0.0.1下线
+[Info] [19:56:40] IP:127.0.0.1上线
+[Info] [19:56:42] IP:127.0.0.1下线
+[Info] [20:01:22] 提示，Transfusion平台运行中 ……（2018-11-13）
+[Info] [20:01:34] IP:127.0.0.1上线
+[Info] [20:01:39] IP:127.0.0.1下线
+[Info] [20:01:41] IP:127.0.0.1上线
+[Info] [20:01:58] IP:127.0.0.1下线
+[Info] [20:36:32] 提示，Transfusion平台运行中 ……（2018-11-13）
+[Info] [20:36:44] IP:127.0.0.1上线
+[Info] [20:36:50] IP:127.0.0.1下线
+[Info] [20:36:52] IP:127.0.0.1上线
+[Info] [20:37:02] IP:127.0.0.1下线
+[Info] [22:49:07] 提示，Transfusion平台运行中 ……（2018-11-13）
+[Info] [22:49:22] IP:127.0.0.1上线
+[Info] [22:49:33] 提示,发送指令和数据成功！发送至=> IP：127.0.0.1
+[Info] [22:49:48] IP:127.0.0.1下线
+[Info] [22:50:01] IP:127.0.0.1上线
