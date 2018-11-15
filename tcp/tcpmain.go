@@ -49,18 +49,16 @@ func (ts *TServer) SendOrderAndMsg(rOrder *cm.Cmd, rWebMsg string) error {
 func (ts *TServer) LoopingTCPOrder() {
 	// 循环清除超过指定时间周期的【待发列表】
 	dm, _ := time.ParseDuration(cm.ConvertIntToStr(ts.ExpireTimeByMinutes) + "m")
-	// dm := 5 * time.Minute
+	// dm := ts.ExpireTimeByMinutes * time.Minute
 	go func() {
 		for v := range ts.WaitOrders {
-			//判断指令是否在生存期内，【超过】指令周期： CreateTime + ExpireTimeMinute >= nowTime
-			// if cm.ConvertTimeToStr(v.CreateTime.Add(dm)) < cm.ConvertTimeToStr(time.Now()) {
+			//判断指令是否在生存期内
 			if time.Now().Sub(v.CreateTime) < dm {
-				// 由于还在生存期内，因此继续发回待发队列
+				// 由于还在生存期内，继续发回待发队列
 				ts.WaitOrders <- v
 			} else {
 				// 超过生存周期，错误信息回写到前端
-				cm.Msg(dm)
-				cm.Msg("out of time!!")
+				cm.Msg("out of time:", v.SendData.CmdID)
 				dh.SendMsgToWeb(cm.NewOrder(v.SendData.CmdID, []byte(TCPMsg.SendFailureForLongTime)))
 			}
 		}
@@ -68,8 +66,7 @@ func (ts *TServer) LoopingTCPOrder() {
 
 	// 循环发送指令，基于datahub指令channel,并存放到相应连接的消息内容中(兼容其它模块发来的数据和指令)
 	go func() {
-		select {
-		case od := <-dh.GetTCPOrderQueue():
+		for od := range dh.GetTCPOrderQueue() {
 			if cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
 				// 如果发送失败，放入待发送列表
 				var wod WaitOrder

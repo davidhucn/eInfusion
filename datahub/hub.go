@@ -8,12 +8,12 @@ import (
 
 // AddToTCPOrderQueue ：通过TCP协议发送指令至设备
 func AddToTCPOrderQueue(rCmd *cm.Cmd) {
-	TCPOrderQueue <- rCmd
+	tcpOrderQueue <- rCmd
 }
 
 // GetTCPOrderQueue :获取TCP数据
 func GetTCPOrderQueue() chan *cm.Cmd {
-	return TCPOrderQueue
+	return tcpOrderQueue
 }
 
 // SendMsgToWeb :回写到web前端

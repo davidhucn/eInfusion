@@ -8,7 +8,7 @@ import (
 )
 
 // TCPOrderQueue :TCP指令队列
-var TCPOrderQueue chan *cm.Cmd
+var tcpOrderQueue chan *cm.Cmd
 
 // WebMsgQueue :回写到web的消息发送队列
 var WebMsgQueue chan *cm.Cmd
@@ -50,7 +50,7 @@ type reqOrdersUnion struct {
 var ReqOrdersUnion reqOrdersUnion
 
 func init() {
-	TCPOrderQueue = make(chan *cm.Cmd, 1024)
+	tcpOrderQueue = make(chan *cm.Cmd, 1024)
 	WebMsgQueue = make(chan *cm.Cmd, 1024)
 	ReqOrdersUnion.RequestOrders = make(map[string]*RequestOrder)
 
@@ -71,7 +71,7 @@ func DecodeToWSConnID(rWSOrderID string) string {
 
 // NewTCPOrderID :生成TCP包约定指令序号
 func NewTCPOrderID(rStrCnt string, rTCPConnectionID string) string {
-	return rStrCnt + "@" + rTCPConnectionID
+	return strings.Split(rStrCnt, "@")[0] + "@" + rTCPConnectionID
 }
 
 // DecodeToTCPConnID :解析指令ID为TCP连接序号
