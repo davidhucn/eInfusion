@@ -47,34 +47,35 @@ func (ts *TServer) SendOrderAndMsg(rOrder *cm.Cmd, rWebMsg string) error {
 
 // LoopingTCPOrder :循环发送设备对象内的指令序列
 func (ts *TServer) LoopingTCPOrder() {
-	// 循环清除超过指定时间周期的待发指令
+	// 循环清除超过指定时间周期的【待发列表】
 	dm, _ := time.ParseDuration(cm.ConvertIntToStr(ts.ExpireTimeByMinutes) + "m")
+	// dm := 5 * time.Minute
 	go func() {
-		for i, v := range ts.WaitOrders {
-			// 如果待发指令生存时间超过指令周期 CreateTime + ExpireTimeMinute >= nowTime
-			if cm.ConvertTimeToStr(v.CreateTime.Add(dm)) <= cm.ConvertTimeToStr(time.Now()) {
-				// 删除指定的待发指令
-				ts.WaitOrders = append(ts.WaitOrders[:i], ts.WaitOrders[i+1])
-				// 长时间发送不成功，回写到前端
+		for v := range ts.WaitOrders {
+			//判断指令是否在生存期内，【超过】指令周期： CreateTime + ExpireTimeMinute >= nowTime
+			// if cm.ConvertTimeToStr(v.CreateTime.Add(dm)) < cm.ConvertTimeToStr(time.Now()) {
+			if time.Now().Sub(v.CreateTime) < dm {
+				// 由于还在生存期内，因此继续发回待发队列
+				ts.WaitOrders <- v
+			} else {
+				// 超过生存周期，错误信息回写到前端
+				cm.Msg(dm)
+				cm.Msg("out of time!!")
 				dh.SendMsgToWeb(cm.NewOrder(v.SendData.CmdID, []byte(TCPMsg.SendFailureForLongTime)))
 			}
 		}
 	}()
 
-	// 循环获取datahub内存放的指令,并存放到相应连接的消息内容中(兼容其它模块发来的数据和指令)
+	// 循环发送指令，基于datahub指令channel,并存放到相应连接的消息内容中(兼容其它模块发来的数据和指令)
 	go func() {
-		for dh.TCPOrderQueue != nil {
-			select {
-			// case od := <-dh.TCPOrderQueue:
-			case od := <-dh.GetTCPQueueOrder():
-				cm.Msg("get channel from tcpqueue")
-				if cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
-					// 如果发送失败，放入待发送列表
-					var wod WaitOrder
-					wod.CreateTime = time.Now()
-					wod.SendData = od
-					ts.WaitOrders = append(ts.WaitOrders, wod)
-				}
+		select {
+		case od := <-dh.GetTCPOrderQueue():
+			if cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
+				// 如果发送失败，放入待发送列表
+				var wod WaitOrder
+				wod.CreateTime = time.Now()
+				wod.SendData = od
+				ts.WaitOrders <- wod
 			}
 		}
 	}()
@@ -102,24 +103,18 @@ func (ts *TServer) madeConn(c *net.TCPConn) {
 	ts.Unlock()
 	logs.LogMain.Info("IP:", connID, "上线")
 	cm.SepLi(20, "-")
-	dm, _ := time.ParseDuration(cm.ConvertIntToStr(ts.ExpireTimeByMinutes) + "m")
 	// v.CreateTime.Add(5*time.Minute)
-
-	for i, v := range ts.WaitOrders {
-		// 创建时间在有效时间期限内 CreateTimme + ExpireTimeMinute < nowTime
-		if cm.ConvertTimeToStr(v.CreateTime.Add(dm)) < cm.ConvertTimeToStr(time.Now()) {
+	// 遍历待发列表，如果符合连接ID即可发送
+	go func() {
+		for v := range ts.WaitOrders {
 			if dh.DecodeToTCPConnID(v.SendData.CmdID) == connID {
-				if cm.CkErr("", ts.SendOrderAndMsg(v.SendData, TCPMsg.SendSuccess)) {
-					// TODO:发送不成功，考虑延时再次发送
-				}
+				dh.AddToTCPOrderQueue(v.SendData)
+			} else {
+				// 如果不符合连接ID，放回待发列表
+				ts.WaitOrders <- v
 			}
-		} else {
-			// 超过有效时间，册除待发列表中信息(这一环节也不太可能发生，因为已经有了一个进程在不断检测)
-			ts.WaitOrders = append(ts.WaitOrders[:i], ts.WaitOrders[i+1])
-			// 回写到前端消息
-			dh.SendMsgToWeb(cm.NewOrder(v.SendData.CmdID, []byte(TCPMsg.SendFailureForLongTime)))
 		}
-	}
+	}()
 	// ****定时处理(心跳等)
 	//	go loopingCall(conn)
 }

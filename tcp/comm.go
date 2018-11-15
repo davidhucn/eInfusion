@@ -54,7 +54,7 @@ func newWaitOrder(rTime time.Time, rOrder *cm.Cmd) *WaitOrder {
 type TServer struct {
 	// 连接集合
 	Connections         map[string]*net.TCPConn
-	WaitOrders          []WaitOrder
+	WaitOrders          chan WaitOrder
 	ExpireTimeByMinutes int
 	MaxTCPConnect       int
 	sync.Mutex
@@ -64,7 +64,7 @@ type TServer struct {
 func NewTCPServer(rMaxTCPConnectAmount int, rExpireTimeByMinutes int) *TServer {
 	return &TServer{
 		Connections:         make(map[string]*net.TCPConn),
-		WaitOrders:          make([]WaitOrder, 0),
+		WaitOrders:          make(chan WaitOrder, 1024),
 		ExpireTimeByMinutes: rExpireTimeByMinutes,
 		MaxTCPConnect:       rMaxTCPConnectAmount,
 	}

@@ -11,8 +11,8 @@ func AddToTCPOrderQueue(rCmd *cm.Cmd) {
 	TCPOrderQueue <- rCmd
 }
 
-// GetTCPQueueOrder :获取TCP数据
-func GetTCPQueueOrder() chan *cm.Cmd {
+// GetTCPOrderQueue :获取TCP数据
+func GetTCPOrderQueue() chan *cm.Cmd {
 	return TCPOrderQueue
 }
 
