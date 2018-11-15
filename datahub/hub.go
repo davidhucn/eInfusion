@@ -8,12 +8,12 @@ import (
 
 // AddToTCPOrderQueue ：通过TCP协议发送指令至设备
 func AddToTCPOrderQueue(rCmd *cm.Cmd) {
-	TCPOrderQueue <- rCmd
+	tcpOrderQueue <- rCmd
 }
 
 // GetTCPOrderQueue :获取TCP数据
 func GetTCPOrderQueue() chan *cm.Cmd {
-	return TCPOrderQueue
+	return tcpOrderQueue
 }
 
 // SendMsgToWeb :回写到web前端
@@ -25,7 +25,7 @@ func SendMsgToWeb(rCmd *cm.Cmd) {
 func RegisterReqOrdersUnion(rRO *RequestOrder) bool {
 	// 指令池里如果有相同操作，终止操作
 	for _, v := range ReqOrdersUnion.RequestOrders {
-		if v == rRO {
+		if v.Args == rRO.Args && v.CmdType == rRO.CmdType && v.TargetID == rRO.TargetID {
 			return false
 		}
 	}
@@ -36,7 +36,7 @@ func RegisterReqOrdersUnion(rRO *RequestOrder) bool {
 	return true
 }
 
-// UnregisterReqOrdersUnion :登记到请求指令池
+// UnregisterReqOrdersUnion :注销请求指令池
 func UnregisterReqOrdersUnion(rTargetID string, rCmdType uint8) bool {
 	for k, v := range ReqOrdersUnion.RequestOrders {
 		// 如果被操作设备和操作指令类型相同，则认为已经操作成功，返回结果
@@ -68,9 +68,6 @@ func SendOrderToDeviceByTCP(rRO *RequestOrder) error {
 		if v.TargetID == rRO.TargetID && v.CmdType == rRO.CmdType && v.Args == rRO.Args {
 			return cm.ConvertStrToErr(DataHubMsg.CmdRepeatNotice)
 		}
-		// if v == rRO {
-		// 	return cm.ConvertStrToErr(DataHubMsg.CmdRepeatNotice)
-		// }
 	}
 	// 判断是否为检测器
 	if ec.IsDetector(rRO.TargetID) {

@@ -58,16 +58,23 @@ func (w *WebClients) receiveWebRequest(rWSConnID string) {
 		// 根据前端应用需求信息发送指令
 		// 加入发送消息队列
 		for i := 0; i < len(clisData); i++ {
+			var od *cm.Cmd
 			ro := dh.NewReqestOrder(rWSConnID, clisData[i].TargetID, cm.ConvertBasStrToUint(10, clisData[i].CmdType), clisData[i].Args)
-			if cm.CkErr("", dh.SendOrderToDeviceByTCP(ro)) {
+			err := dh.SendOrderToDeviceByTCP(ro)
+			if !cm.CkErr("", err) {
 				// 返回发送成功消息给前台,FIXME:制定通讯标准，此处应返回前端页面完成信息代码
-				od := cm.NewOrder(dh.NewWSOrderID(rWSConnID), []byte(WebMsg.WSSendDataSuccess))
-				w.SendOrder(od)
+				od = cm.NewOrder(dh.NewWSOrderID(rWSConnID), []byte(WebMsg.WSSendDataSuccess))
 			} else {
-				// 如果不成功，也返回失败消息，TCP传输模块将自动重试！
-				od := cm.NewOrder(dh.NewWSOrderID(rWSConnID), []byte(WebMsg.WSSendDataFailureTryLater))
-				w.SendOrder(od)
+				// 不成功
+				if err == cm.ConvertStrToErr(dh.DataHubMsg.CmdRepeatNotice) {
+					// 提示，重复操作
+					od = cm.NewOrder(dh.NewWSOrderID(rWSConnID), []byte(dh.DataHubMsg.CmdRepeatNotice))
+				} else {
+					// 提示，TCP传输模块将自动重试！
+					od = cm.NewOrder(dh.NewWSOrderID(rWSConnID), []byte(WebMsg.WSSendDataFailureTryLater))
+				}
 			}
+			w.SendOrder(od)
 		}
 	}
 }
