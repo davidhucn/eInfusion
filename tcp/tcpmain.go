@@ -64,7 +64,7 @@ func (ts *TServer) LoopingTCPOrder() {
 		}
 	}()
 
-	// 循环发送指令，基于datahub指令channel,并存放到相应连接的消息内容中(兼容其它模块发来的数据和指令)
+	// 循环发送指令，基于datahub包指令channel,并存放到相应连接的消息内容中(兼容其它模块发来的数据和指令)
 	go func() {
 		for od := range dh.GetTCPOrderQueue() {
 			if cm.CkErr("", ts.SendOrderAndMsg(od, TCPMsg.SendSuccess)) {
@@ -112,8 +112,6 @@ func (ts *TServer) madeConn(c *net.TCPConn) {
 			}
 		}
 	}()
-	// ****定时处理(心跳等)
-	//	go loopingCall(conn)
 }
 
 // lostConn :连接断开
