@@ -209,6 +209,15 @@ func ReceiveDeleteDetect(packData []byte, ipAddr string, rCmdType uint8) bool {
 			// 	return false
 			// }
 			logs.LogMain.Info("成功册除检测器[", dDet[i].ID, "]")
+			// 生成调用参数
+			args := ""
+			// 注销RequestOrderUnions内数据
+			dh.UnregisterReqOrdersUnion(dDet[i].ID, rCmdType, args)
+			// 获取web通讯ID
+			wsOrderID := dh.GetReqOrderIDFromUnion(dDet[i].ID, rCmdType, args)
+			od := cm.NewOrder(wsOrderID, []byte("成功册除检测器"+dDet[i].ID))
+			// 回写到前端
+			dh.SendMsgToWeb(od)
 		} else {
 			// 接收器附属检测器小于等于0时，提醒出错
 			logs.LogMain.Info("册除指定检测器时出错，当前接收器下已无注册检测器！")
@@ -277,10 +286,12 @@ func ReceiveAddDetect(packData []byte, ipAddr string, rCmdType uint8) bool {
 			return false
 		}
 		logs.LogMain.Info("成功添加检测器[", dDet[i].ID, "]！")
+		// 生成调用参数
+		args := ""
 		// 注销RequestOrderUnions内数据
-		dh.UnregisterReqOrdersUnion(dDet[i].ID, rCmdType)
+		dh.UnregisterReqOrdersUnion(dDet[i].ID, rCmdType, args)
 		// 获取web通讯ID
-		wsOrderID := dh.GetReqOrderIDFromUnion(dDet[i].ID, rCmdType)
+		wsOrderID := dh.GetReqOrderIDFromUnion(dDet[i].ID, rCmdType, args)
 		od := cm.NewOrder(wsOrderID, []byte("开启检测器成功："+dDet[i].ID))
 		// 回写到前端
 		dh.SendMsgToWeb(od)
@@ -327,6 +338,15 @@ func ReceiveSetRcvNetCfgStat(packData []byte, ipAddr string, rCmdType uint8) boo
 		return false
 	}
 	logs.LogMain.Info("成功设置接收器[", strRcvID, "]网络配置！")
+	// 生成调用参数
+	args := strServerIP + ":" + cm.ConvertIntToStr(intServerPort)
+	// 注销RequestOrderUnions内数据
+	dh.UnregisterReqOrdersUnion(strRcvID, rCmdType, args)
+	// 获取web通讯ID
+	wsOrderID := dh.GetReqOrderIDFromUnion(strRcvID, rCmdType, args)
+	od := cm.NewOrder(wsOrderID, []byte("成功设置接收器["+strRcvID+"]网络配置！"))
+	// 回写到前端
+	dh.SendMsgToWeb(od)
 	return true
 }
 
@@ -360,5 +380,14 @@ func ReceiveSetReconnTimeStat(packData []byte, ipAddr string, rCmdType uint8) bo
 		return false
 	}
 	logs.LogMain.Info("成功设置接受器[", strRcvID, "]重联机时间！")
+	// 生成调用参数
+	args := cm.ConvertIntToStr(intReconnTime)
+	// 注销RequestOrderUnions内数据
+	dh.UnregisterReqOrdersUnion(strRcvID, rCmdType, args)
+	// 获取web通讯ID
+	wsOrderID := dh.GetReqOrderIDFromUnion(strRcvID, rCmdType, args)
+	od := cm.NewOrder(wsOrderID, []byte("成功设置接受器["+strRcvID+"]重联机时间！"))
+	// 回写到前端
+	dh.SendMsgToWeb(od)
 	return true
 }
