@@ -41,7 +41,7 @@ type dataHubMsg struct {
 var DataHubMsg dataHubMsg
 
 type reqOrdersUnion struct {
-	RequestOrders map[string]*RequestOrder //map[targetID + randstring]*RequestOrder
+	RequestOrders []*RequestOrder //map[targetID + randstring]*RequestOrder
 	sync.Mutex
 }
 
@@ -52,7 +52,7 @@ var ReqOrdersUnion reqOrdersUnion
 func init() {
 	tcpOrderQueue = make(chan *cm.Cmd, 1024)
 	WebMsgQueue = make(chan *cm.Cmd, 1024)
-	ReqOrdersUnion.RequestOrders = make(map[string]*RequestOrder)
+	ReqOrdersUnion.RequestOrders = make([]*RequestOrder, 0)
 
 	DataHubMsg.GetServerDataErr = "错误，获取服务器数据出错！"
 	DataHubMsg.CmdInvaildErr = "错误，非法或不可识别指令！"

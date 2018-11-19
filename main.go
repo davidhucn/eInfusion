@@ -24,7 +24,7 @@ func main() {
 	// refereSample()
 }
 
-// refereSample := func(){
+// refereSample := func() {
 // 	c := make(chan int, 10)
 // 	go func() {
 // 		for v := range c {

@@ -34,30 +34,25 @@ func CheckReqOrderUnique(rRO *RequestOrder) bool {
 // RegisterReqOrdersUnion :登记到请求指令池
 // 【注意】：参数Args的如果有多项用逗号，分隔
 func RegisterReqOrdersUnion(rRO *RequestOrder) bool {
-	// 指令池里如果有相同操作，终止操作
-	if CheckReqOrderUnique(rRO) {
+	if !CheckReqOrderUnique(rRO) {
 		// 如果该请求动作重复
 		return false
 	}
-	reqOrderID := NewReqOrdersUnionID(rRO.TargetID)
 	ReqOrdersUnion.Lock()
-	ReqOrdersUnion.RequestOrders[reqOrderID] = rRO
+	ReqOrdersUnion.RequestOrders = append(ReqOrdersUnion.RequestOrders, rRO)
 	ReqOrdersUnion.Unlock()
 	return true
 }
 
 // UnregisterReqOrdersUnion :注销请求指令池
 func UnregisterReqOrdersUnion(rTargetID string, rCmdType uint8, rArgs string) bool {
-	var or *RequestOrder
-	or.Args = rArgs
-	or.CmdType = rCmdType
-	or.TargetID = rTargetID
-	if CheckReqOrderUnique(or) {
-		// 针对一个设备的操作指令限定只有一个调用者
-		ReqOrdersUnion.Lock()
-		delete(ReqOrdersUnion.RequestOrders, or.TargetID)
-		ReqOrdersUnion.Unlock()
-		return true
+	for i, v := range ReqOrdersUnion.RequestOrders {
+		if v.CmdType == rCmdType && v.TargetID == rTargetID && v.Args == rArgs {
+			ReqOrdersUnion.Lock()
+			ReqOrdersUnion.RequestOrders = append(ReqOrdersUnion.RequestOrders[:i], ReqOrdersUnion.RequestOrders[i+1])
+			ReqOrdersUnion.Unlock()
+			return true
+		}
 	}
 	return false
 }
@@ -75,10 +70,8 @@ func GetReqOrderIDFromUnion(rTargetID string, rCmdType uint8, rArgs string) stri
 // SendOrderToDeviceByTCP :添加到TCP指令发送队列
 func SendOrderToDeviceByTCP(rRO *RequestOrder) error {
 	// 指令池里如果有相同操作，终止操作，返回错误提示
-	for _, v := range ReqOrdersUnion.RequestOrders {
-		if v.TargetID == rRO.TargetID && v.CmdType == rRO.CmdType && v.Args == rRO.Args {
-			return cm.ConvertStrToErr(DataHubMsg.CmdRepeatNotice)
-		}
+	if !CheckReqOrderUnique(rRO) {
+		return cm.ConvertStrToErr(DataHubMsg.CmdRepeatNotice)
 	}
 	// 判断是否为检测器
 	if ec.IsDetector(rRO.TargetID) {

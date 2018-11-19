@@ -62,7 +62,8 @@ func (w *WebClients) receiveWebRequest(rWSConnID string) {
 			ro := dh.NewReqestOrder(rWSConnID, clisData[i].TargetID, cm.ConvertBasStrToUint(10, clisData[i].CmdType), clisData[i].Args)
 			err := dh.SendOrderToDeviceByTCP(ro)
 			if !cm.CkErr("", err) {
-				// 返回发送成功消息给前台,FIXME:制定通讯标准，此处应返回前端页面完成信息代码
+				// FIXME:返回信息不对
+				// 返回发送成功消息给前台,TODO:制定通讯标准，此处应返回前端页面完成信息代码
 				od = cm.NewOrder(dh.NewWSOrderID(rWSConnID), []byte(WebMsg.WSSendDataSuccess))
 			} else {
 				// 不成功
