@@ -15,11 +15,24 @@ func init() {
 }
 
 func main() {
-
+	// go trsfscomm.StartCreateQRCode()
 	wc := eh.NewWebClients()
 	go eh.StartHTTPServer(wc, 7779)
 	tcpSer := et.NewTCPServer(300, 45)
 	et.RunTCPService(tcpSer, 7778)
+
+	// var s sync.Map
+	// s.Store("g", 97)
+	// s.Store("l", 100)
+	// s.Store("e", 200)
+
+	// s.Range(func(k, v interface{}) bool {
+	// 	// fmt.Println("iterate:", k, v)
+	// 	if k == "l" {
+	// 		fmt.Print(v)
+	// 	}
+	// 	return true
+	// })
 
 }
 

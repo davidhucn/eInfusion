@@ -3,6 +3,7 @@ package trsfscomm
 import (
 	cm "eInfusion/comm"
 	logs "eInfusion/tlogs"
+	"time"
 
 	"github.com/imroc/biu"
 )
@@ -30,7 +31,18 @@ func StartCreateQRCode() {
 	//auto create the qrcode
 	for i := 0; i < 10; i++ {
 		strName := "B000000" + cm.ConvertIntToStr(i)
-		strContent := cm.CreateQRID(strName)
+		strContent := CreateQRID(strName)
 		cm.CreateQRCodePngFile(strContent, 128, strName+".png")
 	}
+}
+
+//CreateQRID ：生成索引编号
+//TODO:等待下一步细化(硬件供应商提供方案)
+func CreateQRID(rID string) string {
+	strBranchCode := "1x0"
+	strCategoryCode := "CP"
+	//批号
+	strPHCode := "xx1"
+	strTime := cm.ConvertIntToStr(time.Now().Hour()) + cm.ConvertIntToStr(time.Now().Minute()) + cm.ConvertIntToStr(time.Now().Second())
+	return strBranchCode + strCategoryCode + strPHCode + strTime + rID
 }

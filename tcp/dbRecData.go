@@ -16,7 +16,7 @@ func InitDetInfoToDB(amount int) bool {
 		var di tsc.Detector
 		di.ID = "B000000" + cm.ConvertIntToStr(i)
 		// di.Stat = ConvertIntToStr(2)
-		di.QRCode = cm.CreateQRID(di.ID)
+		di.QRCode = tsc.CreateQRID(di.ID)
 		dd = append(dd, di)
 	}
 	for i := 0; i < amount; i++ {
@@ -247,7 +247,7 @@ func ReceiveAddDetect(packData []byte, ipAddr string, rCmdType uint8) bool {
 		di.RcvID = strRcvID
 		di.ID = cm.ConvertOxBytesToStr(packData[begin:end])
 		// FIXME:检测器QR需要重做接口链接,等蒋少敏的后一步
-		di.QRCode = cm.CreateQRID(di.ID)
+		di.QRCode = tsc.CreateQRID(di.ID)
 		begin = end
 		dDet = append(dDet, di)
 	}

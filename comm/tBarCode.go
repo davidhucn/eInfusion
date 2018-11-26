@@ -2,7 +2,6 @@ package comm
 
 import (
 	"os"
-	"time"
 
 	qrcode "github.com/skip2/go-qrcode"
 )
@@ -23,15 +22,4 @@ func CreateQRCodeBytes(rStrCnt string, rCntSize int) ([]byte, error) {
 	var png []byte
 	png, err := qrcode.Encode(rStrCnt, qrcode.Medium, rCntSize)
 	return png, err
-}
-
-//CreateQRID ：生成索引编号
-//TODO:等待下一步细化
-func CreateQRID(rID string) string {
-	strBranchCode := "1x0"
-	strCategoryCode := "CP"
-	//批号
-	strPHCode := "xx1"
-	strTime := ConvertIntToStr(time.Now().Hour()) + ConvertIntToStr(time.Now().Minute()) + ConvertIntToStr(time.Now().Second())
-	return strBranchCode + strCategoryCode + strPHCode + strTime + rID
 }
