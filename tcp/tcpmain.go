@@ -9,6 +9,7 @@ import (
 	dh "eInfusion/datahub"
 	logs "eInfusion/tlogs"
 	tsc "eInfusion/trsfscomm"
+	"errors"
 	"net"
 	"os"
 	"strconv"
@@ -28,7 +29,7 @@ func (ts *TServer) SendOrderAndMsg(rOrder *cm.Cmd, rWebMsg string) error {
 	// 获取tcp连接id
 	connID := dh.DecodeToTCPConnID(rOrder.CmdID)
 	if _, ok := ts.Connections[connID]; !ok {
-		return cm.ConvertStrToErr(TCPMsg.CanNotFindConnection)
+		return errors.New(TCPMsg.CanNotFindConnection)
 	}
 	time.Sleep(15 * time.Millisecond)
 	_, err := ts.Connections[connID].Write(rOrder.Cmd)
