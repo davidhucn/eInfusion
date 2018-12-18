@@ -4,6 +4,7 @@ import (
 	"bytes"
 	cm "eInfusion/comm"
 	"errors"
+	"fmt"
 	"log"
 	"net"
 	"sync"
@@ -24,12 +25,12 @@ type TServer struct {
 	onNewDataReceived        func(c *Client, p []byte)
 	clients                  sync.Map //[string]*Client
 	timeOutDuration          time.Duration
-	packetHeader             *THeader
+	packetHeader             *PacketHeader
 }
 
 // Read client data from channel
 func (c *Client) listen() {
-	connID := cm.GetRandString(8)
+	connID := cm.GetRandString(10)
 	c.server.onNewClientCallback(c)
 	c.server.clients.Store(connID, c) // 添加到服务器客户端映射中client id 是string
 	defer c.conn.Close()
@@ -45,21 +46,33 @@ func (c *Client) listen() {
 			return
 		}
 		// 判断头数据是否正确
-		hCntStCursor := c.server.packetHeader.contentStartCursor // 开始下标
-		hCntLength := len(c.server.packetHeader.content)
-		cntBuffer := headerBuffer[hCntStCursor:hCntLength]
-		if !bytes.Equal(cntBuffer, headerBuffer) {
+		headerPrefixLength := len(c.server.packetHeader.prefixData)
+		if !bytes.Equal(headerBuffer[:headerPrefixLength], c.server.packetHeader.prefixData) {
 			// 接收头数据包内数据不符合规定，则下线
 			c.conn.Close()
 			c.server.clients.Delete(connID)
-			c.server.onClientConnectionClosed(c, errors.New(TCPMsg.HeaderDataError))
+			c.server.onClientConnectionClosed(c, errors.New("接收数据头非法！")) //FIXME: 统一制定提示
+			return
+		}
+		pLenCursor := c.server.packetHeader.packetLengthCursor // 数据包总长度
+		packetLength := cm.ConvertHexUnitToDecUnit(headerBuffer[pLenCursor])
+		if packetLength >= 128 { // 数据包长度限定
+			c.conn.Close()
+			c.server.clients.Delete(connID)
+			c.server.onClientConnectionClosed(c, errors.New("数据包长度超限制！")) //FIXME: 统一制定提示
 			return
 		}
 		// 开始接收内容
-		pLenCursor := c.server.packetHeader.packetLengthCursor
-		packetLength := cm.ConvertBytesToInt(headerBuffer[pLenCursor : pLenCursor+1])
-		p := make([]byte, packetLength)
-		c.conn.Read(p)
+		packetDataLength := packetLength - uint8(headerLength)
+		dataBuffer := make([]byte, packetDataLength)
+		c.conn.Read(dataBuffer)
+		p := make([]byte, 0)
+		for _, h := range headerBuffer {
+			p = append(p, h)
+		}
+		for _, d := range dataBuffer {
+			p = append(p, d)
+		}
 		c.server.onNewDataReceived(c, p)
 	}
 }
@@ -103,8 +116,14 @@ func (s *TServer) WhenNewDataReceived(callback func(c *Client, p []byte)) {
 
 // Listen :开始监听tcp服务
 func (s *TServer) Listen() {
-	listener, err := net.Listen("tcp", s.address)
+	tcpAddr, err := net.ResolveTCPAddr("tcp4", s.address)
 	if err != nil {
+		fmt.Print(err)
+		log.Fatal("Error starting TCP tcpserver.")
+	}
+	listener, err := net.ListenTCP("tcp", tcpAddr)
+	if err != nil {
+		fmt.Print(err)
 		log.Fatal("Error starting TCP tcpserver.")
 	}
 	defer listener.Close()
@@ -121,8 +140,8 @@ func (s *TServer) Listen() {
 }
 
 // NewTCPServer :Creates new tcp tcpserver instance
-func NewTCPServer(address string, timeOutDuration time.Duration, packetHeader *THeader) *TServer {
-	cm.Msg(TCPMsg.StartServiceMsg, ",监听地址：", address)
+func NewTCPServer(address string, timeOutDuration time.Duration, packetHeader *PacketHeader) *TServer {
+	fmt.Println("开始tcp服务器....，监听地址：", address)
 	s := &TServer{
 		address:         address,
 		timeOutDuration: timeOutDuration,
