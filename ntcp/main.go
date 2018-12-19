@@ -1,6 +1,9 @@
 package ntcp
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 // StartTCPService :启动TCP服务
 func StartTCPService() {
@@ -8,7 +11,17 @@ func StartTCPService() {
 	ser := NewTCPServer(":9909", 10*time.Minute, h)
 
 	ser.WhenNewClientConnected(func(c *Client) {
-		c.SendData([]byte("nice to meet you!"))
+		if c.SendData([]byte("nice to meet you!")) == nil {
+			fmt.Println("try")
+		}
+	})
+
+	ser.WhenNewDataReceived(func(c *Client, p []byte) {
+
+	})
+
+	ser.WhenClientConnectionClosed(func(c *Client, err error) {
+
 	})
 	ser.Listen()
 }

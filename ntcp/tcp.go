@@ -4,7 +4,6 @@ import (
 	"bytes"
 	cm "eInfusion/comm"
 	"errors"
-	"fmt"
 	"net"
 	"sync"
 	"time"
@@ -12,13 +11,13 @@ import (
 
 // Client holds info about connection
 type Client struct {
-	conn   net.Conn
+	conn   *net.TCPConn
 	server *TServer
 }
 
 // TServer :tcpserver
 type TServer struct {
-	address                  string // Address to open connection: localhost:9999
+	listenPort               string // Address to open connection: localhost:9999
 	onNewClientCallback      func(c *Client)
 	onClientConnectionClosed func(c *Client, err error)
 	onNewDataReceived        func(c *Client, p []byte)
@@ -30,10 +29,9 @@ type TServer struct {
 }
 
 // NewTCPServer :Creates new tcp tcpserver instance
-func NewTCPServer(address string, timeOutDuration time.Duration, packetHeader *PacketHeader) *TServer {
-	fmt.Println(TCPMsg.StartServiceMsg, address)
+func NewTCPServer(listenPort string, timeOutDuration time.Duration, packetHeader *PacketHeader) *TServer {
 	s := &TServer{
-		address:         address,
+		listenPort:      listenPort,
 		timeOutDuration: timeOutDuration,
 		packetHeader:    packetHeader,
 		sendQueue:       make(chan *cm.Cmd, 1024),
@@ -46,7 +44,7 @@ func NewTCPServer(address string, timeOutDuration time.Duration, packetHeader *P
 
 // Read client data from channel
 func (c *Client) listen() {
-	connID := "TCP-" + cm.GetRandString(10) // TCP连接ID，获取随机字符串
+	connID := cm.GetPureIPAddr(c.conn) // TCP连接ID，ip地址
 	c.server.onNewClientCallback(c)
 	c.server.clients.Store(connID, c) // 添加到服务器客户端映射中client id 是string
 	defer c.conn.Close()
@@ -98,11 +96,11 @@ func (c *Client) listen() {
 func (c *Client) SendData(b []byte) error {
 	// 判断是否客户端在线，在线则发送
 	// TODO:
-	// c.conn.LocalAddr().String()
+	_, err := c.conn.Write(b)
 	// od := cm.NewCmd(c.conn
 	// 	), b)
 	// c.server.clients.Load()
-	return nil
+	return err
 }
 
 // Boradcast :广播到所有客户端
@@ -132,7 +130,7 @@ func (s *TServer) WhenNewDataReceived(callback func(c *Client, p []byte)) {
 
 // Listen :开始启动tcp服务
 func (s *TServer) Listen() {
-	tcpAddr, err := net.ResolveTCPAddr("tcp4", s.address)
+	tcpAddr, err := net.ResolveTCPAddr("tcp4", s.listenPort)
 	if cm.CkErr(TCPMsg.SourceError, err) {
 		panic(err)
 	}
@@ -141,7 +139,7 @@ func (s *TServer) Listen() {
 		panic(err)
 	}
 	cm.SepLi(60, "")
-	cm.Msg(TCPMsg.StartServiceMsg, ",监听地址：", tcpAddr.IP.String())
+	cm.Msg(TCPMsg.StartServiceMsg, ",监听地址：")
 	cm.SepLi(60, "")
 	defer listener.Close()
 
@@ -163,9 +161,9 @@ func (s *TServer) Listen() {
 		}
 	}()
 	for {
-		conn, _ := listener.Accept()
+		c, _ := listener.AcceptTCP()
 		client := &Client{
-			conn:   conn,
+			conn:   c,
 			server: s,
 		}
 		client.conn.SetReadDeadline(time.Now().Add(s.timeOutDuration))

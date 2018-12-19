@@ -1,9 +1,11 @@
 package main
 
 import (
-	eh "eInfusion/http"
-	et "eInfusion/tcp"
+	// eh "eInfusion/http"
+	// et "eInfusion/tcp"
+	"eInfusion/ntcp"
 	logs "eInfusion/tlogs"
+
 	"runtime"
 )
 
@@ -16,11 +18,11 @@ func init() {
 
 func main() {
 	// go trsfscomm.StartCreateQRCode()
-	wc := eh.NewWebClients()
-	go eh.StartHTTPServer(wc, 7779)
-	tcpSer := et.NewTCPServer(300, 45)
-	et.RunTCPService(tcpSer, 7778)
-
+	// wc := eh.NewWebClients()
+	// go eh.StartHTTPServer(wc, 7779)
+	// tcpSer := et.NewTCPServer(300, 45)
+	// et.RunTCPService(tcpSer, 7778)
+	ntcp.StartTCPService()
 	// var s sync.Map
 	// s.Store("g", 97)
 	// s.Store("l", 100)

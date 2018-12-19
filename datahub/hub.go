@@ -90,7 +90,7 @@ func SendOrderToDeviceByTCP(rRO *RequestOrder) error {
 			tcpOrderID := NewTCPOrderID(NewWSOrderID(rRO.RequestID), ipAddr)
 			// FIXME:这里有问题,需重新考虑UnionID
 			RegisterReqOrdersUnion(rRO)
-			od := cm.NewOrder(tcpOrderID, tsc.CmdOperateDetect(rRO.CmdType, rcvIDbytes, 1, detIDbytes))
+			od := cm.NewCmd(tcpOrderID, tsc.CmdOperateDetect(rRO.CmdType, rcvIDbytes, 1, detIDbytes))
 			AddToTCPOrderQueue(od)
 		} else {
 			return cm.ConvertStrToErr(DataHubMsg.CmdInvaildErr)
