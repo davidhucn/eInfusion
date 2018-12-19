@@ -22,14 +22,29 @@ type TServer struct {
 	onNewClientCallback      func(c *Client)
 	onClientConnectionClosed func(c *Client, err error)
 	onNewDataReceived        func(c *Client, p []byte)
-	clients                  sync.Map //[string]*Client
+	clients                  sync.Map //[ID:string]*Client
 	timeOutDuration          time.Duration
 	packetHeader             *PacketHeader
+	sendQueue                sync.Map //[ID:string][]byte
+}
+
+// NewTCPServer :Creates new tcp tcpserver instance
+func NewTCPServer(address string, timeOutDuration time.Duration, packetHeader *PacketHeader) *TServer {
+	fmt.Println(TCPMsg.StartServiceMsg, address)
+	s := &TServer{
+		address:         address,
+		timeOutDuration: timeOutDuration,
+		packetHeader:    packetHeader,
+	}
+	s.WhenNewClientConnected(func(c *Client) {})
+	s.WhenNewDataReceived(func(c *Client, p []byte) {})
+	s.WhenClientConnectionClosed(func(c *Client, err error) {})
+	return s
 }
 
 // Read client data from channel
 func (c *Client) listen() {
-	connID := cm.GetRandString(10)
+	connID := cm.GetRandString(10) // TCP连接ID，获取随机字符串
 	c.server.onNewClientCallback(c)
 	c.server.clients.Store(connID, c) // 添加到服务器客户端映射中client id 是string
 	defer c.conn.Close()
@@ -44,8 +59,9 @@ func (c *Client) listen() {
 			c.server.onClientConnectionClosed(c, err)
 			return
 		}
-		// 判断头数据是否正确
+		// 头数据包前缀校验数据长度
 		headerPrefixLength := len(c.server.packetHeader.prefixData)
+		// 判断头数据是否正确
 		if !bytes.Equal(headerBuffer[:headerPrefixLength], c.server.packetHeader.prefixData) {
 			// 接收头数据包内数据不符合规定，则下线
 			c.conn.Close()
@@ -62,7 +78,7 @@ func (c *Client) listen() {
 			return
 		}
 		// 开始接收内容
-		packetDataLength := packetLength - uint8(headerLength)
+		packetDataLength := packetLength - headerLength
 		dataBuffer := make([]byte, packetDataLength)
 		c.conn.Read(dataBuffer)
 		p := make([]byte, 0)
@@ -83,8 +99,12 @@ func (c *Client) SendBytes(b []byte) error {
 }
 
 // Boradcast :广播到所有客户端
+// TODO:完成广播
 func (s *TServer) Boradcast(b []byte) error {
-	// s.clients.Range()
+	s.clients.Range(func(k, v interface{}) bool {
+		fmt.Println(k, v)
+		return true
+	})
 	return nil
 }
 
@@ -103,7 +123,7 @@ func (s *TServer) WhenNewDataReceived(callback func(c *Client, p []byte)) {
 	s.onNewDataReceived = callback
 }
 
-// Listen :开始监听tcp服务
+// Listen :开始启动tcp服务
 func (s *TServer) Listen() {
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", s.address)
 	if cm.CkErr(TCPMsg.SourceError, err) {
@@ -113,6 +133,7 @@ func (s *TServer) Listen() {
 	if cm.CkErr(TCPMsg.SourceError, err) {
 		panic(err)
 	}
+
 	defer listener.Close()
 
 	for {
@@ -124,19 +145,4 @@ func (s *TServer) Listen() {
 		client.conn.SetReadDeadline(time.Now().Add(s.timeOutDuration))
 		go client.listen()
 	}
-}
-
-// NewTCPServer :Creates new tcp tcpserver instance
-func NewTCPServer(address string, timeOutDuration time.Duration, packetHeader *PacketHeader) *TServer {
-	fmt.Println(TCPMsg.StartServiceMsg, address)
-	s := &TServer{
-		address:         address,
-		timeOutDuration: timeOutDuration,
-		packetHeader:    packetHeader,
-	}
-	s.WhenNewClientConnected(func(c *Client) {})
-	s.WhenNewDataReceived(func(c *Client, p []byte) {})
-	s.WhenClientConnectionClosed(func(c *Client, err error) {})
-
-	return s
 }
