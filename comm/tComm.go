@@ -14,15 +14,17 @@ import (
 
 // Cmd :指令对象
 type Cmd struct {
-	Cmd   []byte
-	CmdID string
+	Data       []byte
+	ID         string
+	CreateTime time.Time
 }
 
-// NewOrder :生成新的命令对象
-func NewOrder(rID string, rCnt []byte) *Cmd {
+// NewCmd :生成新的命令对象
+func NewCmd(rID string, rCnt []byte) *Cmd {
 	return &Cmd{
-		Cmd:   rCnt,
-		CmdID: rID,
+		Data:       rCnt,
+		ID:         rID,
+		CreateTime: time.Now(),
 	}
 }
 

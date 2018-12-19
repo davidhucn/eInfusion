@@ -8,7 +8,7 @@ func StartTCPService() {
 	ser := NewTCPServer(":9909", 10*time.Minute, h)
 
 	ser.WhenNewClientConnected(func(c *Client) {
-		c.SendBytes([]byte("nice to meet you!"))
+		c.SendData([]byte("nice to meet you!"))
 	})
 	ser.Listen()
 }
