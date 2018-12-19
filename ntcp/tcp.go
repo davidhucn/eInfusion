@@ -133,8 +133,20 @@ func (s *TServer) Listen() {
 	if cm.CkErr(TCPMsg.SourceError, err) {
 		panic(err)
 	}
-
+	cm.SepLi(60, "")
+	cm.Msg(TCPMsg.StartServiceMsg, ",监听地址：", tcpAddr.IP.String())
+	cm.SepLi(60, "")
 	defer listener.Close()
+	// 循环发送等待发送列表内指令
+	go func() {
+		s.sendQueue.Range(func(key, v interface{}) bool {
+			tConn, ok := s.clients.Load(key)
+			if ok {
+				// TODO:TCP发送数据
+			}
+			return true
+		})
+	}()
 
 	for {
 		conn, _ := listener.Accept()
