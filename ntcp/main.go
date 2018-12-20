@@ -22,11 +22,13 @@ func StartTCPService() {
 			}
 		} else {
 			// 非法客户端 TODO:
+
 		}
 	})
 
 	sv.WhenNewDataReceived(func(c *Client, p []byte) {
 		// TODO: 解析，落到到具体业务
+
 	})
 
 	sv.WhenClientConnectionClosed(func(c *Client, err error) {
