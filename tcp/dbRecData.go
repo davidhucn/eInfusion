@@ -215,7 +215,7 @@ func ReceiveDeleteDetect(packData []byte, ipAddr string, rCmdType uint8) bool {
 			dh.UnregisterReqOrdersUnion(dDet[i].ID, rCmdType, args)
 			// 获取web通讯ID
 			wsOrderID := dh.GetReqOrderIDFromUnion(dDet[i].ID, rCmdType, args)
-			od := cm.NewOrder(wsOrderID, []byte("成功册除检测器"+dDet[i].ID))
+			od := cm.NewCmd(wsOrderID, []byte("成功册除检测器"+dDet[i].ID))
 			// 回写到前端
 			dh.SendMsgToWeb(od)
 		} else {
@@ -292,7 +292,7 @@ func ReceiveAddDetect(packData []byte, ipAddr string, rCmdType uint8) bool {
 		dh.UnregisterReqOrdersUnion(dDet[i].ID, rCmdType, args)
 		// 获取web通讯ID
 		wsOrderID := dh.GetReqOrderIDFromUnion(dDet[i].ID, rCmdType, args)
-		od := cm.NewOrder(wsOrderID, []byte("开启检测器成功："+dDet[i].ID))
+		od := cm.NewCmd(wsOrderID, []byte("开启检测器成功："+dDet[i].ID))
 		// 回写到前端
 		dh.SendMsgToWeb(od)
 	}
@@ -344,7 +344,7 @@ func ReceiveSetRcvNetCfgStat(packData []byte, ipAddr string, rCmdType uint8) boo
 	dh.UnregisterReqOrdersUnion(strRcvID, rCmdType, args)
 	// 获取web通讯ID
 	wsOrderID := dh.GetReqOrderIDFromUnion(strRcvID, rCmdType, args)
-	od := cm.NewOrder(wsOrderID, []byte("成功设置接收器["+strRcvID+"]网络配置！"))
+	od := cm.NewCmd(wsOrderID, []byte("成功设置接收器["+strRcvID+"]网络配置！"))
 	// 回写到前端
 	dh.SendMsgToWeb(od)
 	return true
@@ -386,7 +386,7 @@ func ReceiveSetReconnTimeStat(packData []byte, ipAddr string, rCmdType uint8) bo
 	dh.UnregisterReqOrdersUnion(strRcvID, rCmdType, args)
 	// 获取web通讯ID
 	wsOrderID := dh.GetReqOrderIDFromUnion(strRcvID, rCmdType, args)
-	od := cm.NewOrder(wsOrderID, []byte("成功设置接受器["+strRcvID+"]重联机时间！"))
+	od := cm.NewCmd(wsOrderID, []byte("成功设置接受器["+strRcvID+"]重联机时间！"))
 	// 回写到前端
 	dh.SendMsgToWeb(od)
 	return true

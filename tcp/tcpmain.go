@@ -19,7 +19,7 @@ import (
 // Broadcast :对所有连接发送广播
 func (ts *TServer) Broadcast(rOrder *cm.Cmd) {
 	for _, c := range ts.Connections {
-		rOrder.CmdID = dh.NewTCPOrderID(rOrder.CmdID, cm.GetPureIPAddr(c))
+		rOrder.ID = dh.NewTCPOrderID(rOrder.ID, cm.GetPureIPAddr(c))
 		dh.AddToTCPOrderQueue(rOrder)
 	}
 }
@@ -27,17 +27,17 @@ func (ts *TServer) Broadcast(rOrder *cm.Cmd) {
 // SendOrderAndMsg :发送给设备单独的某条命令、数据，并返回指定信息给WEB前端
 func (ts *TServer) SendOrderAndMsg(rOrder *cm.Cmd, rWebMsg string) error {
 	// 获取tcp连接id
-	connID := dh.DecodeToTCPConnID(rOrder.CmdID)
+	connID := dh.DecodeToTCPConnID(rOrder.ID)
 	if _, ok := ts.Connections[connID]; !ok {
 		return errors.New(TCPMsg.CanNotFindConnection)
 	}
 	time.Sleep(15 * time.Millisecond)
-	_, err := ts.Connections[connID].Write(rOrder.Cmd)
+	_, err := ts.Connections[connID].Write(rOrder.Data)
 	if cm.CkErr(TCPMsg.SendError, err) {
 		return cm.ConvertStrToErr(TCPMsg.SendError)
 	}
 	if rWebMsg != "" {
-		od := cm.NewOrder(rOrder.CmdID, []byte(rWebMsg))
+		od := cm.NewCmd(rOrder.ID, []byte(rWebMsg))
 		dh.SendMsgToWeb(od)
 	}
 	// 发送成功记录日志
@@ -59,8 +59,8 @@ func (ts *TServer) LoopingTCPOrder() {
 				ts.WaitOrders <- v
 			} else {
 				// 超过生存周期，错误信息回写到前端
-				cm.Msg("out of time:", v.SendData.CmdID)
-				dh.SendMsgToWeb(cm.NewOrder(v.SendData.CmdID, []byte(TCPMsg.SendFailureForLongTime)))
+				cm.Msg("out of time:", v.SendData.ID)
+				dh.SendMsgToWeb(cm.NewCmd(v.SendData.ID, []byte(TCPMsg.SendFailureForLongTime)))
 			}
 		}
 	}()
@@ -105,7 +105,7 @@ func (ts *TServer) madeConn(c *net.TCPConn) {
 	// 遍历待发列表，如果符合连接ID即可发送
 	go func() {
 		for v := range ts.WaitOrders {
-			if dh.DecodeToTCPConnID(v.SendData.CmdID) == connID {
+			if dh.DecodeToTCPConnID(v.SendData.ID) == connID {
 				dh.AddToTCPOrderQueue(v.SendData)
 			} else {
 				// 如果不符合连接ID，放回待发列表

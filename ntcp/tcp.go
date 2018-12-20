@@ -17,24 +17,27 @@ type Client struct {
 
 // TServer :tcpserver
 type TServer struct {
-	listenPort               string // Address to open connection: localhost:9999
+	listenPort               string // Address to open connection:
 	onNewClientCallback      func(c *Client)
 	onClientConnectionClosed func(c *Client, err error)
 	onNewDataReceived        func(c *Client, p []byte)
 	clients                  sync.Map //[ID:string]*Client
-	timeOutDuration          time.Duration
+	readExpireTime           time.Duration
 	packetHeader             *PacketHeader
 	sendQueue                chan *cm.Cmd // 发送队列
-	waitQueue                sync.Map     //等待队列，下线客户端
+	waitQueue                []*cm.Cmd    //等待队列，下线客户端([ID:string]*cmd)
+	waitSendExpireTime       time.Duration
 }
 
 // NewTCPServer :Creates new tcp tcpserver instance
-func NewTCPServer(listenPort string, timeOutDuration time.Duration, packetHeader *PacketHeader) *TServer {
+func NewTCPServer(listenPort string, readExpireTime time.Duration, waitSendExpireTime time.Duration, packetHeader *PacketHeader) *TServer {
 	s := &TServer{
-		listenPort:      listenPort,
-		timeOutDuration: timeOutDuration,
-		packetHeader:    packetHeader,
-		sendQueue:       make(chan *cm.Cmd, 1024),
+		listenPort:         listenPort,
+		readExpireTime:     readExpireTime,
+		packetHeader:       packetHeader,
+		sendQueue:          make(chan *cm.Cmd, 2048),
+		waitQueue:          make([]*cm.Cmd, 0),
+		waitSendExpireTime: waitSendExpireTime,
 	}
 	s.WhenNewClientConnected(func(c *Client) {})
 	s.WhenNewDataReceived(func(c *Client, p []byte) {})
@@ -92,22 +95,24 @@ func (c *Client) listen() {
 	}
 }
 
-// SendData :发送bytes到客户端
-func (c *Client) SendData(b []byte) error {
-	// 判断是否客户端在线，在线则发送
+// SendData :把指令存储到sendQueue，发送队列中，系统将自动发送
+func (c *Client) SendData(b []byte) {
+	od := cm.NewCmd(cm.GetPureIPAddr(c.conn), b)
+	c.server.sendQueue <- od
+}
+
+// VerifyLegal :审核客户端为合法
+func (c *Client) VerifyLegal() bool {
 	// TODO:
-	_, err := c.conn.Write(b)
-	// od := cm.NewCmd(c.conn
-	// 	), b)
-	// c.server.clients.Load()
-	return err
+	return true
 }
 
 // Boradcast :广播到所有客户端
 func (s *TServer) Boradcast(b []byte) error {
 	s.clients.Range(func(cID, conn interface{}) bool {
 		// TODO:完成广播
-
+		od := cm.NewCmd(cID.(string), b)
+		s.sendQueue <- od
 		return true
 	})
 	return nil
@@ -146,7 +151,7 @@ func (s *TServer) Listen() {
 	// 循环发送列表内指令
 	go func() {
 		for od := range s.sendQueue {
-			c, ok := s.clients.Load(od.ID)
+			c, ok := s.clients.Load(od.ID) //此处ID为IP地址
 			if ok {
 				time.Sleep(15 * time.Millisecond)
 				_, err := c.(*net.TCPConn).Write(od.Data)
@@ -154,19 +159,34 @@ func (s *TServer) Listen() {
 					// 发送成功
 					s.clients.Delete(od.ID)
 				} else {
-					// TODO:发送不成功,存储至待发送列表内
-
+					s.waitQueue = append(s.waitQueue, od)
 				}
 			}
 		}
 	}()
+	// TODO:校验发送列表sendQueue和待发送队列waitQueue的时间，如果超过指令时间，则清除
+	// 循环清除超过指定时间周期的【待发列表】
+
+	go func() {
+		for i, v := range s.waitQueue {
+			//判断指令是否在生存期内
+			if time.Now().Sub(v.CreateTime) < s.waitSendExpireTime {
+				// 未超时
+			} else {
+				// 超时，错误信息回写到前端，册除相应待发队列
+				s.waitQueue = append(s.waitQueue[:i], s.waitQueue[i+1])
+
+			}
+		}
+	}()
+
 	for {
 		c, _ := listener.AcceptTCP()
 		client := &Client{
 			conn:   c,
 			server: s,
 		}
-		client.conn.SetReadDeadline(time.Now().Add(s.timeOutDuration))
+		client.conn.SetReadDeadline(time.Now().Add(s.readExpireTime))
 		go client.listen()
 	}
 }

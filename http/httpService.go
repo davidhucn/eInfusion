@@ -29,10 +29,10 @@ func (w *WebClients) loopingWebMsg() {
 	go func() {
 		for cd := range w.Orders {
 			// 截取cmd中websocket连接ID
-			wsConnID := dh.DecodeToWSConnID(cd.CmdID)
+			wsConnID := dh.DecodeToWSConnID(cd.ID)
 			if wsConnID != "" {
 				if c, ok := w.Connections[wsConnID]; ok {
-					cm.CkErr(WebMsg.WSSendDataError, c.WriteMessage(ws.TextMessage, cd.Cmd))
+					cm.CkErr(WebMsg.WSSendDataError, c.WriteMessage(ws.TextMessage, cd.Data))
 				}
 			}
 		}
@@ -50,7 +50,7 @@ func (w *WebClients) receiveWebRequest(rWSConnID string) {
 		// 如果连接错误，则返回错误信息并退出
 		if cm.CkErr(WebMsg.WSReceiveDataError, w.Connections[rWSConnID].ReadJSON(&clisData)) {
 			odID := dh.NewWSOrderID(rWSConnID)
-			od := cm.NewOrder(odID, []byte(WebMsg.WSReceiveDataError))
+			od := cm.NewCmd(odID, []byte(WebMsg.WSReceiveDataError))
 			w.SendOrder(od)
 			w.UnregisterWSConn(rWSConnID)
 			break
@@ -64,15 +64,15 @@ func (w *WebClients) receiveWebRequest(rWSConnID string) {
 			if !cm.CkErr("", err) {
 				// FIXME:返回信息不对
 				// 返回发送成功消息给前台,TODO:制定通讯标准，此处应返回前端页面完成信息代码
-				od = cm.NewOrder(dh.NewWSOrderID(rWSConnID), []byte(WebMsg.WSSendDataSuccess))
+				od = cm.NewCmd(dh.NewWSOrderID(rWSConnID), []byte(WebMsg.WSSendDataSuccess))
 			} else {
 				// 不成功
 				if err == cm.ConvertStrToErr(dh.DataHubMsg.CmdRepeatNotice) {
 					// 提示，重复操作
-					od = cm.NewOrder(dh.NewWSOrderID(rWSConnID), []byte(dh.DataHubMsg.CmdRepeatNotice))
+					od = cm.NewCmd(dh.NewWSOrderID(rWSConnID), []byte(dh.DataHubMsg.CmdRepeatNotice))
 				} else {
 					// 提示，TCP传输模块将自动重试！
-					od = cm.NewOrder(dh.NewWSOrderID(rWSConnID), []byte(WebMsg.WSSendDataFailureTryLater))
+					od = cm.NewCmd(dh.NewWSOrderID(rWSConnID), []byte(WebMsg.WSSendDataFailureTryLater))
 				}
 			}
 			w.SendOrder(od)
