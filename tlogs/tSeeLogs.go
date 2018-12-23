@@ -6,7 +6,7 @@ import (
 	seelog "github.com/cihub/seelog"
 )
 
-// Global var base on seelog framework
+// LogMain : 全局变量，Global var base on seelog framework
 var LogMain seelog.LoggerInterface
 
 // local log configration
@@ -40,7 +40,7 @@ var strLogConfig string = `
 `
 
 // load the config file
-func LogConfigLoad() {
+func logConfigLoad() {
 	//	logger, err := seelog.LoggerFromConfigAsFile("./config/LogConfig.xml")
 	logger, err := seelog.LoggerFromConfigAsBytes([]byte(strLogConfig))
 	if err != nil {
@@ -48,15 +48,15 @@ func LogConfigLoad() {
 		log.Println(err)
 		return
 	}
-	UserLogger(logger)
+	userLogger(logger)
 }
 
 // 使用指定日志对象
-func UserLogger(newLogger seelog.LoggerInterface) {
+func userLogger(newLogger seelog.LoggerInterface) {
 	LogMain = newLogger
 }
 
 // 初始化全局变量Logger为seeLog的禁用状态，主要为防止Logger被多次初始化
-func LogDisable() {
+func logDisable() {
 	LogMain = seelog.Disabled
 }

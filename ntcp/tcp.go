@@ -3,6 +3,7 @@ package ntcp
 import (
 	"bytes"
 	cm "eInfusion/comm"
+	"eInfusion/tlogs"
 	"errors"
 	"net"
 	"sync"
@@ -136,11 +137,11 @@ func (s *TServer) WhenNewDataReceived(callback func(c *Client, p []byte)) {
 // Listen :开始启动tcp服务
 func (s *TServer) Listen() {
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", s.listenPort)
-	if cm.CkErr(TCPMsg.SourceError, err) {
+	if cm.CkErr(TCPMsg.SourceError, tlogs.Error, err) {
 		panic(err)
 	}
 	listener, err := net.ListenTCP("tcp", tcpAddr)
-	if cm.CkErr(TCPMsg.SourceError, err) {
+	if cm.CkErr(TCPMsg.SourceError, tlogs.Error, err) {
 		panic(err)
 	}
 	cm.SepLi(60, "")
@@ -155,7 +156,7 @@ func (s *TServer) Listen() {
 			if ok {
 				time.Sleep(15 * time.Millisecond)
 				_, err := c.(*net.TCPConn).Write(od.Data)
-				if !cm.CkErr(TCPMsg.SendError, err) {
+				if !cm.CkErr(TCPMsg.SendError, tlogs.Error, err) {
 					// 发送成功
 					s.clients.Delete(od.ID)
 				} else {
@@ -166,7 +167,6 @@ func (s *TServer) Listen() {
 	}()
 	// TODO:校验发送列表sendQueue和待发送队列waitQueue的时间，如果超过指令时间，则清除
 	// 循环清除超过指定时间周期的【待发列表】
-
 	go func() {
 		for i, v := range s.waitQueue {
 			//判断指令是否在生存期内
@@ -175,7 +175,6 @@ func (s *TServer) Listen() {
 			} else {
 				// 超时，错误信息回写到前端，册除相应待发队列
 				s.waitQueue = append(s.waitQueue[:i], s.waitQueue[i+1])
-
 			}
 		}
 	}()

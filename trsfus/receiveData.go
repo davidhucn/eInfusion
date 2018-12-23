@@ -1,10 +1,10 @@
 package trsfus
 
-// GetReceiveCmdType : 获取接收数据指令类型
-// cursor :下标 (0~N)
-func GetReceiveCmdType(p []byte, cursor int) {
-	if cursor >= 0 && cursor < len(p) {
-		ct, ok := ReceiveCmdMap[p[cursor]]
+// DoReceverData : 获取接收数据指令类型
+// cmdTypeCursor :下标 (0 ~ N)
+func DoReceverData(p []byte, cmdTypeCursor int) {
+	if cmdTypeCursor >= 0 && cmdTypeCursor < len(p) {
+		ct, ok := ReceiveCmdMap[p[cmdTypeCursor]]
 		if ok {
 			switch ct {
 			case GetReceiverState:

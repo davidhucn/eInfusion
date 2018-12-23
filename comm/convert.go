@@ -93,14 +93,14 @@ func ConvertOxBytesToStr(rCnt []byte) string {
 	return strRet
 }
 
-// ConvertBasStrToInt :把指定进制的字符转换成为十进制数值（int型）
+// ConvertBasStrToInt64 :把指定进制的字符转换成为十进制数值（int型）
 // 请注意，只能还原数值的进制，并不能转换进制
-func ConvertBasStrToInt(rBase int, rStrCnt string) int {
+func ConvertBasStrToInt64(rBase int, rStrCnt string) int64 {
 	intRetValue, err := strconv.ParseInt(rStrCnt, rBase, 64)
 	if err != nil {
 		intRetValue = 0
 	}
-	return int(intRetValue)
+	return intRetValue
 }
 
 // ConvertBasStrToUint :根据指定进制要求，把字符串转换成数字Uint8型
@@ -118,8 +118,8 @@ func ConvertHexUnitToDecUnit(rData uint8) uint8 {
 	return ConvertBasStrToUint(10, ConvertBasNumberToStr(16, rData))
 }
 
-// ConvertStrIPAddToBytes :把指定十进制IP地址转换成为bytes
-func ConvertStrIPAddToBytes(rIP string) []byte {
+// ConvertStrIPAddrToBytes :把指定十进制IP地址转换成为bytes
+func ConvertStrIPAddrToBytes(rIP string) []byte {
 	st := strings.SplitN(rIP, ".", 4)
 	var bs []byte
 	for i := 0; i < len(st); i++ {
@@ -134,7 +134,7 @@ func ConvertStrIPAddToBytes(rIP string) []byte {
 // 请注意：只支持偶数位
 func ConvertEvenDecToBytes(rStrCnt string) []byte {
 	var bs []byte
-	ms := ConvertBasNumberToStr(16, ConvertBasStrToInt(10, rStrCnt))
+	ms := ConvertBasNumberToStr(16, ConvertBasStrToInt64(10, rStrCnt))
 	if len(ms) > 2 {
 		t := ConvertStrToBytesByPerTwoChar(ms)
 		for i := 0; i < len(t); i++ {

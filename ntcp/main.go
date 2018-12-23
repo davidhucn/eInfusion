@@ -8,7 +8,7 @@ import (
 
 // StartTCPService :启动TCP服务
 func StartTCPService() {
-	h := NewTCPHeader(3, []byte("0x66"), 1)
+	h := NewTCPHeader(3, tf.PacketHeaderContent, 1)
 	sv := NewTCPServer(":9909", 10*time.Minute, 6*time.Hour, h)
 
 	sv.WhenNewClientConnected(func(c *Client) {

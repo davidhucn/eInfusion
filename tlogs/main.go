@@ -2,22 +2,30 @@ package tlogs
 
 func init() {
 	// 初始化日志
-	LogDisable()
-	LogConfigLoad()
+	logDisable()
+	logConfigLoad()
 }
 
-func LogDebug(v ...interface{}) {
-	LogMain.Debug(v...)
-}
+// LogType : 日志类型
+type LogType int
 
-func LogInfo(v ...interface{}) {
-	LogMain.Info(v...)
-}
+const (
+	Debug LogType = iota
+	Info
+	Warn
+	Error
+)
 
-func LogError(v ...interface{}) {
-	LogMain.Error(v...)
-}
-
-func LogWarn(v ...interface{}) {
-	LogMain.Warn(v...)
+// DoLog :执行日志
+func DoLog(lt LogType, v ...interface{}) {
+	switch lt {
+	case Debug:
+		LogMain.Debug(v...)
+	case Info:
+		LogMain.Info(v...)
+	case Warn:
+		LogMain.Warn(v...)
+	case Error:
+		LogMain.Error(v...)
+	}
 }

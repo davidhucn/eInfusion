@@ -2,11 +2,15 @@ package trsfus
 
 import (
 	cm "eInfusion/comm"
+	log "eInfusion/tlogs"
 	"sync"
 	"time"
 
 	"github.com/imroc/biu"
 )
+
+// PacketHeaderContent :帧头前缀数据
+var PacketHeaderContent = []byte("0x66")
 
 // CmdType :指令类型
 type CmdType int
@@ -29,17 +33,17 @@ const (
 
 // Order :指令对象
 type Order struct {
-	RcvID []byte
-	DetID []byte
-	Cmd   []byte
-	Args  []byte
+	RcvID string
+	DetID string
+	Cmd   CmdType
+	Args  []string
 }
 
 // OrdersQueue :指令对象结合映射，用于接收-发送配对
 var OrdersQueue sync.Map // ([string:ID]Order)
 
 // NewOrder :新建指令对象
-func NewOrder(rcvID []byte, detID []byte, cmd []byte, args []byte) *Order {
+func NewOrder(rcvID string, detID string, cmd CmdType, args []string) *Order {
 	return &Order{
 		RcvID: rcvID,
 		DetID: detID,
@@ -53,13 +57,13 @@ type Receiver struct {
 	ID            string
 	nativeIP      string
 	detectAmount  int
-	reconnectTime time.Duration
+	reconnectTime int
 	targetIP      string
 	targetPort    string
 }
 
 // NewReceiver ：新建一个接收器对象
-func NewReceiver(id string, detectAmount int, nativeIP string, reconnectTime time.Duration,
+func NewReceiver(id string, detectAmount int, nativeIP string, reconnectTime int,
 	targetIP string, targetPort string) *Receiver {
 	return &Receiver{
 		ID:            id,
@@ -134,8 +138,7 @@ func BinDetectorStat(rdata byte, dt *Detector) {
 		dt.PowerOn = 0
 		dt.Alarm = 0
 		dt.Capacity = 0
-		logs.LogMain.Info("试图获取检测器：[", dt.ID, "]信息无效，可能没电或者未启动！")
-		// tlogs.DoLog()
+		log.DoLog(log.Info, "试图获取检测器：[", dt.ID, "]信息无效，可能没电或者未启动！")
 	}
 }
 

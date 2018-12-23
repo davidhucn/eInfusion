@@ -1,7 +1,7 @@
 package comm
 
 import (
-	logs "eInfusion/tlogs"
+	lg "eInfusion/tlogs"
 	"fmt"
 	"math/rand"
 	"net"
@@ -87,10 +87,10 @@ func GetVarType(rVal interface{}) string {
 }
 
 // CkErr :处理错误(如果有错误，返回true,无错则返回false),同时记录日志
-func CkErr(rMsgTitle string, rErr error) bool {
+func CkErr(rMsgTitle string, errType lg.LogType, rErr error) bool {
 	if rErr != nil {
 		if rMsgTitle != "" {
-			logs.LogMain.Error(rMsgTitle, rErr)
+			lg.DoLog(errType, rMsgTitle, rErr)
 		}
 		return true
 	}
@@ -153,7 +153,7 @@ func WrToFilWithBuffer(rFilePath string, rStrCnt string, rIsAppend bool) bool {
 	}
 	fileHandle, err := os.OpenFile(rFilePath, intFileOpenMode, 0666)
 	defer fileHandle.Close()
-	if CkErr("获取文件句柄失败！", err) {
+	if CkErr("获取文件句柄失败！", lg.Error, err) {
 		fileHandle.WriteString("\r\n" + rStrCnt)
 	} else {
 		return false
