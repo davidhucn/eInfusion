@@ -2,6 +2,7 @@ package ntcp
 
 import (
 	cm "eInfusion/comm"
+	tf "eInfusion/trsfus"
 	"time"
 )
 
@@ -28,6 +29,7 @@ func StartTCPService() {
 
 	sv.WhenNewDataReceived(func(c *Client, p []byte) {
 		// TODO: 解析，落到到具体业务
+		ct := tf.GetReceiveCmdType(p, 2)
 
 	})
 

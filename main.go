@@ -5,15 +5,12 @@ import (
 	// et "eInfusion/tcp"
 
 	"eInfusion/ntcp"
-	logs "eInfusion/tlogs"
 
 	"runtime"
 )
 
 func init() {
-	// 初始化日志
-	logs.LogDisable()
-	logs.LogConfigLoad()
+
 	runtime.GOMAXPROCS(runtime.NumCPU())
 }
 
