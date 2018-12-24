@@ -1,9 +1,7 @@
 package tlogs
 
 func init() {
-	// 初始化日志
-	logDisable()
-	logConfigLoad()
+
 }
 
 // LogType : 日志类型

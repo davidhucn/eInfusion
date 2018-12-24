@@ -3,14 +3,16 @@ package main
 import (
 	// eh "eInfusion/http"
 	// et "eInfusion/tcp"
-
 	"eInfusion/ntcp"
+	"eInfusion/tlogs"
 
 	"runtime"
 )
 
 func init() {
-
+	// 初始化日志
+	tlogs.LogDisable()
+	tlogs.LogConfigLoad()
 	runtime.GOMAXPROCS(runtime.NumCPU())
 }
 

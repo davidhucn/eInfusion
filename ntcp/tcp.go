@@ -50,7 +50,7 @@ func NewTCPServer(listenPort string, readExpireTime time.Duration, waitSendExpir
 func (c *Client) listen() {
 	connID := cm.GetPureIPAddr(c.conn) // TCP连接ID，ip地址
 	c.server.onNewClientCallback(c)
-	c.server.clients.Store(connID, c) // 添加到服务器客户端映射中client id 是string
+	c.server.clients.Store(connID, c.conn) // 添加到服务器客户端映射中client id 是string
 	defer c.conn.Close()
 	// 数据头包总长度
 	headerLength := c.server.packetHeader.length
@@ -165,16 +165,15 @@ func (s *TServer) Listen() {
 			}
 		}
 	}()
-	// TODO:校验发送列表sendQueue和待发送队列waitQueue的时间，如果超过指令时间，则清除
+	// 校验发送列表sendQueue和待发送队列waitQueue的时间，如果超过指令时间，则清除
 	// 循环清除超过指定时间周期的【待发列表】
 	go func() {
 		for i, v := range s.waitQueue {
 			//判断指令是否在生存期内
-			if time.Now().Sub(v.CreateTime) < s.waitSendExpireTime {
-				// 未超时
-			} else {
-				// 超时，错误信息回写到前端，册除相应待发队列
+			if time.Now().Sub(v.CreateTime) >= s.waitSendExpireTime {
+				// 超时:册除相应待发队列
 				s.waitQueue = append(s.waitQueue[:i], s.waitQueue[i+1])
+				// TODO:错误信息回写到前端，
 			}
 		}
 	}()

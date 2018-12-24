@@ -40,7 +40,7 @@ var strLogConfig string = `
 `
 
 // load the config file
-func logConfigLoad() {
+func LogConfigLoad() {
 	//	logger, err := seelog.LoggerFromConfigAsFile("./config/LogConfig.xml")
 	logger, err := seelog.LoggerFromConfigAsBytes([]byte(strLogConfig))
 	if err != nil {
@@ -48,15 +48,15 @@ func logConfigLoad() {
 		log.Println(err)
 		return
 	}
-	userLogger(logger)
+	UserLogger(logger)
 }
 
 // 使用指定日志对象
-func userLogger(newLogger seelog.LoggerInterface) {
+func UserLogger(newLogger seelog.LoggerInterface) {
 	LogMain = newLogger
 }
 
 // 初始化全局变量Logger为seeLog的禁用状态，主要为防止Logger被多次初始化
-func logDisable() {
+func LogDisable() {
 	LogMain = seelog.Disabled
 }
