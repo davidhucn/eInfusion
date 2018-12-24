@@ -9,8 +9,7 @@ func init() {
 type LogType int
 
 const (
-	Debug LogType = iota
-	Info
+	Info LogType = iota
 	Warn
 	Error
 )
@@ -18,8 +17,6 @@ const (
 // DoLog :执行日志
 func DoLog(lt LogType, v ...interface{}) {
 	switch lt {
-	case Debug:
-		LogMain.Debug(v...)
 	case Info:
 		LogMain.Info(v...)
 	case Warn:

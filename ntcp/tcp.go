@@ -10,10 +10,18 @@ import (
 	"time"
 )
 
-// Client holds info about connection
+// Client :客户端对象-holds info about connection
 type Client struct {
 	conn   *net.TCPConn
 	server *TServer
+}
+
+// NewClient :新建客户端对象
+func NewClient(c *net.TCPConn, s *TServer) *Client {
+	return &Client{
+		conn:   c,
+		server: s,
+	}
 }
 
 // TServer :tcpserver
@@ -111,7 +119,6 @@ func (c *Client) VerifyLegal() bool {
 // Boradcast :广播到所有客户端
 func (s *TServer) Boradcast(b []byte) error {
 	s.clients.Range(func(cID, conn interface{}) bool {
-		// TODO:完成广播
 		od := cm.NewCmd(cID.(string), b)
 		s.sendQueue <- od
 		return true
@@ -180,10 +187,7 @@ func (s *TServer) Listen() {
 
 	for {
 		c, _ := listener.AcceptTCP()
-		client := &Client{
-			conn:   c,
-			server: s,
-		}
+		client := NewClient(c, s)
 		client.conn.SetReadDeadline(time.Now().Add(s.readExpireTime))
 		go client.listen()
 	}

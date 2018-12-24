@@ -57,39 +57,32 @@ func NewOrder(rcvID string, detID string, cmd CmdType, args []string) *Order {
 }
 
 // RegisteToOrderPool :登记到指令池里
-// 重复项自动册除
+// 如果已存在，忽略
 func (o Order) RegisteToOrderPool() {
-	for i := 0; i < len(OrdersPool); i++ {
-		if !o.findOrderFromOrderPool(i) {
-			var m sync.Mutex
-			defer m.Unlock()
-			m.Lock()
-			OrdersPool = append(OrdersPool, o)
-		}
+	if o.matchFromOrderPool() > -1 {
+		var m sync.Mutex
+		defer m.Unlock()
+		m.Lock()
+		OrdersPool = append(OrdersPool, o)
 	}
-
 }
 
-// findOrderFromOrderPool :在指令池里查找指定的指令
-func (o Order) findOrderFromOrderPool(i int) bool {
-	if i >= len(OrdersPool) || i < 0 {
-		return false
-	}
-	if o.Cmd == OrdersPool[i].Cmd && o.DetID == OrdersPool[i].DetID && o.RcvID == OrdersPool[i].RcvID {
-		if len(o.Args) == len(OrdersPool[i].Args) {
-			// 比较字符串
-			for j := 0; j < len(OrdersPool[i].Args); j++ {
-				if strings.Compare(o.Args[j], OrdersPool[i].Args[j]) != 0 {
-					return false
+// findOrderFromOrderPool :在指令池里查找指定的指令,如果找到，返回下标，未找到返回-1
+func (o Order) matchFromOrderPool() int {
+	for i, p := range OrdersPool {
+		if o.Cmd == p.Cmd && o.DetID == p.DetID && o.RcvID == p.RcvID {
+			if len(o.Args) == len(p.Args) {
+				// 比较参数-字符串
+				for j := 0; j < len(p.Args); j++ {
+					if strings.Compare(o.Args[j], p.Args[j]) != 0 {
+						return -1
+					}
 				}
+				return i
 			}
-		} else {
-			return false
 		}
-	} else {
-		return false
 	}
-	return true
+	return -1
 }
 
 // UnregisterToOrderPool :注销指令池里相应项
@@ -98,11 +91,10 @@ func (o Order) UnregisterToOrderPool() {
 	var m sync.Mutex
 	defer m.Unlock()
 	m.Lock()
-	for i := 0; i < len(OrdersPool); i++ {
-		if o.findOrderFromOrderPool(i) {
-			// 册除
-			OrdersPool = append(OrdersPool[:i], OrdersPool[i+1])
-		}
+	r := o.matchFromOrderPool()
+	if r > -1 {
+		// 如果在指令池内找到相同项，册除
+		OrdersPool = append(OrdersPool[:r], OrdersPool[r+1])
 	}
 }
 

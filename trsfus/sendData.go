@@ -8,6 +8,12 @@ import (
 // SetReceiverReconnectTime ：参数重连时间以秒为单位.
 func MakeSendOrder(cmdType CmdType, rcvid string, detid string, args []string) []byte {
 	sd := make([]byte, 0)
+	od := NewOrder(rcvid, detid, cmdType, args)
+	if od.matchFromOrderPool() > -1 {
+		// 如果指令池内已存在，则返回空指令
+		return sd
+	}
+
 	for i := 0; i < len(packetHeaderPrefix); i++ {
 		sd = append(sd, packetHeaderPrefix[i])
 	}
@@ -56,8 +62,6 @@ func MakeSendOrder(cmdType CmdType, rcvid string, detid string, args []string) [
 	sd[1] = uint8(len(sd)) // 重新计算指令总长度
 
 	// 记录到指令池里面
-	// TODO:如果已经注册了，则不再生成
-	od := NewOrder(rcvid, "", cmdType, args)
 	od.RegisteToOrderPool()
 	return sd
 }
