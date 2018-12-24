@@ -64,9 +64,9 @@ func (c *Client) listen() {
 			return
 		}
 		// 头数据包前缀校验数据长度
-		headerPrefixLength := len(c.server.packetHeader.prefixData)
+		headerPrefixLength := len(c.server.packetHeader.packetPrefix)
 		// 判断头数据是否正确
-		if !bytes.Equal(headerBuffer[:headerPrefixLength], c.server.packetHeader.prefixData) {
+		if !bytes.Equal(headerBuffer[:headerPrefixLength], c.server.packetHeader.packetPrefix) {
 			// 接收头数据包内数据不符合规定，则下线
 			c.conn.Close()
 			c.server.clients.Delete(connID)

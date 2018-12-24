@@ -7,9 +7,9 @@ func DoReceverData(p []byte, cmdTypeCursor int) {
 		ct, ok := ReceiveCmdMap[p[cmdTypeCursor]]
 		if ok {
 			switch ct {
-			case GetReceiverState:
+			case CmdGetReceiverState:
 
-			case GetDetectorState:
+			case CmdGetDetectorState:
 
 			default:
 			}

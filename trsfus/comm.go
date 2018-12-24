@@ -9,26 +9,32 @@ import (
 	"github.com/imroc/biu"
 )
 
-// PacketHeaderContent :帧头前缀数据
-var PacketHeaderContent = []byte("0x66")
+// packetHeaderPrefix :帧头前缀数据
+var packetHeaderPrefix []byte
+
+// MakePacketHeaderPrefix :生成数据包头前缀
+func MakePacketHeaderPrefix(d uint8) []byte {
+	packetHeaderPrefix = append(packetHeaderPrefix, d)
+	return packetHeaderPrefix
+}
 
 // CmdType :指令类型
 type CmdType int
 
 const (
 	_ CmdType = iota
-	// GetReceiverState :获取接收器状态
-	GetReceiverState
-	// GetDetectorState :获取检测器状态
-	GetDetectorState
-	// AddDetector :添加检测器
-	AddDetector
-	// DeleteDetector :删除检测器
-	DeleteDetector
-	// SetReceiverConfig :设置接收器参数
-	SetReceiverConfig
-	// SetReceiverReconnectTime :设置接收器心跳连接时间
-	SetReceiverReconnectTime
+	// CmdGetReceiverState :获取接收器状态
+	CmdGetReceiverState
+	// CmdGetDetectorState :获取检测器状态
+	CmdGetDetectorState
+	// CmdAddDetector :添加检测器
+	CmdAddDetector
+	// CmdDeleteDetector :删除检测器
+	CmdDeleteDetector
+	// CmdSetReceiverConfig :设置接收器参数
+	CmdSetReceiverConfig
+	// CmdSetReceiverReconnectTime :设置接收器心跳连接时间
+	CmdSetReceiverReconnectTime
 )
 
 // Order :指令对象
@@ -109,19 +115,21 @@ var ReceiveCmdMap = make(map[byte]CmdType, 6)
 var SendCmdMap = make(map[CmdType]byte, 6)
 
 func init() {
-	SendCmdMap[GetReceiverState] = 0x00
-	SendCmdMap[GetDetectorState] = 0x01
-	SendCmdMap[AddDetector] = 0x02
-	SendCmdMap[DeleteDetector] = 0x03
-	SendCmdMap[SetReceiverConfig] = 0x04
-	SendCmdMap[SetReceiverReconnectTime] = 0x05
+	SendCmdMap[CmdGetReceiverState] = 10
+	SendCmdMap[CmdGetDetectorState] = 11
+	SendCmdMap[CmdAddDetector] = 12
+	SendCmdMap[CmdDeleteDetector] = 13
+	SendCmdMap[CmdSetReceiverConfig] = 14
+	SendCmdMap[CmdSetReceiverReconnectTime] = 15
 
-	ReceiveCmdMap[0x10] = GetReceiverState
-	ReceiveCmdMap[0x11] = GetDetectorState
-	ReceiveCmdMap[0x12] = AddDetector
-	ReceiveCmdMap[0x13] = DeleteDetector
-	ReceiveCmdMap[0x14] = SetReceiverConfig
-	ReceiveCmdMap[0x15] = SetReceiverReconnectTime
+	ReceiveCmdMap[0x00] = CmdGetReceiverState
+	ReceiveCmdMap[0x01] = CmdGetDetectorState
+	ReceiveCmdMap[0x02] = CmdAddDetector
+	ReceiveCmdMap[0x03] = CmdDeleteDetector
+	ReceiveCmdMap[0x04] = CmdSetReceiverConfig
+	ReceiveCmdMap[0x05] = CmdSetReceiverReconnectTime
+
+	packetHeaderPrefix = make([]byte, 0)
 }
 
 //BinDetectorStat :根据通讯协议，对byte数据生成检测器状态信息（bit）
