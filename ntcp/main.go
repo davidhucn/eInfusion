@@ -25,10 +25,10 @@ func StartTCPService() {
 	}
 	sv.WhenNewClientConnected(func(c *Client) {
 		if c.VerifyLegal() {
-			tlogs.DoLog(tlogs.Debug, "IP:", cm.GetPureIPAddr(c.conn), " Connected")
+			tlogs.DoLog(tlogs.Info, "IP:", cm.GetPureIPAddr(c.conn), " Connected")
 			sendWaitOrder(c) // 发送待发指令
 			// 根据前台需求发送指令
-			t := tf.MakeOrderOnReceiver(tf.CmdGetReceiverState, "A0000000", []string{})
+			t := tf.MakeSendOrder(tf.CmdAddDetector, "A0000000", "B0000000", []string{})
 			c.SendData(t)
 		} else {
 			// 非法客户端 TODO:
@@ -42,7 +42,7 @@ func StartTCPService() {
 	})
 
 	sv.WhenClientConnectionClosed(func(c *Client, err error) {
-
+		tlogs.DoLog(tlogs.Info, "IP:", cm.GetPureIPAddr(c.conn), " Disconnected")
 	})
 	sv.Listen()
 }

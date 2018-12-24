@@ -3,6 +3,7 @@ package trsfus
 import (
 	cm "eInfusion/comm"
 	log "eInfusion/tlogs"
+	"strings"
 	"sync"
 	"time"
 
@@ -45,9 +46,6 @@ type Order struct {
 	Args  []string
 }
 
-// OrdersQueue :指令对象结合映射，用于接收-发送配对
-var OrdersQueue sync.Map // ([string:ID]Order)
-
 // NewOrder :新建指令对象
 func NewOrder(rcvID string, detID string, cmd CmdType, args []string) *Order {
 	return &Order{
@@ -57,6 +55,59 @@ func NewOrder(rcvID string, detID string, cmd CmdType, args []string) *Order {
 		Args:  args,
 	}
 }
+
+// RegisteToOrderPool :登记到指令池里
+// 重复项自动册除
+func (o Order) RegisteToOrderPool() {
+	for i := 0; i < len(OrdersPool); i++ {
+		if !o.findOrderFromOrderPool(i) {
+			var m sync.Mutex
+			defer m.Unlock()
+			m.Lock()
+			OrdersPool = append(OrdersPool, o)
+		}
+	}
+
+}
+
+// findOrderFromOrderPool :在指令池里查找指定的指令
+func (o Order) findOrderFromOrderPool(i int) bool {
+	if i >= len(OrdersPool) || i < 0 {
+		return false
+	}
+	if o.Cmd == OrdersPool[i].Cmd && o.DetID == OrdersPool[i].DetID && o.RcvID == OrdersPool[i].RcvID {
+		if len(o.Args) == len(OrdersPool[i].Args) {
+			// 比较字符串
+			for j := 0; j < len(OrdersPool[i].Args); j++ {
+				if strings.Compare(o.Args[j], OrdersPool[i].Args[j]) != 0 {
+					return false
+				}
+			}
+		} else {
+			return false
+		}
+	} else {
+		return false
+	}
+	return true
+}
+
+// UnregisterToOrderPool :注销指令池里相应项
+// 如果没有找到相应项，则自动过滤
+func (o Order) UnregisterToOrderPool() {
+	var m sync.Mutex
+	defer m.Unlock()
+	m.Lock()
+	for i := 0; i < len(OrdersPool); i++ {
+		if o.findOrderFromOrderPool(i) {
+			// 册除
+			OrdersPool = append(OrdersPool[:i], OrdersPool[i+1])
+		}
+	}
+}
+
+// OrdersPool :指令对象池，用于接收-发送配对
+var OrdersPool []Order // ([string:ID]Order)
 
 // Receiver ：检测器对象
 type Receiver struct {
@@ -130,6 +181,7 @@ func init() {
 	ReceiveCmdMap[0x05] = CmdSetReceiverReconnectTime
 
 	packetHeaderPrefix = make([]byte, 0)
+	OrdersPool = make([]Order, 0)
 }
 
 //BinDetectorStat :根据通讯协议，对byte数据生成检测器状态信息（bit）

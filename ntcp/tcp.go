@@ -173,7 +173,7 @@ func (s *TServer) Listen() {
 			if time.Now().Sub(v.CreateTime) >= s.waitSendExpireTime {
 				// 超时:册除相应待发队列
 				s.waitQueue = append(s.waitQueue[:i], s.waitQueue[i+1])
-				// TODO:错误信息回写到前端，
+				// TODO:错误信息回写到前端
 			}
 		}
 	}()
