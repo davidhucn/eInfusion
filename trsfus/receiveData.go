@@ -21,7 +21,3 @@ func DoReceiveData(p []byte, cmdTypeCursor int) {
 		}
 	}
 }
-
-func (c CmdType) getRcvState() {
-
-}

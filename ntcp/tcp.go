@@ -17,41 +17,11 @@ type Client struct {
 }
 
 // NewClient :新建客户端对象
-func NewClient(c *net.TCPConn, s *TServer) *Client {
+func newClient(c *net.TCPConn, s *TServer) *Client {
 	return &Client{
 		conn:   c,
 		server: s,
 	}
-}
-
-// TServer :tcpserver
-type TServer struct {
-	listenPort               string // Address to open connection:
-	onNewClientCallback      func(c *Client)
-	onClientConnectionClosed func(c *Client, err error)
-	onNewDataReceived        func(c *Client, p []byte)
-	clients                  sync.Map //[ID:string]*Client
-	readExpireTime           time.Duration
-	packetHeader             *PacketHeader
-	sendQueue                chan *cm.Cmd // 发送队列
-	waitQueue                []*cm.Cmd    //等待队列，下线客户端([ID:string]*cmd)
-	waitSendExpireTime       time.Duration
-}
-
-// NewTCPServer :Creates new tcp tcpserver instance
-func NewTCPServer(listenPort string, readExpireTime time.Duration, waitSendExpireTime time.Duration, packetHeader *PacketHeader) *TServer {
-	s := &TServer{
-		listenPort:         listenPort,
-		readExpireTime:     readExpireTime,
-		packetHeader:       packetHeader,
-		sendQueue:          make(chan *cm.Cmd, 2048),
-		waitQueue:          make([]*cm.Cmd, 0),
-		waitSendExpireTime: waitSendExpireTime,
-	}
-	s.WhenNewClientConnected(func(c *Client) {})
-	s.WhenNewDataReceived(func(c *Client, p []byte) {})
-	s.WhenClientConnectionClosed(func(c *Client, err error) {})
-	return s
 }
 
 // Read client data from channel
@@ -126,6 +96,47 @@ func (s *TServer) Boradcast(b []byte) error {
 	return nil
 }
 
+// TServer :tcpserver
+type TServer struct {
+	listenPort               string // Address to open connection:
+	onNewClientCallback      func(c *Client)
+	onClientConnectionClosed func(c *Client, err error)
+	onNewDataReceived        func(c *Client, p []byte)
+	clients                  sync.Map //[ID:string]*Client
+	readExpireTime           time.Duration
+	packetHeader             *PacketHeader
+	sendQueue                chan *cm.Cmd // 发送队列
+	waitQueue                []*cm.Cmd    //等待队列，下线客户端([ID:string]*cmd)
+	waitSendExpireTime       time.Duration
+}
+
+// NewTCPServer :Creates new tcp tcpserver instance
+func NewTCPServer(listenPort string, readExpireTime time.Duration, waitSendExpireTime time.Duration, packetHeader *PacketHeader) *TServer {
+	s := &TServer{
+		listenPort:         listenPort,
+		readExpireTime:     readExpireTime,
+		packetHeader:       packetHeader,
+		sendQueue:          make(chan *cm.Cmd, 2048),
+		waitQueue:          make([]*cm.Cmd, 0),
+		waitSendExpireTime: waitSendExpireTime,
+	}
+	s.WhenNewClientConnected(func(c *Client) {})
+	s.WhenNewDataReceived(func(c *Client, p []byte) {})
+	s.WhenClientConnectionClosed(func(c *Client, err error) {})
+	return s
+}
+
+// GetClient :获取指定Client对象
+func (s *TServer) GetClient(id string) *Client {
+	if id != "" {
+		c, ok := s.clients.Load(id)
+		if ok {
+			return c.(*Client)
+		}
+	}
+	return nil
+}
+
 // WhenNewClientConnected :当有新连接时
 func (s *TServer) WhenNewClientConnected(callback func(c *Client)) {
 	s.onNewClientCallback = callback
@@ -187,7 +198,7 @@ func (s *TServer) Listen() {
 
 	for {
 		c, _ := listener.AcceptTCP()
-		client := NewClient(c, s)
+		client := newClient(c, s)
 		client.conn.SetReadDeadline(time.Now().Add(s.readExpireTime))
 		go client.listen()
 	}

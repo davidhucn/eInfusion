@@ -26,6 +26,7 @@ func StartTCPService() {
 			}
 		}
 	}
+
 	Srv.WhenNewClientConnected(func(c *Client) {
 		if c.VerifyLegal() {
 			tlogs.DoLog(tlogs.Info, "IP:", cm.GetPureIPAddr(c.conn), " Connected")
