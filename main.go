@@ -1,7 +1,7 @@
 package main
 
 import (
-	"eInfusion/ntcp"
+	"eInfusion/ndb"
 	"runtime"
 )
 
@@ -16,7 +16,8 @@ func main() {
 	// go eh.StartHTTPServer(wc, 7779)
 	// tcpSer := et.NewTCPServer(300, 45)
 	// et.RunTCPService(tcpSer, 7778)
-	ntcp.StartTCPService()
+	ndb.InitDB()
+	// ntcp.StartTCPService()
 	// var s sync.Map
 	// s.Store("g", 97)
 	// s.Store("l", 100)
