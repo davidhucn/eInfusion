@@ -12,24 +12,35 @@ import (
 
 // var db *sqlx.DB
 
-// 数据库连接参数
-type dbParam struct {
+// DBParam :数据库连接参数
+type DBParam struct {
 	UserName         string
 	Password         string
 	HostNameOrIPAddr string
 	Port             string
-	schemaName       string
+	SchemaName       string
+}
+
+// NewDBparams :新建数据库连接参数
+func NewDBparams(UserName string, Password string, HostNameOrIPAddr string, Port string, SchemaName string) *DBParam {
+	return &DBParam{
+		UserName:         UserName,
+		Password:         Password,
+		HostNameOrIPAddr: HostNameOrIPAddr,
+		Port:             Port,
+		SchemaName:       SchemaName,
+	}
 }
 
 // DBx :数据库对象
 type DBx struct {
 	db           *sqlx.DB
-	params       *dbParam
+	params       *DBParam
 	databaseType string
 }
 
 // NewDBx :新建数据库对象
-func NewDBx(param *dbParam, databaseType string) *DBx {
+func NewDBx(param *DBParam, databaseType string) *DBx {
 	return &DBx{
 		params:       param,
 		databaseType: databaseType,
@@ -38,21 +49,23 @@ func NewDBx(param *dbParam, databaseType string) *DBx {
 
 // Connect :连接到数据库
 func (d *DBx) Connect() bool {
-	var err error
-	dbsource := d.params.UserName + ":" + d.params.Password + "@tcp(" + d.params.HostNameOrIPAddr + ":"
-	dbsource = dbsource + d.params.Port + ")/" + d.params.schemaName
-	dbsource = dbsource + "?charset=utf8" //字符集
-	d.db, err = sqlx.Connect(d.databaseType, dbsource)
-	if cm.CkErr(DBMsg.ConnectDBErr, tlogs.Info, err) {
-		// 如果连接失败
-		return false
+	if d.db.Ping() == nil {
+		var err error
+		dbsource := d.params.UserName + ":" + d.params.Password + "@tcp(" + d.params.HostNameOrIPAddr + ":"
+		dbsource = dbsource + d.params.Port + ")/" + d.params.SchemaName
+		dbsource = dbsource + "?charset=utf8" //字符集
+		d.db, err = sqlx.Connect(d.databaseType, dbsource)
+		if cm.CkErr(DBMsg.ConnectDBErr, tlogs.Error, err) {
+			// 如果连接失败
+			return false
+		}
+		return true
 	}
-	return true
 }
 
 // isConnected :判断是否已连接
 func (d *DBx) isConnected() bool {
-	if d.db.Stats().OpenConnections > 0 {
+	if d.db.Ping() == nil {
 		return true
 	}
 	return false
@@ -60,7 +73,7 @@ func (d *DBx) isConnected() bool {
 
 // ExceSQL :执行查询语句
 func (d *DBx) ExceSQL(s string, args ...interface{}) bool {
-	_, err := d.db.Exec(s, args)
+	_, err := d.db.Exec(s, args...)
 	if cm.CkErr(DBMsg.QueryDataErr, tlogs.Error, err) {
 		return false
 	}
@@ -69,20 +82,21 @@ func (d *DBx) ExceSQL(s string, args ...interface{}) bool {
 }
 
 // QueryOneData :查询第一条数据，返回相关struct
-func (d *DBx) QueryOneData(sql string, args ...interface{}) interface{} {
-	var rs interface{}
-	cm.Msg("sql:", sql)
-	if !cm.CkErr(DBMsg.QueryDataErr, tlogs.Error, d.db.Get(rs, sql, args)) {
-		return rs
+func (d *DBx) QueryOneData(sql string, result interface{}, args ...interface{}) bool {
+	var err error
+	err = d.db.Get(result, sql, args...)
+	if cm.CkErr(DBMsg.QueryDataErr, tlogs.Error, err) {
+		return false
 	}
-	return nil
+	return true
 }
 
 // QueryDatas :查询批量数据,返回相关[]struct
-func (d *DBx) QueryDatas(sql string, args ...interface{}) interface{} {
-	var rs interface{}
-	if !cm.CkErr(DBMsg.QueryDataErr, tlogs.Error, d.db.Select(rs, sql, args)) {
-		return rs
+func (d *DBx) QueryDatas(sql string, results interface{}, args ...interface{}) bool {
+	var err error
+	err = d.db.Select(&results, sql, args...)
+	if cm.CkErr(DBMsg.QueryDataErr, tlogs.Error, err) {
+		return false
 	}
-	return nil
+	return true
 }

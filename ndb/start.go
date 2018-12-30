@@ -1,35 +1,33 @@
 package ndb
 
-import (
-	"eInfusion/comm"
-)
-
 // Svr ：全局数据库对象
 var Svr *DBx
 
 // InitDB ：初始化数据库
-func InitDB() {
-	ps := &dbParam{}
-	ps.HostNameOrIPAddr = "127.0.0.1"
-	ps.Password = "2341656"
-	ps.Port = "3306"
-	ps.UserName = "root"
-	ps.schemaName = "transfusion"
+func init() {
+	ps := NewDBparams("root", "2341656", "localhost", "3306", "transfusion")
 	Svr = NewDBx(ps, DBType.MySQL)
-	//////////////////////////////////////
-	if !Svr.Connect() {
-		comm.Msg("can't connect")
-	}
-	// type device struct {
-	// 	qcode   string
-	// 	did     string
-	// 	remark  string
-	// 	disable int
-	// }
-	// d := &device{}
-	// comm.Msg(Svr.db)
-	s := "select * from t_device_dict"
-	r := Svr.QueryOneData(s, "B0000000")
-	comm.Msg("result:", r)
-	/////////////////////////////////////
+	Svr.Connect()
 }
+
+//////////////////////////////////////
+// if !Svr.Connect() {
+
+// }
+// type device struct {
+// 	Qcode   string         `db:"qcode"`
+// 	Did     string         `db:"did"`
+// 	Remark  sql.NullString `db:"remark"`
+// 	Disable int            `db:"disable"`
+// }
+
+// var d device
+
+// d := make([]device, 0)
+// comm.Msg(Svr.db)
+// s := "select * from t_device_dict where did=?"
+
+// Svr.QueryOneData(s, &d, "B0000000")
+// comm.Msg("result:", d)
+
+/////////////////////////////////////
