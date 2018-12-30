@@ -61,6 +61,7 @@ func (d *DBx) Connect() bool {
 		}
 		return true
 	}
+	return true
 }
 
 // isConnected :判断是否已连接
