@@ -3,6 +3,7 @@ package dbcomm
 import (
 	cm "eInfusion/comm"
 	db "eInfusion/tdb"
+	"eInfusion/tlogs"
 )
 
 // GetRcvID :根据DetID获取RcvID
@@ -13,7 +14,7 @@ func GetRcvID(rDetID string) string {
 	var err error
 	strSQL = "SELECT rcvID FROM t_rcv_vs_det WHERE detID=?"
 	mRcvID, err = db.QueryOneRow(strSQL, rDetID)
-	if cm.CkErr(db.MsgDB.QueryDataErr, err) {
+	if cm.CkErr(db.MsgDB.QueryDataErr, tlogs.Error, err) {
 		return ""
 	}
 	return (*mRcvID)["rcvID"]
@@ -26,7 +27,7 @@ func GetRcvIP(rRcvID string) string {
 	var err error
 	strSQL = "SELECT ip_addr FROM t_rcv WHERE receiver_id=?"
 	mRcvIP, err = db.QueryOneRow(strSQL, rRcvID)
-	if cm.CkErr(db.MsgDB.QueryDataErr, err) {
+	if cm.CkErr(db.MsgDB.QueryDataErr, tlogs.Error, err) {
 		return ""
 	}
 	return (*mRcvIP)["ip_addr"]
@@ -38,7 +39,7 @@ func IsReceiver(rTargetID string) bool {
 	var mRcvIP *map[string]string
 	var err error
 	mRcvIP, err = db.QueryOneRow(strSQL, rTargetID)
-	if cm.CkErr(db.MsgDB.QueryDataErr, err) {
+	if cm.CkErr(db.MsgDB.QueryDataErr, tlogs.Error, err) {
 		return false
 	}
 	if (*mRcvIP)["receiver_id"] == "" {
@@ -53,7 +54,7 @@ func IsDetector(rTargetID string) bool {
 	var mRcvIP *map[string]string
 	var err error
 	mRcvIP, err = db.QueryOneRow(strSQL, rTargetID)
-	if cm.CkErr(db.MsgDB.QueryDataErr, err) {
+	if cm.CkErr(db.MsgDB.QueryDataErr, tlogs.Error, err) {
 		return false
 	}
 	if (*mRcvIP)["detID"] == "" {
