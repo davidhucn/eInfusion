@@ -41,11 +41,11 @@ func NewDBparams(databaseType string, UserName string, Password string, Host str
 	var connectStr string
 	switch databaseType {
 	case DataBaseType.MySQL:
-		connectStr := p.UserName + ":" + p.Password + "@tcp(" + p.Host + ":"
+		connectStr = p.UserName + ":" + p.Password + "@tcp(" + p.Host + ":"
 		connectStr = connectStr + p.Port + ")/" + p.SchemaName
 		connectStr = connectStr + "?charset=utf8" //字符集
 	case DataBaseType.Sqlite3:
-		connectStr := p.Host
+		connectStr = p.Host
 	case DataBaseType.Oracle:
 	}
 	return p, connectStr
