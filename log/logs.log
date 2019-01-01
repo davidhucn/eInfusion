@@ -1,9 +1,6 @@
-[Error] [20:31:01] 错误,查询数据信息失败！sql: converting argument $1 type: unsupported type []interface {}, a slice of interface
-[Error] [20:33:59] 错误,查询数据信息失败！sql: converting argument $1 type: unsupported type []interface {}, a slice of interface
-[Error] [00:22:17] 错误,查询数据信息失败！sql: converting argument $1 type: unsupported type []interface {}, a slice of interface
-[Error] [00:23:30] 错误,查询数据信息失败！sql: converting argument $1 type: unsupported type []interface {}, a slice of interface
-[Error] [00:30:08] 错误,查询数据信息失败！sql: converting argument $1 type: unsupported type []interface {}, a slice of interface
-[Error] [00:47:24] 错误,查询数据信息失败！scannable dest type interface with >1 columns (4) in result
-[Error] [00:47:52] 错误,查询数据信息失败！scannable dest type interface with >1 columns (4) in result
-[Error] [00:48:57] 错误,查询数据信息失败！scannable dest type ptr with >1 columns (4) in result
-[Error] [01:42:36] 错误,查询数据信息失败！sql: Scan error on column index 2, name "remark": unsupported Scan, storing driver.Value type <nil> into type *string
+[Error] [12:04:36] 错误,查询数据信息失败！must pass a pointer, not a value, to StructScan destination
+[Error] [12:05:18] 错误,查询数据信息失败！sql: Scan error on column index 0, name "remark": unsupported Scan, storing driver.Value type <nil> into type *string
+[Error] [18:36:15] 错误,查询数据信息失败！Error 1062: Duplicate entry 'D0000000-A0000000' for key 'PRIMARY'
+[Error] [18:36:15] 错误,查询数据信息失败！Error 1064: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'set remark=? from t_rcv_vs_det where detID=D0000000' at line 1
+[Error] [18:37:39] 错误,查询数据信息失败！Error 1064: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'set remark=? from t_rcv_vs_det where detID=D0000000' at line 1
+[Error] [18:38:50] 错误,查询数据信息失败！Error 1054: Unknown column 'D0000000' in 'where clause'

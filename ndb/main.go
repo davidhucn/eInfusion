@@ -5,61 +5,75 @@ import (
 	"eInfusion/tlogs"
 
 	"github.com/jmoiron/sqlx"
+	// d "golang.org/x/net/http2/h2demo"
 
 	// mysql 接口
 	_ "github.com/go-sql-driver/mysql"
+	// sqlite接口
+	_ "github.com/mattn/go-sqlite3"
+	// oracle接口
+	// _ "github.com/mattn/go-oci8"
+	// _ "github.com/lib/pq"
 )
 
 // var db *sqlx.DB
 
 // DBParam :数据库连接参数
 type DBParam struct {
-	UserName         string
-	Password         string
-	HostNameOrIPAddr string
-	Port             string
-	SchemaName       string
+	UserName     string
+	Password     string
+	Host         string
+	Port         string
+	SchemaName   string
+	DataBaseType string
 }
 
-// NewDBparams :新建数据库连接参数
-func NewDBparams(UserName string, Password string, HostNameOrIPAddr string, Port string, SchemaName string) *DBParam {
-	return &DBParam{
-		UserName:         UserName,
-		Password:         Password,
-		HostNameOrIPAddr: HostNameOrIPAddr,
-		Port:             Port,
-		SchemaName:       SchemaName,
+// NewDBparams :新建数据库连接参数(mysql,mssql,oracle)
+func NewDBparams(databaseType string, UserName string, Password string, Host string, Port string, SchemaName string) (*DBParam, string) {
+	p := &DBParam{
+		UserName:     UserName,
+		Password:     Password,
+		Host:         Host,
+		Port:         Port,
+		SchemaName:   SchemaName,
+		DataBaseType: databaseType,
 	}
+	var connectStr string
+	switch databaseType {
+	case DataBaseType.MySQL:
+		connectStr := p.UserName + ":" + p.Password + "@tcp(" + p.Host + ":"
+		connectStr = connectStr + p.Port + ")/" + p.SchemaName
+		connectStr = connectStr + "?charset=utf8" //字符集
+	case DataBaseType.Sqlite3:
+		connectStr := p.Host
+	case DataBaseType.Oracle:
+	}
+	return p, connectStr
 }
 
 // DBx :数据库对象
 type DBx struct {
-	db           *sqlx.DB
-	params       *DBParam
-	databaseType string
+	db            *sqlx.DB
+	dbParams      *DBParam
+	connectString string
 }
 
 // NewDBx :新建数据库对象
-func NewDBx(param *DBParam, databaseType string) *DBx {
-	return &DBx{
-		params:       param,
-		databaseType: databaseType,
+func NewDBx(dbParams *DBParam, connectString string) *DBx {
+	d := &DBx{
+		dbParams:      dbParams,
+		connectString: connectString,
 	}
+	return d
 }
 
 // Connect :连接到数据库
 func (d *DBx) Connect() bool {
-	if d.db.Ping() == nil {
-		var err error
-		dbsource := d.params.UserName + ":" + d.params.Password + "@tcp(" + d.params.HostNameOrIPAddr + ":"
-		dbsource = dbsource + d.params.Port + ")/" + d.params.SchemaName
-		dbsource = dbsource + "?charset=utf8" //字符集
-		d.db, err = sqlx.Connect(d.databaseType, dbsource)
-		if cm.CkErr(DBMsg.ConnectDBErr, tlogs.Error, err) {
-			// 如果连接失败
-			return false
-		}
-		return true
+	var err error
+	d.db, err = sqlx.Connect(d.dbParams.DataBaseType, d.connectString)
+	if cm.CkErr(DBMsg.ConnectDBErr, tlogs.Error, err) {
+		// 如果连接失败
+		return false
 	}
 	return true
 }
@@ -73,13 +87,26 @@ func (d *DBx) isConnected() bool {
 }
 
 // ExceSQL :执行查询语句
-func (d *DBx) ExceSQL(s string, args ...interface{}) bool {
-	_, err := d.db.Exec(s, args...)
+func (d *DBx) ExceSQL(s string, args ...interface{}) int64 {
+	rs, err := d.db.Exec(s, args...)
 	if cm.CkErr(DBMsg.QueryDataErr, tlogs.Error, err) {
-		return false
+		return 0
 	}
-	// cm.Msg("影响的数据量：", r.RowsAffected())
-	return true
+	inAmount, err := rs.LastInsertId()
+	if cm.CkErr(DBMsg.UpdateDataErr, tlogs.Error, err) {
+		return 0
+	}
+	affAmount, err := rs.RowsAffected()
+	if cm.CkErr(DBMsg.UpdateDataErr, tlogs.Error, err) {
+		return 0
+	}
+	if affAmount > 0 {
+		return affAmount
+	}
+	if inAmount > 0 {
+		return inAmount
+	}
+	return 0
 }
 
 // QueryOneData :查询第一条数据，返回相关struct

@@ -7,14 +7,14 @@ type databaseTypeForDriver struct {
 	MySQL   string
 }
 
-// DBType :数据库类型(驱动名称)
-var DBType databaseTypeForDriver
+// DataBaseType :数据库类型(驱动名称)
+var DataBaseType databaseTypeForDriver
 
 func init() {
-	DBType.MySQL = "mysql"
-	DBType.Sqlite3 = "sqlite3"
-	DBType.Oracle = "oracle"
-	DBType.MSSql = "mssql"
+	DataBaseType.MySQL = "mysql"
+	DataBaseType.Sqlite3 = "sqlite3"
+	DataBaseType.Oracle = "oracle"
+	DataBaseType.MSSql = "mssql"
 
 	DBMsg.ConnectDBErr = "错误,无法连接到指定数据库！"
 	DBMsg.InsertDataErr = "错误,插入数据库操作失败！"

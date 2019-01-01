@@ -1,9 +1,6 @@
-[ERROR] [20:31:01] [DoLog @ main.go.19] 错误,查询数据信息失败！sql: converting argument $1 type: unsupported type []interface {}, a slice of interface
-[ERROR] [20:33:59] [DoLog @ main.go.19] 错误,查询数据信息失败！sql: converting argument $1 type: unsupported type []interface {}, a slice of interface
-[ERROR] [00:22:17] [DoLog @ main.go.19] 错误,查询数据信息失败！sql: converting argument $1 type: unsupported type []interface {}, a slice of interface
-[ERROR] [00:23:30] [DoLog @ main.go.19] 错误,查询数据信息失败！sql: converting argument $1 type: unsupported type []interface {}, a slice of interface
-[ERROR] [00:30:08] [DoLog @ main.go.19] 错误,查询数据信息失败！sql: converting argument $1 type: unsupported type []interface {}, a slice of interface
-[ERROR] [00:47:24] [DoLog @ main.go.19] 错误,查询数据信息失败！scannable dest type interface with >1 columns (4) in result
-[ERROR] [00:47:52] [DoLog @ main.go.19] 错误,查询数据信息失败！scannable dest type interface with >1 columns (4) in result
-[ERROR] [00:48:57] [DoLog @ main.go.19] 错误,查询数据信息失败！scannable dest type ptr with >1 columns (4) in result
-[ERROR] [01:42:36] [DoLog @ main.go.19] 错误,查询数据信息失败！sql: Scan error on column index 2, name "remark": unsupported Scan, storing driver.Value type <nil> into type *string
+[ERROR] [12:04:36] [DoLog @ main.go.19] 错误,查询数据信息失败！must pass a pointer, not a value, to StructScan destination
+[ERROR] [12:05:18] [DoLog @ main.go.19] 错误,查询数据信息失败！sql: Scan error on column index 0, name "remark": unsupported Scan, storing driver.Value type <nil> into type *string
+[ERROR] [18:36:15] [DoLog @ main.go.19] 错误,查询数据信息失败！Error 1062: Duplicate entry 'D0000000-A0000000' for key 'PRIMARY'
+[ERROR] [18:36:15] [DoLog @ main.go.19] 错误,查询数据信息失败！Error 1064: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'set remark=? from t_rcv_vs_det where detID=D0000000' at line 1
+[ERROR] [18:37:39] [DoLog @ main.go.19] 错误,查询数据信息失败！Error 1064: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'set remark=? from t_rcv_vs_det where detID=D0000000' at line 1
+[ERROR] [18:38:50] [DoLog @ main.go.19] 错误,查询数据信息失败！Error 1054: Unknown column 'D0000000' in 'where clause'
