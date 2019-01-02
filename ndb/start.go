@@ -2,10 +2,6 @@ package ndb
 
 import (
 	"eInfusion/comm"
-
-	"github.com/jmoiron/sqlx"
-
-	_ "github.com/mattn/go-sqlite3"
 )
 
 // Svr ：全局数据库对象
@@ -14,10 +10,20 @@ var Svr *DBx
 // InitDB ：初始化数据库
 func InitDB() {
 	// ps := NewDBparams(DataBaseType, "root", "2341656", "localhost", "3306", "transfusion")
-	Svr = NewDBx(NewDBparams(DataBaseType.MSSql, "root", "2341656", "localhost", "3306", "transfusion"))
+	// Svr = NewDBx(NewDBparams(DataBaseType.Sqlite3, "root", "2341656", "localhost", "3306", "transfusion"))
+	// d, s := NewDBparams(DataBaseType.Sqlite3, "", "", "./", "", "tt")
+	// Svr = NewDBx(NewDBparams(DataBaseType.Sqlite3, "", "", "./", "", "tt"))
+	// comm.Msg(d)
+	// Svr = NewDBx(d, s)
+	Svr = NewDBx(NewDBparams(DataBaseType.Sqlite3, "", "", "./", "", "us"))
 	if !Svr.Connect() {
 		comm.Msg("disconnected!")
 	}
+	schema := `CREATE TABLE main (
+			country text,
+			city text NULL,
+			telcode integer);`
+	Svr.ExceSQL(schema)
 
 	// var sd sql.NullString
 	// Svr.QueryOneData("select disable from t_device_dict limit 1", &sd)
@@ -35,43 +41,45 @@ func InitDB() {
 	// 	comm.Msg(str)
 	// }
 
-	d, err := sqlx.Connect(DataBaseType.Sqlite3, "./tt")
-	if err != nil {
-		comm.Msg("err:", err)
-	} else {
-		schema := `CREATE TABLE main (
-			country text,
-			city text NULL,
-			telcode integer);`
+	// 	d, err := sqlx.Connect(DataBaseType.Sqlite3, "./tt")
+	// 	comm.Msg(DataBaseType.Sqlite3)
+	// 	if err != nil {
+	// 		comm.Msg("err:", err)
+	// 	} else {
+	// 		schema := `CREATE TABLE main (
+	// 			country text,
+	// 			city text NULL,
+	// 			telcode integer);`
 
-		// execute a query on the server
-		_, err := d.Exec(schema)
-		if err != nil {
-			comm.Msg(err)
-		} else {
+	// 		// execute a query on the server
+	// 		_, err := d.Exec(schema)
+	// 		if err != nil {
+	// 			comm.Msg(err)
+	// 		} else {
 
-		}
-	}
+	// 		}
+	// 	}
+	// }
+
+	//////////////////////////////////////
+	// if !Svr.Connect() {
+
+	// }
+	// type device struct {
+	// 	Qcode   string         `db:"qcode"`
+	// 	Did     string         `db:"did"`
+	// 	Remark  sql.NullString `db:"remark"`
+	// 	Disable int            `db:"disable"`
+	// }
+
+	// var d device
+
+	// d := make([]device, 0)
+	// comm.Msg(Svr.db)
+	// s := "select * from t_device_dict where did=?"
+
+	// Svr.QueryOneData(s, &d, "B0000000")
+	// comm.Msg("result:", d)
+
+	/////////////////////////////////////
 }
-
-//////////////////////////////////////
-// if !Svr.Connect() {
-
-// }
-// type device struct {
-// 	Qcode   string         `db:"qcode"`
-// 	Did     string         `db:"did"`
-// 	Remark  sql.NullString `db:"remark"`
-// 	Disable int            `db:"disable"`
-// }
-
-// var d device
-
-// d := make([]device, 0)
-// comm.Msg(Svr.db)
-// s := "select * from t_device_dict where did=?"
-
-// Svr.QueryOneData(s, &d, "B0000000")
-// comm.Msg("result:", d)
-
-/////////////////////////////////////

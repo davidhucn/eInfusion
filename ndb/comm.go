@@ -1,10 +1,11 @@
 package ndb
 
 type databaseTypeForDriver struct {
-	Oracle  string
-	MSSql   string
-	Sqlite3 string
-	MySQL   string
+	Oracle     string
+	MSSql      string
+	Sqlite3    string
+	MySQL      string
+	PostgreSQL string
 }
 
 // DataBaseType :数据库类型(驱动名称)
@@ -15,6 +16,7 @@ func init() {
 	DataBaseType.Sqlite3 = "sqlite3"
 	DataBaseType.Oracle = "oracle"
 	DataBaseType.MSSql = "mssql"
+	DataBaseType.PostgreSQL = "postgres"
 
 	DBMsg.ConnectDBErr = "错误,无法连接到指定数据库！"
 	DBMsg.InsertDataErr = "错误,插入数据库操作失败！"

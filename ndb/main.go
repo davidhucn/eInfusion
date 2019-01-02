@@ -13,7 +13,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	// oracle接口
 	// _ "github.com/mattn/go-oci8"
-	// _ "github.com/lib/pq"
+	// PostgreSQL 接口:
+	_ "github.com/lib/pq"
 )
 
 // var db *sqlx.DB
@@ -45,8 +46,11 @@ func NewDBparams(databaseType string, UserName string, Password string, Host str
 		connectStr = connectStr + p.Port + ")/" + p.SchemaName
 		connectStr = connectStr + "?charset=utf8" //字符集
 	case DataBaseType.Sqlite3:
-		connectStr = p.Host
+		connectStr = p.Host + p.SchemaName
 	case DataBaseType.Oracle:
+		connectStr = ""
+	case DataBaseType.PostgreSQL:
+		connectStr = ""
 	}
 	return p, connectStr
 }
@@ -86,7 +90,7 @@ func (d *DBx) isConnected() bool {
 	return false
 }
 
-// ExceSQL :执行查询语句
+// ExceSQL :执行查询语句,如果是DDL语句则返回都为0
 func (d *DBx) ExceSQL(s string, args ...interface{}) int64 {
 	rs, err := d.db.Exec(s, args...)
 	if cm.CkErr(DBMsg.QueryDataErr, tlogs.Error, err) {
@@ -100,10 +104,10 @@ func (d *DBx) ExceSQL(s string, args ...interface{}) int64 {
 	if cm.CkErr(DBMsg.UpdateDataErr, tlogs.Error, err) {
 		return 0
 	}
-	if affAmount > 0 {
-		return affAmount
-	}
-	if inAmount > 0 {
+	if affAmount > 0 || inAmount > 0 {
+		if affAmount > 0 {
+			return affAmount
+		}
 		return inAmount
 	}
 	return 0
