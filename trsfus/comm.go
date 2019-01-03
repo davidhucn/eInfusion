@@ -56,9 +56,9 @@ func NewOrder(rcvID string, detID string, cmd CmdType, args []string) *Order {
 	}
 }
 
-// RegisteToOrderPool :登记到指令池里
+// RegisteToOrdersPool :登记到指令池里
 // 如果已存在，忽略
-func (o Order) RegisteToOrderPool() {
+func (o Order) RegisteToOrdersPool() {
 	if o.matchFromOrderPool() > -1 {
 		var m sync.Mutex
 		defer m.Unlock()
@@ -85,9 +85,9 @@ func (o Order) matchFromOrderPool() int {
 	return -1
 }
 
-// UnregisterToOrderPool :注销指令池里相应项
+// UnregisterToOrdersPool :注销指令池里相应项
 // 如果没有找到相应项，则自动过滤
-func (o Order) UnregisterToOrderPool() {
+func (o Order) UnregisterToOrdersPool() {
 	var m sync.Mutex
 	defer m.Unlock()
 	m.Lock()
@@ -164,7 +164,7 @@ func init() {
 	SendCmdMap[CmdDeleteDetector] = 13
 	SendCmdMap[CmdSetReceiverConfig] = 14
 	SendCmdMap[CmdSetReceiverReconnectTime] = 15
-
+	/////////////////////////////////////////////
 	ReceiveCmdMap[0x00] = CmdGetReceiverState
 	ReceiveCmdMap[0x01] = CmdGetDetectorState
 	ReceiveCmdMap[0x02] = CmdAddDetector

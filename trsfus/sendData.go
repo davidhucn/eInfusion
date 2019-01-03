@@ -62,6 +62,6 @@ func MakeSendOrder(cmdType CmdType, rcvid string, detid string, args []string) [
 	sd[1] = uint8(len(sd)) // 重新计算指令总长度
 
 	// 记录到指令池里面
-	od.RegisteToOrderPool()
+	od.RegisteToOrdersPool()
 	return sd
 }

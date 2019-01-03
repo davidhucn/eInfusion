@@ -19,11 +19,11 @@ func InitDB() {
 	if !Svr.Connect() {
 		comm.Msg("disconnected!")
 	}
-	schema := `CREATE TABLE main (
-			country text,
-			city text NULL,
-			telcode integer);`
-	Svr.ExceSQL(schema)
+	// schema := `CREATE TABLE main (
+	// 		country text,
+	// 		city text NULL,
+	// 		telcode integer);`
+	// Svr.ExceSQL(schema)
 
 	// var sd sql.NullString
 	// Svr.QueryOneData("select disable from t_device_dict limit 1", &sd)
