@@ -30,7 +30,7 @@ type DBParam struct {
 }
 
 // NewDBparams :新建数据库连接参数(mysql,mssql,oracle)
-func NewDBparams(databaseType string, UserName string, Password string, Host string, Port string, SchemaName string) (*DBParam, string) {
+func NewDBparams(databaseType string, UserName string, Password string, Host string, Port string, SchemaName string) *DBParam {
 	p := &DBParam{
 		UserName:     UserName,
 		Password:     Password,
@@ -39,8 +39,20 @@ func NewDBparams(databaseType string, UserName string, Password string, Host str
 		SchemaName:   SchemaName,
 		DataBaseType: databaseType,
 	}
+	return p
+}
+
+// DBx :数据库对象
+type DBx struct {
+	db            *sqlx.DB
+	dbParams      *DBParam
+	connectString string
+}
+
+// NewDBx :新建数据库对象
+func NewDBx(p *DBParam) *DBx {
 	var connectStr string
-	switch databaseType {
+	switch p.DataBaseType {
 	case DataBaseType.MySQL:
 		connectStr = p.UserName + ":" + p.Password + "@tcp(" + p.Host + ":"
 		connectStr = connectStr + p.Port + ")/" + p.SchemaName
@@ -52,21 +64,9 @@ func NewDBparams(databaseType string, UserName string, Password string, Host str
 	case DataBaseType.PostgreSQL:
 		connectStr = ""
 	}
-	return p, connectStr
-}
-
-// DBx :数据库对象
-type DBx struct {
-	db            *sqlx.DB
-	dbParams      *DBParam
-	connectString string
-}
-
-// NewDBx :新建数据库对象
-func NewDBx(dbParams *DBParam, connectString string) *DBx {
 	d := &DBx{
-		dbParams:      dbParams,
-		connectString: connectString,
+		dbParams:      p,
+		connectString: connectStr,
 	}
 	return d
 }

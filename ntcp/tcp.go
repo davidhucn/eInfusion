@@ -166,7 +166,6 @@ func (s *TServer) Listen() {
 	cm.Msg(TCPMsg.StartServiceMsg, ",监听地址：")
 	cm.SepLi(60, "")
 	defer listener.Close()
-
 	// 循环发送列表内指令
 	go func() {
 		for od := range s.sendQueue {
@@ -176,7 +175,6 @@ func (s *TServer) Listen() {
 				_, err := c.(*net.TCPConn).Write(od.Data)
 				if !cm.CkErr(TCPMsg.SendError, tlogs.Error, err) {
 					// 发送成功
-					s.clients.Delete(od.ID)
 				} else {
 					s.waitQueue = append(s.waitQueue, od)
 				}
@@ -190,7 +188,7 @@ func (s *TServer) Listen() {
 			//判断指令是否在生存期内
 			if time.Now().Sub(v.CreateTime) >= s.waitSendExpireTime {
 				// 超时:册除相应待发队列
-				s.waitQueue = append(s.waitQueue[:i], s.waitQueue[i+1])
+				s.waitQueue = append(s.waitQueue[:i], s.waitQueue[i+1:]...)
 				// TODO:错误信息回写到前端
 			}
 		}

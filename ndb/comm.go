@@ -23,14 +23,16 @@ func init() {
 	DBMsg.DeleteDataErr = "错误,册除数据操作失败！"
 	DBMsg.QueryDataErr = "错误,查询数据信息失败！"
 	DBMsg.UpdateDataErr = "错误,更数据信息失败！"
+	DBMsg.DatabaseInitFinish = "提示，数据库管理模块初始化完成！"
 }
 
 type dbMsg struct {
-	ConnectDBErr  string
-	InsertDataErr string
-	DeleteDataErr string
-	QueryDataErr  string
-	UpdateDataErr string
+	ConnectDBErr       string
+	InsertDataErr      string
+	DeleteDataErr      string
+	QueryDataErr       string
+	UpdateDataErr      string
+	DatabaseInitFinish string
 }
 
 // DBMsg :数据库消息对象

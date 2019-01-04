@@ -2,22 +2,23 @@ package ndb
 
 import (
 	"eInfusion/comm"
+	"eInfusion/tlogs"
 )
 
-// Svr ：全局数据库对象
-var Svr *DBx
+// DBMain ：全局数据库对象
+var DBMain *DBx
 
-// InitDB ：初始化数据库
-func InitDB() {
-	// ps := NewDBparams(DataBaseType, "root", "2341656", "localhost", "3306", "transfusion")
-	// Svr = NewDBx(NewDBparams(DataBaseType.Sqlite3, "root", "2341656", "localhost", "3306", "transfusion"))
-	// d, s := NewDBparams(DataBaseType.Sqlite3, "", "", "./", "", "tt")
-	// Svr = NewDBx(NewDBparams(DataBaseType.Sqlite3, "", "", "./", "", "tt"))
-	// comm.Msg(d)
-	// Svr = NewDBx(d, s)
-	Svr = NewDBx(NewDBparams(DataBaseType.Sqlite3, "", "", "./", "", "us"))
-	if !Svr.Connect() {
+// DatabaseInit ：初始化数据库
+func DatabaseInit() {
+
+	localDB := NewDBparams(DataBaseType.MySQL, "root", "", "localhost", "3306", "transfusion")
+	// sqlite3 := NewDBparams(DataBaseType.Sqlite3, "", "", "./", "", "us")
+	DBMain = NewDBx(localDB)
+
+	if !DBMain.Connect() {
 		comm.Msg("disconnected!")
+	} else {
+		tlogs.DoLog(tlogs.Info, DBMsg.DatabaseInitFinish)
 	}
 	// schema := `CREATE TABLE main (
 	// 		country text,

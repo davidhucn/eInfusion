@@ -22,7 +22,7 @@ func StartTCPService() {
 			if od.ID == cm.GetPureIPAddr(c.conn) {
 				c.SendData(od.Data)
 				// 册除待发队列相应项
-				Srv.waitQueue = append(Srv.waitQueue[:i], Srv.waitQueue[i+1])
+				Srv.waitQueue = append(Srv.waitQueue[:i], Srv.waitQueue[i+1:]...)
 			}
 		}
 	}
@@ -35,7 +35,8 @@ func StartTCPService() {
 			// 发送欢迎词
 			c.SendData([]byte("Welcome To Transfusion Platform!"))
 			// 测试用--生成发送至客户端指令
-			t := tf.MakeSendOrder(tf.CmdAddDetector, "A0000000", "B0000000", []string{})
+			// t := tf.MakeSendOrder(tf.CmdAddDetector, "A0000000", "B0000000", []string{})
+			t := tf.MakeSendOrder(tf.CmdGetReceiverState, "A0000000", "", []string{})
 			c.SendData(t)
 		} else {
 			// 非法客户端
@@ -45,7 +46,7 @@ func StartTCPService() {
 
 	Srv.WhenNewDataReceived(func(c *Client, p []byte) {
 		// 解析，落到到具体业务
-		tf.DoReceiveData(p, 2)
+		cm.CkErr(TCPMsg.ReceiveError, tlogs.Warn, tf.DoReceiveData(p, 2, c.conn))
 	})
 
 	Srv.WhenClientConnectionClosed(func(c *Client, err error) {

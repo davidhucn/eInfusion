@@ -59,7 +59,7 @@ func NewOrder(rcvID string, detID string, cmd CmdType, args []string) *Order {
 // RegisteToOrdersPool :登记到指令池里
 // 如果已存在，忽略
 func (o Order) RegisteToOrdersPool() {
-	if o.matchFromOrderPool() > -1 {
+	if o.matchFromOrderPool() == -1 {
 		var m sync.Mutex
 		defer m.Unlock()
 		m.Lock()
@@ -69,6 +69,9 @@ func (o Order) RegisteToOrdersPool() {
 
 // findOrderFromOrderPool :在指令池里查找指定的指令,如果找到，返回下标，未找到返回-1
 func (o Order) matchFromOrderPool() int {
+	if len(OrdersPool) == 0 {
+		return -1
+	}
 	for i, p := range OrdersPool {
 		if o.Cmd == p.Cmd && o.DetID == p.DetID && o.RcvID == p.RcvID {
 			if len(o.Args) == len(p.Args) {
@@ -92,9 +95,13 @@ func (o Order) UnregisterToOrdersPool() {
 	defer m.Unlock()
 	m.Lock()
 	r := o.matchFromOrderPool()
-	if r > -1 {
+	if r == 0 {
+		// 如果只有一条指令,则视为清空操作,FIXME:
+		// OrdersPool = append(interface{})
+	}
+	if r > 0 {
 		// 如果在指令池内找到相同项，册除
-		OrdersPool = append(OrdersPool[:r], OrdersPool[r+1])
+		OrdersPool = append(OrdersPool[:r], OrdersPool[r+1:]...)
 	}
 }
 
