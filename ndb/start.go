@@ -1,7 +1,6 @@
 package ndb
 
 import (
-	"eInfusion/comm"
 	"eInfusion/tlogs"
 )
 
@@ -11,14 +10,14 @@ var DBMain *DBx
 // DatabaseInit ：初始化数据库
 func DatabaseInit() {
 
-	localDB := NewDBparams(DataBaseType.MySQL, "root", "", "localhost", "3306", "transfusion")
+	localDB := NewDBparams(DataBaseType.MySQL, "root", "2341656", "localhost", "3306", "transfusion")
 	// sqlite3 := NewDBparams(DataBaseType.Sqlite3, "", "", "./", "", "us")
 	DBMain = NewDBx(localDB)
 
-	if !DBMain.Connect() {
-		comm.Msg("disconnected!")
-	} else {
+	if DBMain.Connect() {
 		tlogs.DoLog(tlogs.Info, DBMsg.DatabaseInitFinish)
+	} else {
+
 	}
 	// schema := `CREATE TABLE main (
 	// 		country text,

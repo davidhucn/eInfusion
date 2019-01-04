@@ -15,7 +15,7 @@ func StartTCPService() {
 	// 生成tcp包前缀
 	prefixs := tf.MakePacketHeaderPrefix(0x66)
 	h := NewTCPHeader(3, prefixs, 1)
-	Srv = NewTCPServer(":9909", 10*time.Minute, 6*time.Hour, h)
+	Srv = NewTCPServer("9909", 10*time.Minute, 6*time.Hour, h)
 	// 发送待发队列内的命令
 	loopSendService := func(c *Client) {
 		for i, od := range Srv.waitQueue {
@@ -35,7 +35,6 @@ func StartTCPService() {
 			// 发送欢迎词
 			c.SendData([]byte("Welcome To Transfusion Platform!"))
 			// 测试用--生成发送至客户端指令
-			// t := tf.MakeSendOrder(tf.CmdAddDetector, "A0000000", "B0000000", []string{})
 			t := tf.MakeSendOrder(tf.CmdGetReceiverState, "A0000000", "", []string{})
 			c.SendData(t)
 		} else {

@@ -154,7 +154,7 @@ func (s *TServer) WhenNewDataReceived(callback func(c *Client, p []byte)) {
 
 // Listen :开始启动tcp服务
 func (s *TServer) Listen() {
-	tcpAddr, err := net.ResolveTCPAddr("tcp4", s.listenPort)
+	tcpAddr, err := net.ResolveTCPAddr("tcp4", ":"+s.listenPort)
 	if cm.CkErr(TCPMsg.SourceError, tlogs.Error, err) {
 		panic(err)
 	}
@@ -163,7 +163,7 @@ func (s *TServer) Listen() {
 		panic(err)
 	}
 	cm.SepLi(60, "")
-	cm.Msg(TCPMsg.StartServiceMsg, ",监听地址：")
+	cm.Msg(TCPMsg.StartServiceMsg, ",TCP监听端口：", s.listenPort)
 	cm.SepLi(60, "")
 	defer listener.Close()
 	// 循环发送列表内指令

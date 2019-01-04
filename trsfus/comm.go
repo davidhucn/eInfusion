@@ -95,9 +95,9 @@ func (o Order) UnregisterToOrdersPool() {
 	defer m.Unlock()
 	m.Lock()
 	r := o.matchFromOrderPool()
-	if r == 0 {
-		// 如果只有一条指令,则视为清空操作,FIXME:
-		// OrdersPool = append(interface{})
+	if r == 0 && len(OrdersPool) == 1 {
+		// 如果指令在第一条并且只有一条指令,则视为清空操作
+		OrdersPool = OrdersPool[:r]
 	}
 	if r > 0 {
 		// 如果在指令池内找到相同项，册除
