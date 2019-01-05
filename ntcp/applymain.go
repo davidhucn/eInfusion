@@ -35,7 +35,8 @@ func StartTCPService() {
 			// 发送欢迎词
 			c.SendData([]byte("Welcome To Transfusion Platform!"))
 			// 测试用--生成发送至客户端指令
-			t := tf.MakeSendOrder(tf.CmdGetReceiverState, "A0000000", "", []string{})
+			// t := tf.MakeSendOrder(tf.CmdGetReceiverState, "A0000000", "", []string{})
+			t := tf.MakeSendOrder(tf.CmdGetDetectorState, "A0000000", "B0000000", []string{})
 			c.SendData(t)
 		} else {
 			// 非法客户端

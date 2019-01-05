@@ -23,7 +23,7 @@ func DoReceiveData(p []byte, cmdTypeCursor int, c *net.TCPConn) error {
 			case CmdGetDetectorState:
 				return getUpLoadDetectorState(p[3:], c)
 			case CmdAddDetector:
-
+				getUpLoadAddDetectorState(p[3:], c)
 			case CmdSetReceiverConfig:
 
 			case CmdSetReceiverReconnectTime:
@@ -80,45 +80,76 @@ func getUpLoadReceiverState(p []byte, c *net.TCPConn) error {
 }
 
 // getUpLoadDetectorState :获取检测器信息
-// 未考虑心跳包数据上传，有待后续改进
+// 报警会自动发送数据，因此不匹配发送指令池
 func getUpLoadDetectorState(p []byte, c *net.TCPConn) error {
 	// TODO: Testing
 	var err error
 	rcvID := comm.ConvertOxBytesToStr(p[0:4])
 	// detAmount := comm.ConvertHexUnitToDecUnit(p[4])
 	detID := comm.ConvertOxBytesToStr(p[5:9])
-
-	var dt *Detector
+	dt := &Detector{}
 	BinDetectorStat(p[9], dt)
 	dt.ID = detID
-	od := NewOrder(rcvID, detID, CmdGetDetectorState, []string{})
-	if od.matchFromOrderPool() > -1 {
-		// 匹配成功
-		var did string
-		// 检验检测器与接收器配对
-		if ndb.DBMain.QueryOneData("SELECT detID FROM t_rcv_vs_det WHERE detID=? and rcvID=? ;", &did, detID, rcvID) {
-			if did != "" { // 校验成功
-				var id string
-				ndb.DBMain.QueryOneData("SELECT did FROM t_running WHERE did=?", &id, detID)
-				if id != "" {
-					s := "UPDATE t_running SET time=?,capacity=?,alarm=?,error=? WHERE did=?"
-					if ndb.DBMain.ExceSQL(s, comm.GetCurrentTime(), dt.Capacity, dt.Alarm, 0, detID) == 0 {
-						err = errors.New("更新数据库失败，请查看错误日志！")
-					} else {
-						err = nil
-					}
-				} else {
-					s := "INSERT INTO t_running(did,time,capacity,alarm) VALUES(?,?,?,?)"
-					if ndb.DBMain.ExceSQL(s, detID, comm.GetCurrentTime(), dt.Capacity, dt.Alarm) == 0 {
-						err = errors.New("更新数据库失败，请查看错误日志！")
-					} else {
-						err = nil
-					}
-				}
-			}
+	// od := NewOrder(rcvID, detID, CmdGetDetectorState, []string{})
+	m := matchRcvToDet(rcvID, detID)
+	if comm.CkErr("检测器与接收器匹配校验错误:", tlogs.Error, m) { // 校验验检测器与接收器配对
+		return m
+	}
+	var id string
+	ndb.DBMain.QueryOneData("SELECT did FROM t_running WHERE did=?", &id, detID)
+	if id != "" {
+		s := "UPDATE t_running SET time=?,capacity=?,alarm=?,error=? WHERE did=?"
+		if ndb.DBMain.ExceSQL(s, comm.GetCurrentTime(), dt.Capacity, dt.Alarm, 0, detID) == 0 {
+			err = errors.New("更新数据库失败，请查看错误日志！")
 		} else {
-			err = errors.New("数据库连接错误！")
+			err = nil
+		}
+	} else {
+		s := "INSERT INTO t_running(did,time,capacity,alarm) VALUES(?,?,?,?)"
+		if ndb.DBMain.ExceSQL(s, detID, comm.GetCurrentTime(), dt.Capacity, dt.Alarm) == 0 {
+			err = errors.New("更新数据库失败，请查看错误日志！")
+		} else {
+			err = nil
 		}
 	}
 	return err
+}
+
+// getUpLoadAddDetectorState :获取添加/开启检测器结果
+func getUpLoadAddDetectorState(p []byte, c *net.TCPConn) error {
+	// var err error
+	rcvID := comm.ConvertOxBytesToStr(p[0:4])
+	// detAmount := comm.ConvertHexUnitToDecUnit(p[4])
+	detID := comm.ConvertOxBytesToStr(p[5:9])
+
+	od := NewOrder(rcvID, detID, CmdAddDetector, []string{})
+	if od.matchFromOrderPool() > -1 { // 匹配成功
+		m := matchRcvToDet(rcvID, detID)
+		if comm.CkErr("检测器与接收器匹配校验错误:", tlogs.Error, m) { // 校验验检测器与接收器配对
+			return m
+		}
+		var tas []*ndb.TransacionArgs
+		ta := &ndb.TransacionArgs{}
+		ta.SQL = "INSERT INTO t_running(did,time) VALUES(?,?)"
+		ta.Args = append(ta.Args, detID)
+		ta.Args = append(ta.Args, comm.GetCurrentTime())
+		tas = append(tas, ta)
+		ndb.DBMain.DoTransacion(tas)
+	}
+	return nil
+}
+
+// matchRcvToDet :匹配数据库内检测器与接收器是否对应
+// 有错误表示不匹配
+func matchRcvToDet(rcvID string, detID string) error {
+	var id string
+	s := "SELECT detID FROM t_rcv_vs_det WHERE rcvID=? and detID=?"
+	if ndb.DBMain.QueryOneData(s, &id, rcvID, detID) {
+		if id == "" {
+			return errors.New("接收器:[" + rcvID + "]与检测器:[" + detID + "]不匹配！")
+		}
+	} else {
+		return errors.New("获取设备记录表错误，请查看错误日志！")
+	}
+	return nil
 }

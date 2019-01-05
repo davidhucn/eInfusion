@@ -1,8 +1,10 @@
 package ndb
 
 import (
+	"eInfusion/comm"
 	cm "eInfusion/comm"
 	"eInfusion/tlogs"
+	"errors"
 
 	"github.com/jmoiron/sqlx"
 	// d "golang.org/x/net/http2/h2demo"
@@ -44,7 +46,7 @@ func NewDBparams(databaseType string, UserName string, Password string, Host str
 
 // DBx :数据库对象
 type DBx struct {
-	db            *sqlx.DB
+	DB            *sqlx.DB
 	dbParams      *DBParam
 	connectString string
 }
@@ -74,7 +76,7 @@ func NewDBx(p *DBParam) *DBx {
 // Connect :连接到数据库
 func (d *DBx) Connect() bool {
 	var err error
-	d.db, err = sqlx.Connect(d.dbParams.DataBaseType, d.connectString)
+	d.DB, err = sqlx.Connect(d.dbParams.DataBaseType, d.connectString)
 	if cm.CkErr(DBMsg.ConnectDBErr, tlogs.Error, err) {
 		// 如果连接失败
 		return false
@@ -84,7 +86,7 @@ func (d *DBx) Connect() bool {
 
 // isConnected :判断是否已连接
 func (d *DBx) isConnected() bool {
-	if d.db.Ping() == nil {
+	if d.DB.Ping() == nil {
 		return true
 	}
 	return false
@@ -92,7 +94,7 @@ func (d *DBx) isConnected() bool {
 
 // ExceSQL :执行查询语句,如果是DDL语句则返回都为0
 func (d *DBx) ExceSQL(s string, args ...interface{}) int64 {
-	rs, err := d.db.Exec(s, args...)
+	rs, err := d.DB.Exec(s, args...)
 	if cm.CkErr(DBMsg.QueryDataErr, tlogs.Error, err) {
 		return 0
 	}
@@ -116,7 +118,7 @@ func (d *DBx) ExceSQL(s string, args ...interface{}) int64 {
 // QueryOneData :查询第一条数据，返回相关struct
 func (d *DBx) QueryOneData(sql string, result interface{}, args ...interface{}) bool {
 	var err error
-	err = d.db.Get(result, sql, args...)
+	err = d.DB.Get(result, sql, args...)
 	if cm.CkErr(DBMsg.QueryDataErr, tlogs.Error, err) {
 		return false
 	}
@@ -126,9 +128,29 @@ func (d *DBx) QueryOneData(sql string, result interface{}, args ...interface{}) 
 // QueryDatas :查询批量数据,返回相关[]struct
 func (d *DBx) QueryDatas(sql string, results interface{}, args ...interface{}) bool {
 	var err error
-	err = d.db.Select(&results, sql, args...)
+	err = d.DB.Select(&results, sql, args...)
 	if cm.CkErr(DBMsg.QueryDataErr, tlogs.Error, err) {
 		return false
 	}
 	return true
+}
+
+// DoTransacion :进行事务操作，基于TxArgs
+func (d *DBx) DoTransacion(t []*TransacionArgs) error {
+	tx, err := d.DB.Begin()
+	if comm.CkErr(DBMsg.EnableTransacionFailure, tlogs.Error, err) {
+		return errors.New(DBMsg.EnableTransacionFailure)
+	}
+	for _, args := range t {
+		_, err := tx.Exec(args.SQL, args.Args) //FIXME: 参数不对
+		if comm.CkErr(DBMsg.TransacionOperateErr, tlogs.Error, err) {
+			tx.Rollback()
+			return err
+		}
+	}
+	err = tx.Commit()
+	if comm.CkErr(DBMsg.TransacionOperateErr, tlogs.Error, err) {
+		return errors.New(DBMsg.TransacionOperateErr)
+	}
+	return nil
 }
