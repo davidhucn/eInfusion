@@ -4,8 +4,8 @@ import (
 	cm "eInfusion/comm"
 )
 
-// MakeSendOrder :生成接收器相关发送命令
-// SetReceiverReconnectTime ：参数重连时间以秒为单位.
+// MakeSendOrder :生成接收器相关发送命令,如果已登记操作，则忽略
+// SetReceiverReconnectTime ：参数重连时间以[秒'为单位.
 func MakeSendOrder(cmdType CmdType, rcvid string, detid string, args []string) []byte {
 	sd := make([]byte, 0)
 	od := NewOrder(rcvid, detid, cmdType, args)
@@ -13,7 +13,6 @@ func MakeSendOrder(cmdType CmdType, rcvid string, detid string, args []string) [
 		// 如果指令池内已存在，则返回空指令
 		return sd
 	}
-
 	for i := 0; i < len(packetHeaderPrefix); i++ {
 		sd = append(sd, packetHeaderPrefix[i])
 	}

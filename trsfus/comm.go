@@ -56,15 +56,17 @@ func NewOrder(rcvID string, detID string, cmd CmdType, args []string) *Order {
 	}
 }
 
-// RegisteToOrdersPool :登记到指令池里
-// 如果已存在，忽略
-func (o Order) RegisteToOrdersPool() {
+// RegisteToOrdersPool :登记到指令池里;
+// 如果已登记，则忽略并返回:false
+func (o Order) RegisteToOrdersPool() bool {
 	if o.matchFromOrderPool() == -1 {
 		var m sync.Mutex
 		defer m.Unlock()
 		m.Lock()
 		OrdersPool = append(OrdersPool, o)
+		return true
 	}
+	return false
 }
 
 // findOrderFromOrderPool :在指令池里查找指定的指令,如果找到，返回下标，未找到返回-1

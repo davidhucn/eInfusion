@@ -142,7 +142,7 @@ func (d *DBx) DoTransacion(t []*TransacionArgs) error {
 		return errors.New(DBMsg.EnableTransacionFailure)
 	}
 	for _, args := range t {
-		_, err := tx.Exec(args.SQL, args.Args) //FIXME: 参数不对
+		_, err := tx.Exec(args.SQL, args.Params...)
 		if comm.CkErr(DBMsg.TransacionOperateErr, tlogs.Error, err) {
 			tx.Rollback()
 			return err

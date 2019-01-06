@@ -30,13 +30,14 @@ func StartTCPService() {
 	Srv.WhenNewClientConnected(func(c *Client) {
 		if c.VerifyLegal() {
 			// 合法
-			tlogs.DoLog(tlogs.Info, "IP:", cm.GetPureIPAddr(c.conn), " Connected")
+			tlogs.DoLog(tlogs.Info, "IP:", cm.GetPureIPAddr(c.conn), " 【上线】")
 			loopSendService(c) // 执行循环发送待发送指令服务
 			// 发送欢迎词
 			c.SendData([]byte("Welcome To Transfusion Platform!"))
 			// 测试用--生成发送至客户端指令
 			// t := tf.MakeSendOrder(tf.CmdGetReceiverState, "A0000000", "", []string{})
-			t := tf.MakeSendOrder(tf.CmdGetDetectorState, "A0000000", "B0000000", []string{})
+			// t := tf.MakeSendOrder(tf.CmdGetDetectorState, "A0000000", "B0000000", []string{})
+			t := tf.MakeSendOrder(tf.CmdDeleteDetector, "A0000000", "B0000007", []string{})
 			c.SendData(t)
 		} else {
 			// 非法客户端
@@ -50,7 +51,7 @@ func StartTCPService() {
 	})
 
 	Srv.WhenClientConnectionClosed(func(c *Client, err error) {
-		tlogs.DoLog(tlogs.Info, "IP:", cm.GetPureIPAddr(c.conn), " Disconnected")
+		tlogs.DoLog(tlogs.Info, "IP:", cm.GetPureIPAddr(c.conn), " 【下线】")
 	})
 	Srv.Listen()
 }
